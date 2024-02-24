@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    restart: always
+    ports:
+      - 4000:3000
+    networks:
+      - otog_network
+
+networks:
+  otog_network:
+    name: otog-network
