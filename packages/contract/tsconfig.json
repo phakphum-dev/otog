@@ -1,0 +1,10 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "lib": ["ESNext"],
+    "target": "ESNext"
+  }
+}
