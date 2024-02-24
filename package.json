@@ -3,7 +3,10 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "web:dev": "pnpm --filter @otog/web dev",
+    "api:dev": "pnpm --filter @otog/api dev",
+    "codegen": "turbo codegen",
+    "codegen:watch": "turbo run codegen:watch",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
