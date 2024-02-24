@@ -1,4 +1,4 @@
-# src Dockerfile: https://github.com/vercel/turbo/blob/main/examples/with-docker/apps/web/Dockerfile
+# source https://github.com/vercel/turbo/pull/5536
 FROM node:18-alpine AS alpine
 
 # setup pnpm on the alpine base
