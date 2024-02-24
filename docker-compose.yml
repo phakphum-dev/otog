@@ -10,8 +10,8 @@ services:
     ports:
       - 4000:3000
     networks:
-      - otog_network
+      - otog-network
 
 networks:
-  otog_network:
+  otog-network:
     name: otog-network

@@ -15,7 +15,7 @@ RUN apk update
 # Set working directory
 WORKDIR /app
 COPY . .
-RUN turbo prune --scope=web --docker
+RUN turbo prune --scope=@otog/web --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -41,7 +41,7 @@ COPY turbo.json turbo.json
 # ARG TURBO_TOKEN
 # ENV TURBO_TOKEN=$TURBO_TOKEN
 
-RUN turbo run build --filter=web
+RUN turbo run build --filter=@otog/web
 
 # use alpine as the thinest image
 FROM alpine AS runner
