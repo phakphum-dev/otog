@@ -26,7 +26,7 @@ export class AppController {
   @TsRestHandler(c.ping)
   pingServer() {
     return tsRestHandler(c.ping, async () => {
-      return { status: 200, body: 'pong' };
+      return { status: 200, body: this.appService.getPong() };
     });
   }
 }

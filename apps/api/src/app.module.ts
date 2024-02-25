@@ -11,6 +11,7 @@ import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { PrismaModule } from './core/database/prisma.module';
 import { S3Module } from 'nestjs-s3';
 import { environment } from './env';
+
 @Module({
   imports: [
     PrismaModule,

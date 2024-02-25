@@ -3,13 +3,10 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { JwtAuthGuard } from './core/guards/jwt-auth.guard';
-('./core/config/configuration');
 import { OfflineModeGuard } from './core/guards/offline-mode.guard';
 import { generateOpenApi } from '@ts-rest/open-api';
 import { router } from '@otog/contract';
 import { environment } from './env';
-
-const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +34,7 @@ async function bootstrap() {
     SwaggerModule.setup('doc', app, document);
   }
 
-  await app.listen(PORT);
+  await app.listen(environment.PORT);
 }
+
 bootstrap();
