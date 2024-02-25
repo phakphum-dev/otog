@@ -7,7 +7,7 @@ import { sha256 } from 'js-sha256';
 import { Role } from 'src/core/constants';
 import { userList } from 'src/utils';
 import { PrismaService } from 'src/core/database/prisma.service';
-import { ContestMode, Prisma, User } from '@prisma/client';
+import { ContestMode, Prisma, User } from '@otog/database';
 
 export const WITHOUT_PASSWORD = {
   id: true,

@@ -50,18 +50,18 @@ importers:
       '@nestjs/websockets':
         specifier: ^10.0.5
         version: 10.3.3(@nestjs/common@8.4.7)(@nestjs/core@8.4.7)(@nestjs/platform-socket.io@10.3.3)(reflect-metadata@0.1.14)(rxjs@7.8.1)
-      '@prisma/client':
-        specifier: 4.11.0
-        version: 4.11.0(prisma@4.11.0)
-      '@ts-rest/core':
-        specifier: ^3.26.3
-        version: 3.33.0(zod@3.21.1)
+      '@otog/contract':
+        specifier: workspace:^
+        version: link:../../packages/contract
+      '@otog/database':
+        specifier: workspace:^
+        version: link:../../packages/database
       '@ts-rest/nest':
-        specifier: ^3.26.3
-        version: 3.33.0(@nestjs/common@8.4.7)(@nestjs/core@8.4.7)(rxjs@7.8.1)(zod@3.21.1)
+        specifier: ^3.33.0
+        version: 3.33.0(@nestjs/common@8.4.7)(@nestjs/core@8.4.7)(rxjs@7.8.1)(zod@3.22.4)
       '@ts-rest/open-api':
-        specifier: ^3.26.3
-        version: 3.33.0(zod@3.21.1)
+        specifier: ^3.33.0
+        version: 3.33.0(zod@3.22.4)
       '@types/passport-jwt':
         specifier: ^3.0.3
         version: 3.0.13
@@ -129,11 +129,8 @@ importers:
         specifier: ^8.3.2
         version: 8.3.2
       zod:
-        specifier: 3.21.1
-        version: 3.21.1
-      zod-prisma-types:
-        specifier: ^2.7.4
-        version: 2.8.1
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@nestjs/cli':
         specifier: ^8.1.4
@@ -396,7 +393,7 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@anatine/zod-openapi@1.14.2(openapi3-ts@2.0.2)(zod@3.21.1):
+  /@anatine/zod-openapi@1.14.2(openapi3-ts@2.0.2)(zod@3.22.4):
     resolution: {integrity: sha512-q0qHfnuNYVKu0Swrnnvfj9971AEyW7c8v9jCOZGCl5ZbyGMNG4RPyJkRcMi/JC8CRfdOe0IDfNm1nNsi2avprg==}
     peerDependencies:
       openapi3-ts: ^2.0.0 || ^3.0.0
@@ -404,7 +401,7 @@ packages:
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.1
-      zod: 3.21.1
+      zod: 3.22.4
     dev: false
 
   /@angular-devkit/core@13.3.5(chokidar@3.5.3):
@@ -1833,20 +1830,6 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@prisma/client@4.11.0(prisma@4.11.0):
-    resolution: {integrity: sha512-0INHYkQIqgAjrt7NzhYpeDQi8x3Nvylc2uDngKyFDDj1tTRQ4uV1HnVmd1sQEraeVAN63SOK0dgCKQHlvjL0KA==}
-    engines: {node: '>=14.17'}
-    requiresBuild: true
-    peerDependencies:
-      prisma: '*'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-    dependencies:
-      '@prisma/engines-version': 4.11.0-57.8fde8fef4033376662cad983758335009d522acb
-      prisma: 4.11.0
-    dev: false
-
   /@prisma/client@5.10.2(prisma@5.10.2):
     resolution: {integrity: sha512-ef49hzB2yJZCvM5gFHMxSFL9KYrIP9udpT5rYo0CsHD4P9IKj473MbhU1gjKKftiwWBTIyrt9jukprzZXazyag==}
     engines: {node: '>=16.13'}
@@ -1870,10 +1853,6 @@ packages:
 
   /@prisma/debug@5.10.2:
     resolution: {integrity: sha512-bkBOmH9dpEBbMKFJj8V+Zp8IZHIBjy3fSyhLhxj4FmKGb/UBSt9doyfA6k1UeUREsMJft7xgPYBbHSOYBr8XCA==}
-
-  /@prisma/engines-version@4.11.0-57.8fde8fef4033376662cad983758335009d522acb:
-    resolution: {integrity: sha512-3Vd8Qq06d5xD8Ch5WauWcUUrsVPdMC6Ge8ILji8RFfyhUpqon6qSyGM0apvr1O8n8qH8cKkEFqRPsYjuz5r83g==}
-    dev: false
 
   /@prisma/engines-version@5.10.0-34.5a9203d0590c951969e85a7d07215503f4672eb9:
     resolution: {integrity: sha512-uCy/++3Jx/O3ufM+qv2H1L4tOemTNqcP/gyEVOlZqTpBvYJUe0tWtW0y3o2Ueq04mll4aM5X3f6ugQftOSLdFQ==}
@@ -1907,12 +1886,6 @@ packages:
       chalk: 4.1.2
       cross-spawn: 7.0.3
     dev: true
-
-  /@prisma/generator-helper@5.10.2:
-    resolution: {integrity: sha512-U1W5fBJubLMKbcfwKZHACTIw38JEl8t92BZTzSDeDvhgWPpHRtzRcCVAAqFqjpaqmrXJZ7KeFCaAfsyllliVvA==}
-    dependencies:
-      '@prisma/debug': 5.10.2
-    dev: false
 
   /@prisma/get-platform@5.10.2:
     resolution: {integrity: sha512-nqXP6vHiY2PIsebBAuDeWiUYg8h8mfjBckHh6Jezuwej0QJNnjDiOq30uesmg+JXxGk99nqyG3B7wpcOODzXvg==}
@@ -2066,17 +2039,6 @@ packages:
       path-browserify: 1.0.1
     dev: true
 
-  /@ts-rest/core@3.33.0(zod@3.21.1):
-    resolution: {integrity: sha512-EUV+VmHWXrtvjBcGURrAuW29ajKhteGGgbf//KcrEhq0pYuENJfxfg4mx23OXVOliuceY/kSXO4HiEYs9jH79g==}
-    peerDependencies:
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
-    dependencies:
-      zod: 3.21.1
-    dev: false
-
   /@ts-rest/core@3.33.0(zod@3.22.4):
     resolution: {integrity: sha512-EUV+VmHWXrtvjBcGURrAuW29ajKhteGGgbf//KcrEhq0pYuENJfxfg4mx23OXVOliuceY/kSXO4HiEYs9jH79g==}
     peerDependencies:
@@ -2088,7 +2050,7 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /@ts-rest/nest@3.33.0(@nestjs/common@8.4.7)(@nestjs/core@8.4.7)(rxjs@7.8.1)(zod@3.21.1):
+  /@ts-rest/nest@3.33.0(@nestjs/common@8.4.7)(@nestjs/core@8.4.7)(rxjs@7.8.1)(zod@3.22.4):
     resolution: {integrity: sha512-8FDudhG50ibAyLe1Jg2XUXmTaEFK+45F2+68iOk49Ntsk0cL7DZM0+md7I7nHKFOnA8yr6PoOKGZEU9nVwz45w==}
     peerDependencies:
       '@nestjs/common': ^9.0.0 || ^10.0.0
@@ -2102,17 +2064,17 @@ packages:
       '@nestjs/common': 8.4.7(reflect-metadata@0.1.14)(rxjs@7.8.1)
       '@nestjs/core': 8.4.7(@nestjs/common@8.4.7)(@nestjs/platform-express@8.4.7)(@nestjs/websockets@10.3.3)(reflect-metadata@0.1.14)(rxjs@7.8.1)
       rxjs: 7.8.1
-      zod: 3.21.1
+      zod: 3.22.4
     dev: false
 
-  /@ts-rest/open-api@3.33.0(zod@3.21.1):
+  /@ts-rest/open-api@3.33.0(zod@3.22.4):
     resolution: {integrity: sha512-ZUhOWy7oIo9D53W4/DuJuum6RtwSrcxr7VrNTKOeUlq+uvx8yzW/cxaZEh/SrHnzXhOegWj+lWRCH32MS/CaNA==}
     peerDependencies:
       zod: ^3.22.3
     dependencies:
-      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@3.21.1)
+      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@3.22.4)
       openapi3-ts: 2.0.2
-      zod: 3.21.1
+      zod: 3.22.4
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -4102,10 +4064,6 @@ packages:
   /code-block-writer@11.0.3:
     resolution: {integrity: sha512-NiujjUFB4SwScJq2bwbYUtXbZhBSlY6vYzm++3Q6oC+U+injTqfPYFK8wS9COOmb2lueqp0ZRB4nK1VYeHgNyw==}
     dev: true
-
-  /code-block-writer@12.0.0:
-    resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
-    dev: false
 
   /collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
@@ -11363,16 +11321,6 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zod-prisma-types@2.8.1:
-    resolution: {integrity: sha512-jGHyR/VYdF/7qWPVzjpS161Bodz0L7anlEDslaEHJgGigyiegDflViLUhUY1zze8QGgAHOnof4FzHYLzl5d3rw==}
-    hasBin: true
-    dependencies:
-      '@prisma/generator-helper': 5.10.2
-      code-block-writer: 12.0.0
-      lodash: 4.17.21
-      zod: 3.22.4
-    dev: false
-
   /zod-prisma@0.5.4(prisma@5.10.2)(zod@3.22.4):
     resolution: {integrity: sha512-5Ca4Qd1a1jy1T/NqCEpbr0c+EsbjJfJ/7euEHob3zDvtUK2rTuD1Rc/vfzH8q8PtaR2TZbysD88NHmrLwpv3Xg==}
     engines: {node: '>=14'}
@@ -11391,10 +11339,6 @@ packages:
       ts-morph: 13.0.3
       zod: 3.22.4
     dev: true
-
-  /zod@3.21.1:
-    resolution: {integrity: sha512-+dTu2m6gmCbO9Ahm4ZBDapx2O6ZY9QSPXst2WXjcznPMwf2YNpn3RevLx4KkZp1OPW/ouFcoBtBzFz/LeY69oA==}
-    dev: false
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}

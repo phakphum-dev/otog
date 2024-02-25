@@ -1,12 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { JwtAuthGuard } from './core/guards/jwt-auth.guard';
 import { configuration } from './core/config/configuration';
 import { OfflineModeGuard } from './core/guards/offline-mode.guard';
 import { generateOpenApi } from '@ts-rest/open-api';
-import { router } from './api';
+import { router } from '@otog/contract';
 
 const PORT = process.env.PORT || 3000;
 

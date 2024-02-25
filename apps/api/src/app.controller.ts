@@ -7,7 +7,7 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { appRouter } from './api';
+import { appRouter } from '@otog/contract';
 
 const c = nestControllerContract(appRouter);
 

@@ -19,9 +19,10 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { submissionRouter } from 'src/api';
+
 import { z } from 'zod';
 import { ContestService } from '../contest/contest.service';
+import { submissionRouter } from '@otog/contract';
 
 const c = nestControllerContract(submissionRouter);
 

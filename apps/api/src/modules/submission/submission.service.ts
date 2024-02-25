@@ -3,7 +3,9 @@ import { scodeFileFilter, scodeFileSizeLimit } from 'src/utils';
 import { UserDTO } from '../user/dto/user.dto';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { WITHOUT_PASSWORD } from '../user/user.service';
-import { Submission, SubmissionStatus, UserRole } from '@prisma/client';
+import { Submission, SubmissionStatus, UserRole } from '@otog/database';
+// src: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/47780
+import { Multer } from 'multer';
 
 export const WITHOUT_SOURCECODE = {
   id: true,

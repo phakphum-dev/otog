@@ -12,6 +12,14 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "codegen": {
+      "dependsOn": ["^codegen"],
+      "outputs": ["__generated__/**", "dist/**"]
+    },
+    "codegen:watch": {
+      "dependsOn": ["^codegen"],
+      "outputs": ["__generated__/**", "dist/**"]
     }
   }
 }

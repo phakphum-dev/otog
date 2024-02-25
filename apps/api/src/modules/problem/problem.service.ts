@@ -10,10 +10,8 @@ import {
   updateProblemDoc,
   updateProblemTestCase,
 } from 'src/utils/file.util';
-import { Prisma, Problem, SubmissionStatus, User } from '@prisma/client';
 import { PrismaService } from 'src/core/database/prisma.service';
 
-import { InjectS3, S3 } from 'nestjs-s3';
 import {
   FileFileManager,
   FileManager,
@@ -21,6 +19,9 @@ import {
 } from 'src/core/fileManager';
 import { ConfigService } from '@nestjs/config';
 import { Configuration } from 'src/core/config/configuration';
+import { Prisma, Problem, SubmissionStatus, User } from '@otog/database';
+import { InjectS3 } from 'nestjs-s3';
+import type { S3 } from 'nestjs-s3';
 
 type ProblemNoExample = Omit<Problem, 'example'>;
 type PassedCount = { passedCount: number };
@@ -80,14 +81,16 @@ export class ProblemService {
       if (files.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
-          files.pdf[0].path,
+          // TODO: fix me
+          files.pdf?.[0]?.path as string,
           this.fileManager,
         );
       }
       if (files.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
-          files.zip[0].path,
+          // TODO: fix me
+          files.pdf?.[0]?.path as string,
           this.fileManager,
         );
       }
@@ -118,14 +121,16 @@ export class ProblemService {
       if (files.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
-          files.pdf[0].path,
+          // TODO: fix me
+          files.pdf?.[0]?.path as string,
           this.fileManager,
         );
       }
       if (files.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
-          files.zip[0].path,
+          // TODO: fix me
+          files.pdf?.[0]?.path as string,
           this.fileManager,
         );
       }

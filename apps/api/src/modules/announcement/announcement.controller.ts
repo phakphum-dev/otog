@@ -15,8 +15,9 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { announcementRouter } from 'src/api';
+
 import { z } from 'zod';
+import { announcementRouter } from '@otog/contract';
 
 const c = nestControllerContract(announcementRouter);
 // type RequestShapes = NestRequestShapes<typeof c>;
@@ -122,7 +123,8 @@ export class AnnouncementController {
         const id = z.number().parse(announcementId);
         const announcement = await this.announcementService.updateAnnounce(
           id,
-          body,
+          // TODO: fix me
+          body as any,
         );
         return { status: 200, body: announcement };
       },

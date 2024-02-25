@@ -6,7 +6,7 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { chatRouter } from 'src/api';
+import { chatRouter } from '@otog/contract';
 
 const c = nestControllerContract(chatRouter);
 

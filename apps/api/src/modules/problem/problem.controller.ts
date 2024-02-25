@@ -12,7 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import * as path from 'path';
 import { AccessState, Role, UPLOAD_DIR } from 'src/core/constants';
 import { OfflineAccess } from 'src/core/decorators/offline-mode.decorator';
@@ -30,8 +30,9 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { problemRouter } from 'src/api';
+
 import { z } from 'zod';
+import { problemRouter } from '@otog/contract';
 
 const c = nestControllerContract(problemRouter);
 
@@ -164,7 +165,11 @@ export class ProblemController {
   )
   createProblem(@UploadedFiles() files: UploadedFilesObject) {
     return tsRestHandler(c.createProblem, async ({ body }) => {
-      const problem = await this.problemService.create(body, files);
+      const problem = await this.problemService.create(
+        // TODO: fix me
+        body as any,
+        files,
+      );
       return { status: 201, body: problem };
     });
   }
@@ -189,7 +194,8 @@ export class ProblemController {
         const id = z.coerce.number().parse(problemId);
         const problem = await this.problemService.replaceByProblemId(
           id,
-          body,
+          // TODO: fix me
+          body as any,
           files,
         );
         return { status: 200, body: problem };

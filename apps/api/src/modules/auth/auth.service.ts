@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UserDTO } from '../user/dto/user.dto';
 import { UserService } from '../user/user.service';
 import { PrismaService } from 'src/core/database/prisma.service';
-import { RefreshToken, User } from '@prisma/client';
+import { RefreshToken, User } from '@otog/database';
 
 @Injectable()
 export class AuthService {

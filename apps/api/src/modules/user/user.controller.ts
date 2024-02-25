@@ -9,9 +9,9 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { userRouter } from 'src/api';
 import { z } from 'zod';
 import { UserDTO } from './dto/user.dto';
+import { userRouter } from '@otog/contract';
 
 const c = nestControllerContract(userRouter);
 

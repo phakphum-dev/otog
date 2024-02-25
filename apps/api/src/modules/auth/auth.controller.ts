@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthResDTO } from './dto/auth.dto';
 import { JwtRefreshTokenAuthGuard } from '../../core/guards/jwt-refreshtoken-auth.guard';
@@ -15,7 +14,8 @@ import {
   nestControllerContract,
   tsRestHandler,
 } from '@ts-rest/nest';
-import { authRouter } from 'src/api';
+import { authRouter } from '@otog/contract';
+import type { Response } from 'express';
 
 const c = nestControllerContract(authRouter);
 
