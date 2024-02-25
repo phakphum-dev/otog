@@ -34,7 +34,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @OfflineAccess(AccessState.Public)
-  @Post('/login')
+  @TsRestHandler(c.login)
   async login(@User() userData: UserDTO, @Res() res: Response) {
     const { token, user } = await this.authService.login(userData);
     const authResDTO = new AuthResDTO();
@@ -51,7 +51,7 @@ export class AuthController {
 
   @UseGuards(JwtRefreshTokenAuthGuard)
   @OfflineAccess(AccessState.Public)
-  @Get('/refresh/token')
+  @TsRestHandler(c.refreshToken)
   async refreshToken(@User() userData: UserDTO, @Res() res: Response) {
     const { token, user } = await this.authService.reAccessToken(userData);
     const authResDTO = new AuthResDTO();
