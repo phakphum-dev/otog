@@ -3,16 +3,16 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { JwtAuthGuard } from './core/guards/jwt-auth.guard';
-import { configuration } from './core/config/configuration';
+('./core/config/configuration');
 import { OfflineModeGuard } from './core/guards/offline-mode.guard';
 import { generateOpenApi } from '@ts-rest/open-api';
 import { router } from '@otog/contract';
+import { environment } from './env';
 
 const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const offlineMode = configuration().offlineMode;
   app.use(cookieParser());
   app.enableCors({
     credentials: true,
@@ -21,10 +21,12 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   app.useGlobalGuards(
     new JwtAuthGuard(reflector),
-    offlineMode ? new OfflineModeGuard(reflector) : (undefined as never),
+    environment.OFFLINE_MODE
+      ? new OfflineModeGuard(reflector)
+      : (undefined as never),
   );
 
-  if (!offlineMode) {
+  if (!environment.OFFLINE_MODE) {
     const config = new DocumentBuilder()
       .setTitle('OTOG API')
       .setDescription('API service for OTOG')

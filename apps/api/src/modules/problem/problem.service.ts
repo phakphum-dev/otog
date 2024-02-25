@@ -17,11 +17,10 @@ import {
   FileManager,
   S3FileManager,
 } from 'src/core/fileManager';
-import { ConfigService } from '@nestjs/config';
-import { Configuration } from 'src/core/config/configuration';
 import { Prisma, Problem, SubmissionStatus, User } from '@otog/database';
 import { InjectS3 } from 'nestjs-s3';
 import type { S3 } from 'nestjs-s3';
+import { environment } from 'src/env';
 
 type ProblemNoExample = Omit<Problem, 'example'>;
 type PassedCount = { passedCount: number };
@@ -55,9 +54,8 @@ export class ProblemService {
   constructor(
     @InjectS3() private readonly s3: S3,
     private readonly prisma: PrismaService,
-    private configService: ConfigService<Configuration>,
   ) {
-    this.fileManager = this.configService.get('useS3')
+    this.fileManager = environment.USE_S3
       ? new S3FileManager(this.s3, 'otog-bucket')
       : new FileFileManager();
   }

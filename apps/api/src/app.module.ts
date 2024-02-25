@@ -7,26 +7,21 @@ import { ProblemModule } from './modules/problem/problem.module';
 import { SubmissionModule } from './modules/submission/submission.module';
 import { ContestModule } from './modules/contest/contest.module';
 import { ChatModule } from './modules/chat/chat.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { configuration, Configuration } from './core/config/configuration';
 import { AnnouncementModule } from './modules/announcement/announcement.module';
 import { PrismaModule } from './core/database/prisma.module';
 import { S3Module } from 'nestjs-s3';
+import { environment } from './env';
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: ['.env.dev', '.env'],
-      load: [configuration],
-      isGlobal: true,
-    }),
     PrismaModule,
-    S3Module.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService<Configuration>) => {
-        const config = configService.get('s3');
-        return {
-          config,
-        };
+    S3Module.forRoot({
+      config: {
+        accessKeyId: environment.S3_ACCESS_KEY_ID,
+        secretAccessKey: environment.S3_SECRET_ACCESS_KEY,
+        endpoint: environment.S3_ENDPOINT,
+        region: environment.S3_REGION,
+        s3ForcePathStyle: true,
+        signatureVersion: 'v4',
       },
     }),
     AuthModule,

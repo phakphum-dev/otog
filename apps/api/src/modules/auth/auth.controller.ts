@@ -8,7 +8,6 @@ import { User } from 'src/core/decorators/user.decorator';
 import { UserDTO } from '../user/dto/user.dto';
 import { OfflineAccess } from 'src/core/decorators/offline-mode.decorator';
 import { AccessState } from 'src/core/constants';
-import { configuration } from 'src/core/config/configuration';
 import {
   TsRestHandler,
   nestControllerContract,
@@ -16,6 +15,7 @@ import {
 } from '@ts-rest/nest';
 import { authRouter } from '@otog/contract';
 import type { Response } from 'express';
+import { environment } from 'src/env';
 
 const c = nestControllerContract(authRouter);
 
@@ -43,7 +43,7 @@ export class AuthController {
     return res
       .cookie('RID', token.refreshToken.id, {
         httpOnly: true,
-        domain: configuration().domain,
+        domain: environment.COOKIE_DOMAIN,
         expires: token.refreshToken.expiryDate ?? undefined,
       })
       .json(authResDTO);
@@ -60,7 +60,7 @@ export class AuthController {
     return res
       .cookie('RID', token.refreshToken.id, {
         httpOnly: true,
-        domain: configuration().domain,
+        domain: environment.COOKIE_DOMAIN,
         expires: token.refreshToken.expiryDate ?? undefined,
       })
       .json(authResDTO);
