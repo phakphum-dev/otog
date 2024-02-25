@@ -29,9 +29,9 @@ export class UserController {
     });
   }
 
-  @TsRestHandler(c.getUsers)
+  @TsRestHandler(c.getOnlineUsers)
   getOnlineUsers() {
-    return tsRestHandler(c.getUsers, async () => {
+    return tsRestHandler(c.getOnlineUsers, async () => {
       const users = await this.userService.onlineUser();
       return { status: 200, body: users };
     });

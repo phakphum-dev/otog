@@ -265,7 +265,7 @@ export const userRouter = contract.router(
     },
     getOnlineUsers: {
       method: "GET",
-      path: "",
+      path: "/online",
       responses: {
         200: z.array(UserWithourPasswordSchema),
       },
