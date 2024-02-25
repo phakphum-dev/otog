@@ -4,7 +4,7 @@ export const environment = parseEnv(process.env, {
   PORT: port(),
   JWT_SECRET: z.string(),
 
-  COOKIE_DOMAIN: z.string().default(''),
+  COOKIE_DOMAIN: z.string(),
   OFFLINE_MODE: z.boolean(),
 
   USE_S3: z.boolean().default(false),
