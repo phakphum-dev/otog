@@ -1,10 +1,10 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsup'
 
-import { findAllPackageMetadatas } from '@otog/workspace';
+import { findAllPackageMetadatas } from '@otog/workspace'
 
 const noExternal = findAllPackageMetadatas()
   .map((p) => p.name)
-  .filter((name) => name !== '@otog/database');
+  .filter((name) => name !== '@otog/database')
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -20,4 +20,4 @@ export default defineConfig({
 const __filename = (await import("node:url")).fileURLToPath(import.meta.url);
 const __dirname = (await import("node:path")).dirname(__filename);`,
   },
-});
+})

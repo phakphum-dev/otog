@@ -3,9 +3,10 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY, Role } from '../constants';
+} from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+
+import { ROLES_KEY, Role } from '../constants'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -14,17 +15,17 @@ export class RolesGuard implements CanActivate {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
-    ]);
+    ])
     if (!requiredRoles) {
-      return true;
+      return true
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest()
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException()
     }
 
-    return requiredRoles.some((role) => user?.role?.includes(role));
+    return requiredRoles.some((role) => user?.role?.includes(role))
   }
 }

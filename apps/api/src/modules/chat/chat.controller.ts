@@ -1,14 +1,16 @@
-import { Controller, UseGuards } from '@nestjs/common';
-import { RolesGuard } from 'src/core/guards/roles.guard';
-import { ChatService } from './chat.service';
+import { Controller, UseGuards } from '@nestjs/common'
 import {
   TsRestHandler,
   nestControllerContract,
   tsRestHandler,
-} from '@ts-rest/nest';
-import { chatRouter } from '@otog/contract';
+} from '@ts-rest/nest'
+import { RolesGuard } from 'src/core/guards/roles.guard'
 
-const c = nestControllerContract(chatRouter);
+import { chatRouter } from '@otog/contract'
+
+import { ChatService } from './chat.service'
+
+const c = nestControllerContract(chatRouter)
 
 @Controller()
 @UseGuards(RolesGuard)
@@ -18,8 +20,8 @@ export class ChatController {
   @TsRestHandler(c.getChats)
   getChats() {
     return tsRestHandler(c.getChats, async ({ query: { limit, offset } }) => {
-      const chats = await this.chatService.findAll(offset, limit);
-      return { status: 200, body: chats };
-    });
+      const chats = await this.chatService.findAll(offset, limit)
+      return { status: 200, body: chats }
+    })
   }
 }

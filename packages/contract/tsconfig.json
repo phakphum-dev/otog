@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@otog/config/tsconfig/base.json",
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "moduleResolution": "bundler",

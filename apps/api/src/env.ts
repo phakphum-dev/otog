@@ -1,4 +1,4 @@
-import { parseEnv, port, z } from 'znv';
+import { parseEnv, port, z } from 'znv'
 
 export const environment = parseEnv(process.env, {
   PORT: port(),
@@ -14,4 +14,4 @@ export const environment = parseEnv(process.env, {
   S3_REGION: z.string().default(''),
 
   DATABASE_URL: z.string(),
-});
+})

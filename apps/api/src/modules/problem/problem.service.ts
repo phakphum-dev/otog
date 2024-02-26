@@ -2,37 +2,35 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { UploadedFilesObject } from './dto/problem.dto';
+} from '@nestjs/common'
+import { InjectS3 } from 'nestjs-s3'
+import type { S3 } from 'nestjs-s3'
+import { PrismaService } from 'src/core/database/prisma.service'
+import {
+  FileFileManager,
+  FileManager,
+  S3FileManager,
+} from 'src/core/fileManager'
+import { environment } from 'src/env'
 import {
   getProblemDocStream,
   removeProblemSource,
   updateProblemDoc,
   updateProblemTestCase,
-} from 'src/utils/file.util';
-import { PrismaService } from 'src/core/database/prisma.service';
+} from 'src/utils/file.util'
 
-import {
-  FileFileManager,
-  FileManager,
-  S3FileManager,
-} from 'src/core/fileManager';
-import { Prisma, Problem, SubmissionStatus, User } from '@otog/database';
-import { InjectS3 } from 'nestjs-s3';
-import type { S3 } from 'nestjs-s3';
-import { environment } from 'src/env';
+import { Prisma, Problem, SubmissionStatus, User } from '@otog/database'
 
-type ProblemNoExample = Omit<Problem, 'example'>;
-type PassedCount = { passedCount: number };
+import { UploadedFilesObject } from './dto/problem.dto'
+
+type ProblemNoExample = Omit<Problem, 'example'>
+type PassedCount = { passedCount: number }
 type LatestSubmission = {
-  latestSubmissionId: number | null;
-  status: SubmissionStatus | null;
-};
-type ProblemWithDetail = ProblemNoExample & PassedCount & LatestSubmission;
-type PassedUser = Pick<
-  User,
-  'id' | 'role' | 'username' | 'showName' | 'rating'
->;
+  latestSubmissionId: number | null
+  status: SubmissionStatus | null
+}
+type ProblemWithDetail = ProblemNoExample & PassedCount & LatestSubmission
+type PassedUser = Pick<User, 'id' | 'role' | 'username' | 'showName' | 'rating'>
 
 export const WITHOUT_EXAMPLE = {
   id: true,
@@ -45,24 +43,24 @@ export const WITHOUT_EXAMPLE = {
   recentShowTime: true,
   case: true,
   rating: true,
-};
+}
 
 @Injectable()
 export class ProblemService {
-  private fileManager: FileManager;
+  private fileManager: FileManager
 
   constructor(
     @InjectS3() private readonly s3: S3,
-    private readonly prisma: PrismaService,
+    private readonly prisma: PrismaService
   ) {
     this.fileManager = environment.USE_S3
       ? new S3FileManager(this.s3, 'otog-bucket')
-      : new FileFileManager();
+      : new FileFileManager()
   }
 
   async create(
     problemData: Prisma.ProblemCreateInput,
-    files: UploadedFilesObject,
+    files: UploadedFilesObject
   ) {
     try {
       const problem = await this.prisma.problem.create({
@@ -75,34 +73,34 @@ export class ProblemService {
           show: false,
         },
         select: WITHOUT_EXAMPLE,
-      });
+      })
       if (files.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
           files.pdf?.[0]?.path as string,
-          this.fileManager,
-        );
+          this.fileManager
+        )
       }
       if (files.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
           files.pdf?.[0]?.path as string,
-          this.fileManager,
-        );
+          this.fileManager
+        )
       }
-      return problem;
+      return problem
     } catch (err) {
-      console.log(err);
-      throw new BadRequestException();
+      console.log(err)
+      throw new BadRequestException()
     }
   }
 
   async replaceByProblemId(
     problemId: number,
     problemData: Prisma.ProblemUpdateInput,
-    files: UploadedFilesObject,
+    files: UploadedFilesObject
   ) {
     try {
       const problem = await this.prisma.problem.update({
@@ -115,26 +113,26 @@ export class ProblemService {
         },
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
-      });
+      })
       if (files.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
           files.pdf?.[0]?.path as string,
-          this.fileManager,
-        );
+          this.fileManager
+        )
       }
       if (files.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
           files.pdf?.[0]?.path as string,
-          this.fileManager,
-        );
+          this.fileManager
+        )
       }
-      return problem;
+      return problem
     } catch (err) {
-      throw new BadRequestException();
+      throw new BadRequestException()
     }
   }
 
@@ -146,7 +144,7 @@ export class ProblemService {
             SELECT MAX(id) as "submissionId", "submission"."problemId", submission."userId" FROM submission GROUP BY submission."problemId", submission."userId"
           ) AS LatestIdTable JOIN submission ON submission.id = LatestIdTable."submissionId" AND submission.status = 'accept' JOIN "user" ON LatestIdTable."userId" = "user"."id" AND "user"."role" = 'user'
         ) AS CountTable GROUP BY "problemId"
-      ) AS G RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`;
+      ) AS G RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`
   }
 
   async findOnlyShownWithSubmission(userId: number) {
@@ -163,7 +161,7 @@ export class ProblemService {
             SELECT MAX(id) as "latestSubmissionId", submission."problemId" FROM submission WHERE "userId" = ${userId} GROUP BY submission."problemId"
           ) AS LatestIdTable ON CountIdTable."problemId" = LatestIdTable."problemId" 
         ) AS LatestAndCountTable LEFT JOIN submission ON "latestSubmissionId" = "submission".id
-      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`;
+      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`
   }
 
   async findAllWithSubmission(userId: number) {
@@ -180,28 +178,28 @@ export class ProblemService {
             SELECT MAX(id) as "latestSubmissionId", submission."problemId" FROM submission WHERE "userId" = ${userId} GROUP BY submission."problemId"
           ) AS LatestIdTable ON CountIdTable."problemId" = LatestIdTable."problemId" 
         ) AS LatestAndCountTable LEFT JOIN submission ON "latestSubmissionId" = "submission".id
-      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" ORDER BY problem."id" DESC`;
+      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" ORDER BY problem."id" DESC`
   }
 
   async findOneById(id: number) {
     return this.prisma.problem.findUnique({
       where: { id },
       select: WITHOUT_EXAMPLE,
-    });
+    })
   }
 
   async findOneByIdWithExamples(id: number) {
-    return this.prisma.problem.findUnique({ where: { id } });
+    return this.prisma.problem.findUnique({ where: { id } })
   }
 
   async getProblemDocStream(problemId: number) {
     const docStream = await getProblemDocStream(
       `${problemId}`,
-      this.fileManager,
-    );
+      this.fileManager
+    )
 
-    if (!docStream) throw new NotFoundException();
-    return docStream;
+    if (!docStream) throw new NotFoundException()
+    return docStream
   }
 
   async changeProblemShowById(problemId: number, show: boolean) {
@@ -209,7 +207,7 @@ export class ProblemService {
       where: { id: problemId },
       data: { show, recentShowTime: new Date() },
       select: WITHOUT_EXAMPLE,
-    });
+    })
   }
 
   async findPassedUser(problemId: number) {
@@ -220,7 +218,7 @@ export class ProblemService {
             SELECT MAX(id) as "submissionId", submission."userId" FROM submission WHERE submission."problemId" = ${problemId} GROUP BY submission."userId"
           ) AS X JOIN submission ON submission.id = "submissionId"
         ) AS T WHERE "status" = 'accept'
-      ) AS S JOIN "user" ON "user"."id" = "userId" ORDER BY "user"."role"`;
+      ) AS S JOIN "user" ON "user"."id" = "userId" ORDER BY "user"."role"`
   }
 
   async delete(problemId: number) {
@@ -228,12 +226,12 @@ export class ProblemService {
       const problem = await this.prisma.problem.delete({
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
-      });
-      await removeProblemSource(`${problem.id}`, this.fileManager);
-      return problem;
+      })
+      await removeProblemSource(`${problem.id}`, this.fileManager)
+      return problem
     } catch (e) {
-      console.log(e);
-      throw new BadRequestException();
+      console.log(e)
+      throw new BadRequestException()
     }
   }
 
@@ -243,10 +241,10 @@ export class ProblemService {
         data: { examples },
         where: { id: problemId },
         select: { examples: true },
-      });
+      })
     } catch (e) {
-      console.log(e);
-      throw new BadRequestException();
+      console.log(e)
+      throw new BadRequestException()
     }
   }
 }

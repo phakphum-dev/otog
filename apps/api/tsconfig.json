@@ -1,27 +1,6 @@
 {
-  // TODO
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@otog/config/tsconfig/nestjs.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "declaration": false,
-    "declarationMap": false,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "esnext",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "types": ["node"],
     "baseUrl": "."
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

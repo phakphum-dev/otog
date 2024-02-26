@@ -3,20 +3,20 @@ import {
   BadRequestException,
   Injectable,
   PipeTransform,
-} from '@nestjs/common';
+} from '@nestjs/common'
 
 @Injectable()
 export class OptionalIntPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     if (value === undefined) {
-      return undefined;
+      return undefined
     }
-    const parsedValue = parseInt(value);
+    const parsedValue = parseInt(value)
     if (isNaN(parsedValue)) {
       throw new BadRequestException(
-        'Validation failed (numeric string is expected)',
-      );
+        'Validation failed (numeric string is expected)'
+      )
     }
-    return parsedValue;
+    return parsedValue
   }
 }

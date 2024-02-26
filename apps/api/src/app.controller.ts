@@ -1,15 +1,17 @@
-import { Controller } from '@nestjs/common';
-import { AppService } from './app.service';
-import { AccessState } from './core/constants';
-import { OfflineAccess } from './core/decorators/offline-mode.decorator';
+import { Controller } from '@nestjs/common'
 import {
   TsRestHandler,
   nestControllerContract,
   tsRestHandler,
-} from '@ts-rest/nest';
-import { appRouter } from '@otog/contract';
+} from '@ts-rest/nest'
 
-const c = nestControllerContract(appRouter);
+import { appRouter } from '@otog/contract'
+
+import { AppService } from './app.service'
+import { AccessState } from './core/constants'
+import { OfflineAccess } from './core/decorators/offline-mode.decorator'
+
+const c = nestControllerContract(appRouter)
 
 @Controller()
 export class AppController {
@@ -19,14 +21,14 @@ export class AppController {
   @OfflineAccess(AccessState.Public)
   serverTime() {
     return tsRestHandler(c.time, async () => {
-      return { status: 200, body: new Date() };
-    });
+      return { status: 200, body: new Date() }
+    })
   }
 
   @TsRestHandler(c.ping)
   pingServer() {
     return tsRestHandler(c.ping, async () => {
-      return { status: 200, body: this.appService.getPong() };
-    });
+      return { status: 200, body: this.appService.getPong() }
+    })
   }
 }

@@ -10,31 +10,32 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
-} from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import type { Request, Response } from 'express';
-import * as path from 'path';
-import { AccessState, Role, UPLOAD_DIR } from 'src/core/constants';
-import { OfflineAccess } from 'src/core/decorators/offline-mode.decorator';
-import { Roles } from 'src/core/decorators/roles.decorator';
-import { User } from 'src/core/decorators/user.decorator';
-import { RolesGuard } from 'src/core/guards/roles.guard';
-import { AuthService } from '../auth/auth.service';
-import { ContestService } from '../contest/contest.service';
-import { UserDTO } from '../user/dto/user.dto';
-import { UserService } from '../user/user.service';
-import { UploadedFilesObject } from './dto/problem.dto';
-import { ProblemService } from './problem.service';
+} from '@nestjs/common'
+import { FileFieldsInterceptor } from '@nestjs/platform-express'
 import {
   TsRestHandler,
   nestControllerContract,
   tsRestHandler,
-} from '@ts-rest/nest';
+} from '@ts-rest/nest'
+import type { Request, Response } from 'express'
+import * as path from 'path'
+import { AccessState, Role, UPLOAD_DIR } from 'src/core/constants'
+import { OfflineAccess } from 'src/core/decorators/offline-mode.decorator'
+import { Roles } from 'src/core/decorators/roles.decorator'
+import { User } from 'src/core/decorators/user.decorator'
+import { RolesGuard } from 'src/core/guards/roles.guard'
+import { z } from 'zod'
 
-import { z } from 'zod';
-import { problemRouter } from '@otog/contract';
+import { problemRouter } from '@otog/contract'
 
-const c = nestControllerContract(problemRouter);
+import { AuthService } from '../auth/auth.service'
+import { ContestService } from '../contest/contest.service'
+import { UserDTO } from '../user/dto/user.dto'
+import { UserService } from '../user/user.service'
+import { UploadedFilesObject } from './dto/problem.dto'
+import { ProblemService } from './problem.service'
+
+const c = nestControllerContract(problemRouter)
 
 @Controller()
 @UseGuards(RolesGuard)
@@ -43,7 +44,7 @@ export class ProblemController {
     private problemService: ProblemService,
     private contestService: ContestService,
     private authService: AuthService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   @TsRestHandler(c.getProblems)
@@ -51,35 +52,35 @@ export class ProblemController {
     return tsRestHandler(c.getProblems, async () => {
       if (user.role === Role.Admin) {
         const problems = await this.problemService.findAllWithSubmission(
-          user.id,
-        );
-        return { status: 200, body: problems };
+          user.id
+        )
+        return { status: 200, body: problems }
       }
       if (user) {
         const problems = await this.problemService.findOnlyShownWithSubmission(
-          user.id,
-        );
-        return { status: 200, body: problems };
+          user.id
+        )
+        return { status: 200, body: problems }
       }
 
-      const problems = await this.problemService.findOnlyShown();
-      return { status: 200, body: problems };
-    });
+      const problems = await this.problemService.findOnlyShown()
+      return { status: 200, body: problems }
+    })
   }
 
   @TsRestHandler(c.getProblem)
   getProblem(@User() user: UserDTO) {
     return tsRestHandler(c.getProblem, async ({ params: { problemId } }) => {
-      const id = z.coerce.number().parse(problemId);
-      const problem = await this.problemService.findOneByIdWithExamples(id);
+      const id = z.coerce.number().parse(problemId)
+      const problem = await this.problemService.findOneByIdWithExamples(id)
       if (!problem) {
-        return { status: 404, body: { message: 'Not Found' } };
+        return { status: 404, body: { message: 'Not Found' } }
       }
       if (problem.show === false && user.role !== Role.Admin) {
-        return { status: 403, body: { message: 'Forbidden' } };
+        return { status: 403, body: { message: 'Forbidden' } }
       }
-      return { status: 200, body: problem };
-    });
+      return { status: 200, body: problem }
+    })
   }
 
   @TsRestHandler(c.getPassedUsers)
@@ -87,11 +88,11 @@ export class ProblemController {
     return tsRestHandler(
       c.getPassedUsers,
       async ({ params: { problemId } }) => {
-        const id = z.coerce.number().parse(problemId);
-        const users = await this.problemService.findPassedUser(id);
-        return { status: 200, body: users };
-      },
-    );
+        const id = z.coerce.number().parse(problemId)
+        const users = await this.problemService.findPassedUser(id)
+        return { status: 200, body: users }
+      }
+    )
   }
 
   @OfflineAccess(AccessState.Public)
@@ -99,38 +100,35 @@ export class ProblemController {
   async getPdf(
     @Param('problemId', ParseIntPipe) problemId: number,
     @Req() req: Request,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
-    let user = null;
-    const rid = await req.cookies['RID'];
+    let user = null
+    const rid = await req.cookies['RID']
     if (rid) {
-      const refreshToken = await this.authService.findOneByRID(rid);
+      const refreshToken = await this.authService.findOneByRID(rid)
       if (!refreshToken?.userId) {
-        throw new NotFoundException();
+        throw new NotFoundException()
       }
-      user = await this.userService.findOneById(refreshToken.userId);
+      user = await this.userService.findOneById(refreshToken.userId)
     }
 
-    const problem = await this.problemService.findOneById(problemId);
+    const problem = await this.problemService.findOneById(problemId)
     if (!problem) {
-      throw new NotFoundException();
+      throw new NotFoundException()
     }
     if (problem.show === false && user?.role !== Role.Admin) {
       // TODO validate user if contest is private
-      const contest =
-        await this.contestService.getStartedAndUnFinishedContest();
+      const contest = await this.contestService.getStartedAndUnFinishedContest()
       if (
         !contest ||
         !contest.contestProblem.some((p) => p.problemId === problem.id)
       )
-        throw new ForbiddenException();
+        throw new ForbiddenException()
     }
 
-    const readStream = await this.problemService.getProblemDocStream(
-      problem.id,
-    );
+    const readStream = await this.problemService.getProblemDocStream(problem.id)
 
-    return readStream.pipe(res.type('application/pdf'));
+    return readStream.pipe(res.type('application/pdf'))
   }
 
   //Admin route
@@ -140,14 +138,14 @@ export class ProblemController {
     return tsRestHandler(
       c.toggleShowProblem,
       async ({ params: { problemId }, body: { show } }) => {
-        const id = z.coerce.number().parse(problemId);
+        const id = z.coerce.number().parse(problemId)
         const problem = await this.problemService.changeProblemShowById(
           id,
-          show,
-        );
-        return { status: 200, body: problem };
-      },
-    );
+          show
+        )
+        return { status: 200, body: problem }
+      }
+    )
   }
 
   @TsRestHandler(c.createProblem)
@@ -160,18 +158,18 @@ export class ProblemController {
       ],
       {
         dest: path.join(process.cwd(), UPLOAD_DIR),
-      },
-    ),
+      }
+    )
   )
   createProblem(@UploadedFiles() files: UploadedFilesObject) {
     return tsRestHandler(c.createProblem, async ({ body }) => {
       const problem = await this.problemService.create(
         // TODO: fix me
         body as any,
-        files,
-      );
-      return { status: 201, body: problem };
-    });
+        files
+      )
+      return { status: 201, body: problem }
+    })
   }
 
   @TsRestHandler(c.updateProblem)
@@ -184,33 +182,33 @@ export class ProblemController {
       ],
       {
         dest: path.join(process.cwd(), UPLOAD_DIR),
-      },
-    ),
+      }
+    )
   )
   updateProblem(@UploadedFiles() files: UploadedFilesObject) {
     return tsRestHandler(
       c.updateProblem,
       async ({ body, params: { problemId } }) => {
-        const id = z.coerce.number().parse(problemId);
+        const id = z.coerce.number().parse(problemId)
         const problem = await this.problemService.replaceByProblemId(
           id,
           // TODO: fix me
           body as any,
-          files,
-        );
-        return { status: 200, body: problem };
-      },
-    );
+          files
+        )
+        return { status: 200, body: problem }
+      }
+    )
   }
 
   @TsRestHandler(c.deleteProblem)
   @Roles(Role.Admin)
   deleteProblem() {
     return tsRestHandler(c.deleteProblem, async ({ params: { problemId } }) => {
-      const id = z.coerce.number().parse(problemId);
-      const problem = await this.problemService.delete(id);
-      return { status: 200, body: problem };
-    });
+      const id = z.coerce.number().parse(problemId)
+      const problem = await this.problemService.delete(id)
+      return { status: 200, body: problem }
+    })
   }
 
   @TsRestHandler(c.updateProblemExamples)
@@ -219,13 +217,13 @@ export class ProblemController {
     return tsRestHandler(
       c.updateProblemExamples,
       async ({ params: { problemId }, body }) => {
-        const id = z.coerce.number().parse(problemId);
+        const id = z.coerce.number().parse(problemId)
         const problem = await this.problemService.updateProblemExamples(
           id,
-          body,
-        );
-        return { status: 200, body: problem };
-      },
-    );
+          body
+        )
+        return { status: 200, body: problem }
+      }
+    )
   }
 }

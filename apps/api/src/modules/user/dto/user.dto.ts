@@ -1,24 +1,24 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/core/constants';
+import { ApiProperty } from '@nestjs/swagger'
+import { Role } from 'src/core/constants'
 
 export class UserDTO {
   @ApiProperty()
-  id: number;
+  id: number
 
-  username: string;
+  username: string
 
-  showName: string;
+  showName: string
 
   @ApiProperty({ enum: Role })
-  role: Role;
+  role: Role
 
-  rating: number;
+  rating: number
 
   constructor(user: any) {
-    this.id = user?.id;
-    this.username = user?.username;
-    this.showName = user?.showName;
-    this.role = user?.role;
-    this.rating = user?.rating;
+    this.id = user?.id
+    this.username = user?.username
+    this.showName = user?.showName
+    this.role = user?.role
+    this.rating = user?.rating
   }
 }

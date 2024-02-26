@@ -1,19 +1,21 @@
-import { Controller, UseGuards } from '@nestjs/common';
-import { Role } from 'src/core/constants';
-import { Roles } from 'src/core/decorators/roles.decorator';
-import { User } from 'src/core/decorators/user.decorator';
-import { RolesGuard } from 'src/core/guards/roles.guard';
-import { UserService } from './user.service';
+import { Controller, UseGuards } from '@nestjs/common'
 import {
   TsRestHandler,
   nestControllerContract,
   tsRestHandler,
-} from '@ts-rest/nest';
-import { z } from 'zod';
-import { UserDTO } from './dto/user.dto';
-import { userRouter } from '@otog/contract';
+} from '@ts-rest/nest'
+import { Role } from 'src/core/constants'
+import { Roles } from 'src/core/decorators/roles.decorator'
+import { User } from 'src/core/decorators/user.decorator'
+import { RolesGuard } from 'src/core/guards/roles.guard'
+import { z } from 'zod'
 
-const c = nestControllerContract(userRouter);
+import { userRouter } from '@otog/contract'
+
+import { UserDTO } from './dto/user.dto'
+import { UserService } from './user.service'
+
+const c = nestControllerContract(userRouter)
 
 @Controller()
 @UseGuards(RolesGuard)
@@ -24,39 +26,39 @@ export class UserController {
   @Roles(Role.Admin)
   getUsers() {
     return tsRestHandler(c.getUsers, async () => {
-      const users = await this.userService.findAll();
-      return { status: 200, body: users };
-    });
+      const users = await this.userService.findAll()
+      return { status: 200, body: users }
+    })
   }
 
   @TsRestHandler(c.getOnlineUsers)
   getOnlineUsers() {
     return tsRestHandler(c.getOnlineUsers, async () => {
-      const users = await this.userService.onlineUser();
-      return { status: 200, body: users };
-    });
+      const users = await this.userService.onlineUser()
+      return { status: 200, body: users }
+    })
   }
 
   @TsRestHandler(c.getUserProfile)
   getUserProfile() {
     return tsRestHandler(c.getUserProfile, async ({ params: { userId } }) => {
-      const id = z.coerce.number().parse(userId);
-      const user = await this.userService.getUserProfileById(id);
+      const id = z.coerce.number().parse(userId)
+      const user = await this.userService.getUserProfileById(id)
       if (!user) {
-        return { status: 404, body: { message: 'Not Found' } };
+        return { status: 404, body: { message: 'Not Found' } }
       }
-      return { status: 200, body: user };
-    });
+      return { status: 200, body: user }
+    })
   }
 
   @TsRestHandler(c.updateUser)
   @Roles(Role.Admin)
   updateUser() {
     return tsRestHandler(c.updateUser, async ({ params: { userId }, body }) => {
-      const id = z.coerce.number().parse(userId);
-      const user = await this.userService.updateUser(id, body);
-      return { status: 200, body: user };
-    });
+      const id = z.coerce.number().parse(userId)
+      const user = await this.userService.updateUser(id, body)
+      return { status: 200, body: user }
+    })
   }
 
   @TsRestHandler(c.updateShowName)
@@ -65,16 +67,16 @@ export class UserController {
     return tsRestHandler(
       c.updateShowName,
       async ({ params: { userId }, body }) => {
-        const id = z.coerce.number().parse(userId);
+        const id = z.coerce.number().parse(userId)
         if (user.role !== Role.Admin && user.id !== id) {
-          return { status: 403, body: { message: 'Forbidden' } };
+          return { status: 403, body: { message: 'Forbidden' } }
         }
         const showName = await this.userService.updateShowNameById(
           body.showName,
-          id,
-        );
-        return { status: 200, body: showName };
-      },
-    );
+          id
+        )
+        return { status: 200, body: showName }
+      }
+    )
   }
 }

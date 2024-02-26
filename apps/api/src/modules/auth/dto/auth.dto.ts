@@ -1,26 +1,26 @@
-import { Role } from 'src/core/constants';
-import { UserDTO } from 'src/modules/user/dto/user.dto';
+import { Role } from 'src/core/constants'
+import { UserDTO } from 'src/modules/user/dto/user.dto'
 
 export class AuthResDTO {
-  user?: UserDTO;
+  user?: UserDTO
 
-  accessToken?: string;
+  accessToken?: string
 }
 
 export class JwtPayloadDTO {
-  id?: number;
+  id?: number
 
-  username?: string;
+  username?: string
 
-  showName?: string;
+  showName?: string
 
-  role?: Role;
+  role?: Role
 
-  rating?: number | null;
+  rating?: number | null
 
-  iat?: number;
+  iat?: number
 
-  exp?: number;
+  exp?: number
 
-  jti?: string;
+  jti?: string
 }

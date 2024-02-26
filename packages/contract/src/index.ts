@@ -1,106 +1,107 @@
-import { initContract } from "@ts-rest/core";
-import { z } from "zod";
+import { initContract } from '@ts-rest/core'
+import { z } from 'zod'
+
 import {
   AnnouncementModel,
   ChatModel,
-  ContestProblemModel,
   ContestModel,
+  ContestProblemModel,
   ProblemModel,
   SubmissionModel,
   SubmissionStatus,
   UserContestModel,
   UserModel,
-} from "@otog/database";
+} from '@otog/database'
 
 // TODO: https://github.com/colinhacks/zod/discussions/2171
 
-export const contract: ReturnType<typeof initContract> = initContract();
+export const contract: ReturnType<typeof initContract> = initContract()
 
 export const announcementRouter = contract.router(
   {
     getAnnouncements: {
-      method: "GET",
-      path: "",
+      method: 'GET',
+      path: '',
       responses: {
         200: z.array(AnnouncementModel),
       },
-      summary: "Get all announcements",
+      summary: 'Get all announcements',
     },
     createAnnouncement: {
-      method: "POST",
-      path: "",
+      method: 'POST',
+      path: '',
       body: AnnouncementModel.pick({ value: true }),
       responses: {
         201: AnnouncementModel,
         400: z.object({ message: z.string() }),
       },
-      summary: "Create an announcement",
+      summary: 'Create an announcement',
     },
     getContestAnnouncments: {
-      method: "GET",
-      path: "/contest/:contestId",
+      method: 'GET',
+      path: '/contest/:contestId',
       responses: {
         200: z.array(AnnouncementModel),
       },
-      summary: "Get contest announcements",
+      summary: 'Get contest announcements',
     },
     createContestAnnouncement: {
-      method: "POST",
-      path: "/contest/:contestId",
+      method: 'POST',
+      path: '/contest/:contestId',
       body: AnnouncementModel.pick({ value: true }),
       responses: {
         201: AnnouncementModel,
         400: z.object({ message: z.string() }),
       },
-      summary: "Create an announcement in a contest",
+      summary: 'Create an announcement in a contest',
     },
     deleteAnnouncement: {
-      method: "DELETE",
-      path: "/:announcementId",
+      method: 'DELETE',
+      path: '/:announcementId',
       body: null,
       responses: {
         200: AnnouncementModel,
       },
-      summary: "Delete an announcement",
+      summary: 'Delete an announcement',
     },
     showAnnouncement: {
-      method: "PATCH",
-      path: "/:announcementId",
+      method: 'PATCH',
+      path: '/:announcementId',
       body: AnnouncementModel.pick({ show: true }),
       responses: {
         200: AnnouncementModel,
       },
-      summary: "Toggle show of an announcement",
+      summary: 'Toggle show of an announcement',
     },
     updateAnnouncement: {
-      method: "PUT",
-      path: "/:announcementId",
+      method: 'PUT',
+      path: '/:announcementId',
       body: AnnouncementModel.omit({ id: true }),
       responses: {
         200: AnnouncementModel,
       },
-      summary: "Update an announcement",
+      summary: 'Update an announcement',
     },
   },
-  { pathPrefix: "/announcement" }
-);
+  { pathPrefix: '/announcement' }
+)
 
 const PaginationQuerySchema = z.object({
   offset: z.coerce.number().optional(),
   limit: z.coerce.number().optional(),
-});
+})
 
 export const chatRouter = contract.router({
   getChats: {
-    method: "GET",
-    path: "/chat",
+    method: 'GET',
+    path: '/chat',
     responses: {
       200: z.array(ChatModel),
     },
     query: PaginationQuerySchema,
-    summary: "Get paginated chats",
+    summary: 'Get paginated chats',
   },
-});
+})
 
 const UserWithourPasswordSchema = UserModel.pick({
   id: true,
@@ -108,7 +109,7 @@ const UserWithourPasswordSchema = UserModel.pick({
   showName: true,
   role: true,
   rating: true,
-});
+})
 
 const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
   id: true,
@@ -130,46 +131,46 @@ const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
   })
   .extend({
     user: UserWithourPasswordSchema.nullable(),
-  });
+  })
 
 const SubmissionWithSourceCodeSchema = SubmissionWithoutSourceCodeSchema.merge(
   SubmissionModel.pick({ sourceCode: true })
-);
+)
 
 export const submissionRouter = contract.router(
   {
     getSubmissions: {
-      method: "GET",
-      path: "",
+      method: 'GET',
+      path: '',
       responses: {
         200: z.array(SubmissionWithoutSourceCodeSchema),
       },
       query: PaginationQuerySchema,
-      summary: "Get paginated submissions",
+      summary: 'Get paginated submissions',
     },
     getContestSubmissions: {
-      method: "GET",
-      path: "/contest",
+      method: 'GET',
+      path: '/contest',
       responses: {
         200: z.array(SubmissionWithoutSourceCodeSchema),
       },
       query: PaginationQuerySchema,
-      summary: "Get paginated contest submissions",
+      summary: 'Get paginated contest submissions',
     },
     getLatestSubmissionByProblemId: {
-      method: "GET",
-      path: "/problem/:problemId/latest",
+      method: 'GET',
+      path: '/problem/:problemId/latest',
       responses: {
         200: z.object({
           latestSubmission: SubmissionWithSourceCodeSchema.nullable(),
         }),
       },
-      summary: "Get latest submission for a problem",
+      summary: 'Get latest submission for a problem',
     },
     uploadFile: {
-      method: "POST",
-      path: "/problem/:problemId",
-      contentType: "multipart/form-data",
+      method: 'POST',
+      path: '/problem/:problemId',
+      contentType: 'multipart/form-data',
       responses: {
         200: SubmissionModel,
       },
@@ -177,103 +178,103 @@ export const submissionRouter = contract.router(
         language: true,
         contestId: true,
       }),
-      summary: "Submit code file",
+      summary: 'Submit code file',
     },
     getLatestSubmissionByUserId: {
-      method: "GET",
-      path: "/latest",
+      method: 'GET',
+      path: '/latest',
       responses: {
         200: z.object({
           latestSubmission: SubmissionWithSourceCodeSchema.nullable(),
         }),
       },
-      summary: "Get latest submission for a user",
+      summary: 'Get latest submission for a user',
     },
     getSubmissionsByUserId: {
-      method: "GET",
-      path: "/user/:userId",
+      method: 'GET',
+      path: '/user/:userId',
       responses: {
         200: z.array(SubmissionWithoutSourceCodeSchema),
         400: z.object({ message: z.string() }),
       },
       query: PaginationQuerySchema,
-      summary: "Get submissions for a user",
+      summary: 'Get submissions for a user',
     },
     getSubmission: {
-      method: "GET",
-      path: "/:submissionId",
+      method: 'GET',
+      path: '/:submissionId',
       responses: {
         200: SubmissionWithoutSourceCodeSchema,
         404: z.object({ message: z.string() }),
       },
-      summary: "Get a submission without source code",
+      summary: 'Get a submission without source code',
     },
     getSubmissionWithSourceCode: {
-      method: "GET",
-      path: "/:submissionId/code",
+      method: 'GET',
+      path: '/:submissionId/code',
       responses: {
         200: SubmissionWithSourceCodeSchema,
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
-      summary: "Get a submission with source code",
+      summary: 'Get a submission with source code',
     },
     shareSubmission: {
-      method: "PATCH",
-      path: "/:submissionId/share",
+      method: 'PATCH',
+      path: '/:submissionId/share',
       responses: {
         200: SubmissionModel.pick({ public: true }),
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
       body: z.object({ show: z.boolean() }),
-      summary: "Toggle publicity of a submission",
+      summary: 'Toggle publicity of a submission',
     },
     rejudgeSubmission: {
-      method: "PATCH",
-      path: "/:submissionId/rejudge",
+      method: 'PATCH',
+      path: '/:submissionId/rejudge',
       responses: {
         200: SubmissionWithoutSourceCodeSchema,
         404: z.object({ message: z.string() }),
       },
       body: null,
-      summary: "Rejudge a submission",
+      summary: 'Rejudge a submission',
     },
     rejudgeProblem: {
-      method: "PATCH",
-      path: "/problem/:problemId/rejudge",
+      method: 'PATCH',
+      path: '/problem/:problemId/rejudge',
       responses: {
         200: z.undefined(),
         404: z.object({ message: z.string() }),
       },
       body: null,
-      summary: "Rejudge all submissions of a problem",
+      summary: 'Rejudge all submissions of a problem',
     },
   },
-  { pathPrefix: "/submission" }
-);
+  { pathPrefix: '/submission' }
+)
 
 export const userRouter = contract.router(
   {
     getUsers: {
-      method: "GET",
-      path: "",
+      method: 'GET',
+      path: '',
       responses: {
         200: z.array(UserWithourPasswordSchema),
       },
-      summary: "Get all users",
+      summary: 'Get all users',
     },
     getOnlineUsers: {
-      method: "GET",
-      path: "/online",
+      method: 'GET',
+      path: '/online',
       responses: {
         200: z.array(UserWithourPasswordSchema),
       },
-      summary: "Get online users",
+      summary: 'Get online users',
     },
     getUserProfile: {
-      method: "GET",
-      path: "/:userId/profile",
+      method: 'GET',
+      path: '/:userId/profile',
       responses: {
         200: UserWithourPasswordSchema.extend({
           userContest: z.array(
@@ -291,68 +292,68 @@ export const userRouter = contract.router(
         }).nullable(),
         404: z.object({ message: z.string() }),
       },
-      summary: "Get a user by id",
+      summary: 'Get a user by id',
     },
     updateUser: {
-      method: "PUT",
-      path: "/:userId",
+      method: 'PUT',
+      path: '/:userId',
       responses: {
         200: UserWithourPasswordSchema,
       },
       body: UserModel.omit({ id: true }),
-      summary: "Update user data",
+      summary: 'Update user data',
     },
     updateShowName: {
-      method: "PATCH",
-      path: "/:userId/name",
+      method: 'PATCH',
+      path: '/:userId/name',
       responses: {
         200: UserModel.pick({ showName: true }),
         403: z.object({ message: z.string() }),
       },
       body: UserModel.pick({ showName: true }),
-      summary: "Update user show name",
+      summary: 'Update user show name',
     },
   },
-  { pathPrefix: "/user" }
-);
+  { pathPrefix: '/user' }
+)
 
 const PrizeSchema = z.object({
   id: z.number(),
   problem: ProblemModel.pick({ id: true }).nullable(),
   user: UserModel.pick({ id: true, showName: true }).nullable(),
-});
+})
 
 export const contestRouter = contract.router(
   {
     getContests: {
-      method: "GET",
-      path: "",
+      method: 'GET',
+      path: '',
       responses: {
         200: z.array(ContestModel),
       },
-      summary: "Get all contests",
+      summary: 'Get all contests',
     },
     getCurrentContest: {
-      method: "GET",
-      path: "/now",
+      method: 'GET',
+      path: '/now',
       responses: {
         200: z.object({
           currentContest: ContestModel.nullable(),
         }),
       },
-      summary: "Get the current contest",
+      summary: 'Get the current contest',
     },
     getContest: {
-      method: "GET",
-      path: "/:contestId",
+      method: 'GET',
+      path: '/:contestId',
       responses: {
         200: ContestModel.nullable(),
       },
-      summary: "Get a contest",
+      summary: 'Get a contest',
     },
     getContestScoreboard: {
-      method: "GET",
-      path: "/:contestId/scoreboard",
+      method: 'GET',
+      path: '/:contestId/scoreboard',
       responses: {
         200: z.object({
           contest: ContestModel.extend({
@@ -381,11 +382,11 @@ export const contestRouter = contract.router(
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
-      summary: "Get a contest",
+      summary: 'Get a contest',
     },
     getContestPrize: {
-      method: "GET",
-      path: "/:contestId/prize",
+      method: 'GET',
+      path: '/:contestId/prize',
       responses: {
         200: z.object({
           firstBlood: z.array(PrizeSchema),
@@ -394,79 +395,79 @@ export const contestRouter = contract.router(
           oneManSolve: z.array(PrizeSchema),
         }),
       },
-      summary: "Get a contest prize",
+      summary: 'Get a contest prize',
     },
     createContest: {
-      method: "POST",
-      path: "",
+      method: 'POST',
+      path: '',
       responses: {
         200: ContestModel,
       },
       body: ContestModel.omit({ id: true }),
-      summary: "Create a contest",
+      summary: 'Create a contest',
     },
     toggleProblemToContest: {
-      method: "PATCH",
-      path: "/:contestId",
+      method: 'PATCH',
+      path: '/:contestId',
       responses: { 200: z.object({ show: z.boolean() }) },
       body: z.object({ show: z.boolean(), problemId: z.coerce.number() }),
-      summary: "Toggle problem to a contest",
+      summary: 'Toggle problem to a contest',
     },
     updateContest: {
-      method: "PUT",
-      path: "/:contestId",
+      method: 'PUT',
+      path: '/:contestId',
       responses: {
         200: ContestModel,
       },
       body: ContestModel.omit({ id: true }),
-      summary: "Update a contest",
+      summary: 'Update a contest',
     },
     deleteContest: {
-      method: "DELETE",
-      path: "/:contestId",
+      method: 'DELETE',
+      path: '/:contestId',
       body: null,
       responses: {
         200: ContestModel,
       },
-      summary: "Delete a contest",
+      summary: 'Delete a contest',
     },
     contestSignUp: {
-      method: "POST",
-      path: "/:contestId/signup",
+      method: 'POST',
+      path: '/:contestId/signup',
       body: z.object({ userId: z.coerce.number() }),
       responses: {
         200: UserContestModel,
       },
-      summary: "Sign up for a contest",
+      summary: 'Sign up for a contest',
     },
   },
-  { pathPrefix: "/contest" }
-);
+  { pathPrefix: '/contest' }
+)
 
-const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true });
+const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
 const LatestSubmissionModel = z.object({
   latestSubmissionId: z.number().nullable(),
   status: z.nativeEnum(SubmissionStatus).nullable(),
-});
+})
 const PassedCountSchema = z.object({
   passedCount: z.number(),
-});
+})
 const ProblemWithDetailSchema = ProblemWithoutExampleSchema.merge(
   LatestSubmissionModel
-).merge(PassedCountSchema);
+).merge(PassedCountSchema)
 const PassedUserModel = UserModel.pick({
   id: true,
   role: true,
   username: true,
   showName: true,
   rating: true,
-});
+})
 
 export const problemRouter = contract.router(
   {
     getProblems: {
-      method: "GET",
-      path: "",
+      method: 'GET',
+      path: '',
       responses: {
         200: z.array(
           z.union([
@@ -475,132 +476,132 @@ export const problemRouter = contract.router(
           ])
         ),
       },
-      summary: "Get problems",
+      summary: 'Get problems',
     },
     getProblem: {
-      method: "GET",
-      path: "/:problemId",
+      method: 'GET',
+      path: '/:problemId',
       responses: {
         200: ProblemWithoutExampleSchema,
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
-      summary: "Get a problem",
+      summary: 'Get a problem',
     },
     getPassedUsers: {
-      method: "GET",
-      path: "/:problemId/user",
+      method: 'GET',
+      path: '/:problemId/user',
       responses: {
         200: z.array(PassedUserModel),
       },
-      summary: "Get passed users",
+      summary: 'Get passed users',
     },
     getPdf: {
-      method: "GET",
-      path: "/doc/:problemId",
+      method: 'GET',
+      path: '/doc/:problemId',
       responses: { 200: z.string() },
-      summary: "Get a pdf document for a problem",
+      summary: 'Get a pdf document for a problem',
     },
     toggleShowProblem: {
-      method: "PATCH",
-      path: "/:problemId",
+      method: 'PATCH',
+      path: '/:problemId',
       responses: {
         200: ProblemWithoutExampleSchema,
       },
       body: ProblemModel.pick({ show: true }),
-      summary: "Toggle problem show state",
+      summary: 'Toggle problem show state',
     },
     createProblem: {
-      method: "POST",
-      path: "",
-      contentType: "multipart/form-data",
+      method: 'POST',
+      path: '',
+      contentType: 'multipart/form-data',
       responses: {
         201: ProblemWithoutExampleSchema,
       },
       body: ProblemModel.omit({ id: true }),
-      summary: "Create a problem",
+      summary: 'Create a problem',
     },
     updateProblem: {
-      method: "PUT",
-      path: "/:problemId",
+      method: 'PUT',
+      path: '/:problemId',
       responses: {
         200: ProblemWithoutExampleSchema,
       },
       body: ProblemModel.omit({ id: true }),
-      summary: "Update a problem",
+      summary: 'Update a problem',
     },
     deleteProblem: {
-      method: "DELETE",
-      path: "/:problemId",
+      method: 'DELETE',
+      path: '/:problemId',
       responses: {
         200: ProblemWithoutExampleSchema,
       },
       body: null,
-      summary: "Delete a problem",
+      summary: 'Delete a problem',
     },
     updateProblemExamples: {
-      method: "PUT",
-      path: "/:problemId/examples",
+      method: 'PUT',
+      path: '/:problemId/examples',
       responses: {
         200: ProblemModel.pick({ examples: true }),
       },
       body: z.any(),
-      summary: "Update problem example testcases",
+      summary: 'Update problem example testcases',
     },
   },
-  { pathPrefix: "/problem" }
-);
+  { pathPrefix: '/problem' }
+)
 
 export const authRouter = contract.router(
   {
     register: {
-      method: "POST",
-      path: "/register",
+      method: 'POST',
+      path: '/register',
       responses: {
         201: z.object({ message: z.string() }),
       },
       body: UserModel.pick({ username: true, showName: true, password: true }),
-      summary: "Register a user",
+      summary: 'Register a user',
     },
     login: {
-      method: "POST",
-      path: "/login",
+      method: 'POST',
+      path: '/login',
       responses: {
         200: z.object({ message: z.string() }),
       },
       body: UserModel.pick({ username: true, password: true }),
-      summary: "Login and get tokens",
+      summary: 'Login and get tokens',
     },
     refreshToken: {
-      method: "GET",
-      path: "/refresh/token",
+      method: 'GET',
+      path: '/refresh/token',
       responses: {
         200: z.object({ message: z.string() }),
       },
-      summary: "Refresh access token",
+      summary: 'Refresh access token',
     },
   },
-  { pathPrefix: "/auth" }
-);
+  { pathPrefix: '/auth' }
+)
 
 export const appRouter = contract.router({
   time: {
-    method: "GET",
-    path: "/time",
+    method: 'GET',
+    path: '/time',
     responses: {
       200: z.date(),
     },
-    summary: "Get server time",
+    summary: 'Get server time',
   },
   ping: {
-    method: "GET",
-    path: "/ping",
+    method: 'GET',
+    path: '/ping',
     responses: {
       200: z.string(),
     },
-    summary: "Ping server",
+    summary: 'Ping server',
   },
-});
+})
 
 export const router = contract.router({
   app: appRouter,
@@ -610,4 +611,4 @@ export const router = contract.router({
   submission: submissionRouter,
   chat: chatRouter,
   announcement: announcementRouter,
-});
+})
