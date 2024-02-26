@@ -57,4 +57,6 @@ ENV NODE_ENV production
 
 COPY --chown=nodejs:nodejs --from=installer /app .
 
+EXPOSE 8000
+
 CMD node apps/api/dist/index.js
