@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
   web:
-    image: ghcr.io/phakphum-dev/otog-web/:latest
+    image: ghcr.io/phakphum-dev/otog-web:latest
     networks:
       - api-gateway
 
   api:
-    image: ghcr.io/phakphum-dev/otog-api/:latest
+    image: ghcr.io/phakphum-dev/otog-api:latest
     networks:
       - api-gateway
     
