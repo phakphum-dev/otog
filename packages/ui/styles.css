@@ -4,49 +4,49 @@
 
 @layer base {
   :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(20 14.3% 4.1%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(20 14.3% 4.1%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(20 14.3% 4.1%);
-    --primary: hsl(24.6 95% 53.1%);
-    --primary-foreground: hsl(60 9.1% 97.8%);
-    --secondary: hsl(60 4.8% 95.9%);
-    --secondary-foreground: hsl(24 9.8% 10%);
-    --muted: hsl(60 4.8% 95.9%);
-    --muted-foreground: hsl(25 5.3% 44.7%);
-    --accent: hsl(60 4.8% 95.9%);
-    --accent-foreground: hsl(24 9.8% 10%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(60 9.1% 97.8%);
-    --border: hsl(20 5.9% 90%);
-    --input: hsl(20 5.9% 90%);
-    --ring: hsl(24.6 95% 53.1%);
+    --background: theme(colors.white);
+    --foreground: theme(colors.gray.950);
+    --card: theme(colors.white);
+    --card-foreground: theme(colors.gray.950);
+    --popover: theme(colors.white);
+    --popover-foreground: theme(colors.gray.950);
+    --primary: theme(colors.orange.500);
+    --primary-foreground: theme(colors.gray.50);
+    --secondary: theme(colors.gray.100);
+    --secondary-foreground: theme(colors.gray.900);
+    --muted: theme(colors.gray.100);
+    --muted-foreground: theme(colors.gray.500);
+    --accent: theme(colors.gray.100);
+    --accent-foreground: theme(colors.gray.900);
+    --destructive: theme(colors.red.500);
+    --destructive-foreground: theme(colors.gray.50);
+    --border: theme(colors.gray.200);
+    --input: theme(colors.gray.200);
+    --ring: theme(colors.orange.500);
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: hsl(20 14.3% 4.1%);
-    --foreground: hsl(60 9.1% 97.8%);
-    --card: hsl(20 14.3% 4.1%);
-    --card-foreground: hsl(60 9.1% 97.8%);
-    --popover: hsl(20 14.3% 4.1%);
-    --popover-foreground: hsl(60 9.1% 97.8%);
-    --primary: hsl(20.5 90.2% 48.2%);
-    --primary-foreground: hsl(60 9.1% 97.8%);
-    --secondary: hsl(12 6.5% 15.1%);
-    --secondary-foreground: hsl(60 9.1% 97.8%);
-    --muted: hsl(12 6.5% 15.1%);
-    --muted-foreground: hsl(24 5.4% 63.9%);
-    --accent: hsl(12 6.5% 15.1%);
-    --accent-foreground: hsl(60 9.1% 97.8%);
-    --destructive: hsl(0 72.2% 50.6%);
-    --destructive-foreground: hsl(60 9.1% 97.8%);
-    --border: hsl(12 6.5% 15.1%);
-    --input: hsl(12 6.5% 15.1%);
-    --ring: hsl(20.5 90.2% 48.2%);
+    --background: theme(colors.gray.900);
+    --foreground: theme(colors.gray.50);
+    --card: theme(colors.gray.900);
+    --card-foreground: theme(colors.gray.50);
+    --popover: theme(colors.gray.900);
+    --popover-foreground: theme(colors.gray.50);
+    --primary: theme(colors.orange.600);
+    --primary-foreground: theme(colors.gray.50);
+    --secondary: theme(colors.gray.700);
+    --secondary-foreground: theme(colors.gray.50);
+    --muted: theme(colors.gray.700);
+    --muted-foreground: theme(colors.gray.400);
+    --accent: theme(colors.gray.700);
+    --accent-foreground: theme(colors.gray.50);
+    --destructive: theme(colors.red.600);
+    --destructive-foreground: theme(colors.gray.50);
+    --border: theme(colors.gray.700);
+    --input: theme(colors.gray.700);
+    --ring: theme(colors.orange.600);
   }
 }
 
@@ -57,4 +57,10 @@
   body {
     @apply font-sans bg-background text-foreground;
   }
+}
+
+body {
+  font-feature-settings: 'kern';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
