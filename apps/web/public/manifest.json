@@ -1,0 +1,21 @@
+{
+  "name": "One Tambon One Grader",
+  "short_name": "otog",
+  "start_url": ".",
+  "display": "standalone",
+  "description": "Become a god of competitive programming. Code and create algorithms efficiently. OTOG is an online judge system with hundreds of problems. ",
+  "icons": [
+    {
+      "src": "/logo196.png",
+      "sizes": "196x196",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#ffffff",
+  "theme_color": "#ff851b"
+}
