@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss'
 import tailwindAnimate from 'tailwindcss-animate'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 const config = {
   darkMode: ['class'],
@@ -68,6 +69,14 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      fontFamily: {
+        sans: [
+          'var(--font-inter)',
+          'var(--font-sarabun)',
+          ...defaultTheme.fontFamily.sans,
+        ],
+        heading: ['var(--font-sukhumvit)', ...defaultTheme.fontFamily.sans],
       },
     },
   },
