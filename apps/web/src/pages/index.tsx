@@ -5,6 +5,7 @@ import NextLink from 'next/link'
 import { Button } from '@otog/ui'
 
 import ComputerImage from '../../public/computer.svg'
+import { ModeToggle } from '../components/theme-provider'
 
 export default function HomePage() {
   return (
@@ -29,6 +30,7 @@ export default function HomePage() {
                 Sign in
               </Button>
             </NextLink>
+            <ModeToggle />
           </div>
         </div>
         <div className="flex flex-1 items-center justify-center">

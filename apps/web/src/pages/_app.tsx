@@ -23,6 +23,8 @@ import Head from 'next/head'
 
 import '@otog/ui/styles.css'
 
+import { ThemeProvider } from '../components/theme-provider'
+
 const inter = Inter({
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
@@ -109,7 +111,6 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         <SWRProvider fallback={fallback} session={session}>
           <UserProvider>
             <SocketProvider>
-              <ThemeProvider attribute="class">
                 <Toaster
                   position="bottom-center"
                   toastOptions={{
@@ -118,12 +119,20 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                 />
                 <ConfirmModalProvider>
                   <TopProgressBar /> */}
-      <main className="flex min-h-screen flex-col font-sans">
-        {/* <NavBar /> */}
-        <Component {...props} />
-        {/* {!OFFLINE_MODE && <Chat />}
+
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <main className="flex min-h-screen flex-col font-sans">
+          {/* <NavBar /> */}
+          <Component {...props} />
+          {/* {!OFFLINE_MODE && <Chat />}
                     <Footer /> */}
-      </main>
+        </main>
+      </ThemeProvider>
       {/* </ConfirmModalProvider>
               </ThemeProvider>
             </SocketProvider>
