@@ -1,9 +1,9 @@
-const { defineConfig } = require("eslint-define-config");
-const base = require("./base");
+const { defineConfig } = require('eslint-define-config')
+const base = require('./base')
 
 module.exports = defineConfig({
   ...base,
-  plugins: [...base.plugins, "react-hooks"],
+  plugins: [...base.plugins, 'react-hooks'],
   globals: {
     React: true,
     JSX: true,
@@ -11,4 +11,4 @@ module.exports = defineConfig({
   env: {
     browser: true,
   },
-});
+})
