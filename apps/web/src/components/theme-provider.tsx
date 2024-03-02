@@ -33,9 +33,11 @@ export function ModeToggle() {
     <ClientOnly
       fallback={
         <Button
-          className="rounded-full"
           aria-label="Toggle color mode"
           onClick={toggleColorMode}
+          size="icon"
+          className="rounded-full"
+          variant="outline"
         >
           <div className="bg-current rounded-full size-4" />
         </Button>
@@ -44,7 +46,9 @@ export function ModeToggle() {
       <Button
         aria-label="Toggle color mode"
         onClick={toggleColorMode}
+        size="icon"
         className="rounded-full"
+        variant="outline"
       >
         {resolvedTheme === 'light' ? (
           <MoonIcon className="size-4" />
