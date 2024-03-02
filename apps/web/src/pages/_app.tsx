@@ -17,46 +17,12 @@
 // import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 // import dynamic from 'next/dynamic'
-import { Inter, Sarabun } from 'next/font/google'
-import localFont from 'next/font/local'
 import Head from 'next/head'
 
 import '@otog/ui/styles.css'
 
 import { ThemeProvider } from '../components/theme-provider'
-
-const inter = Inter({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-inter',
-})
-
-const sarabun = Sarabun({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-sarabun',
-})
-
-const sukhumvit = localFont({
-  src: [
-    {
-      weight: '500',
-      style: 'normal',
-      path: '../fonts/SukhumvitSet-Medium.ttf',
-    },
-    {
-      weight: '600',
-      style: 'normal',
-      path: '../fonts/SukhumvitSet-SemiBold.ttf',
-    },
-    {
-      weight: '700',
-      style: 'normal',
-      path: '../fonts/SukhumvitSet-Bold.ttf',
-    },
-  ],
-  variable: '--font-sukhumvit',
-})
+import { inter, sarabun, sukhumvit } from '../fonts'
 
 // const TopProgressBar = dynamic(
 //   () => import('@src/components/layout/ProgressBar'),
