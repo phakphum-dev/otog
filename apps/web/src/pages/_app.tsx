@@ -126,12 +126,12 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         enableSystem
         disableTransitionOnChange
       >
-        <main className="flex min-h-screen flex-col font-sans">
+        <div className="min-h-screen flex flex-col">
           {/* <NavBar /> */}
           <Component {...props} />
           {/* {!OFFLINE_MODE && <Chat />}
                     <Footer /> */}
-        </main>
+        </div>
       </ThemeProvider>
       {/* </ConfirmModalProvider>
               </ThemeProvider>

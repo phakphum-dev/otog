@@ -9,35 +9,31 @@ import { ModeToggle } from '../components/theme-provider'
 
 export default function HomePage() {
   return (
-    <div className="container flex justify-center items-center flex-1">
+    <main className="container flex justify-center items-center flex-1">
       <Head>
-        <title>Login | OTOG</title>
+        <title>One Tambon One Grader</title>
       </Head>
-      <div className="flex flex-col gap-16 md:flex-row md:pb-16">
-        <div className="flex gap-6 flex-1 flex-col ">
-          <h1 className="font-heading text-5xl font-bold tracking-tight text-balance">
-            Become a god of Competitive Programming
-          </h1>
-          <div className="text-md text-gray-500">
-            Code and Create algorithms efficiently.
-          </div>
-          <div className="flex gap-4">
-            <NextLink passHref legacyBehavior href="/register">
-              <Button className="w-[100px]">Sign Up</Button>
-            </NextLink>
-            <NextLink passHref legacyBehavior href="/login">
-              <Button className="w-[100px]" variant="outline">
-                Sign in
-              </Button>
-            </NextLink>
-            <ModeToggle />
-          </div>
+      <section className="flex flex-col gap-6">
+        <h1 className="font-heading text-5xl lg:text-7xl font-bold tracking-tight text-balance lg:text-center">
+          Become a god of Competitive Programming
+        </h1>
+        <p className="text-md lg:text-xl text-left lg:text-center text-muted-foreground">
+          Code and create algorithms efficiently.
+        </p>
+        <div className="flex gap-4 lg:justify-center">
+          <Button className="w-[100px]" asChild>
+            <NextLink href="/register">Sign Up</NextLink>
+          </Button>
+          <Button className="w-[100px]" variant="outline" asChild>
+            <NextLink href="/login">Sign in</NextLink>
+          </Button>
+          <ModeToggle />
         </div>
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex items-center justify-center pt-10">
           <Image src={ComputerImage} alt="computer image" />
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }
 
