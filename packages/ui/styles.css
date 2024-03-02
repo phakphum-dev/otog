@@ -10,7 +10,7 @@
     --card-foreground: theme(colors.gray.950);
     --popover: theme(colors.white);
     --popover-foreground: theme(colors.gray.950);
-    --primary: theme(colors.orange.500);
+    --primary: theme(colors.orange.400);
     --primary-foreground: theme(colors.gray.50);
     --secondary: theme(colors.gray.100);
     --secondary-foreground: theme(colors.gray.900);
@@ -22,7 +22,7 @@
     --destructive-foreground: theme(colors.gray.50);
     --border: theme(colors.gray.200);
     --input: theme(colors.gray.200);
-    --ring: theme(colors.orange.500);
+    --ring: theme(colors.orange.400);
 
     --radius: 0.75rem;
   }
@@ -34,7 +34,7 @@
     --card-foreground: theme(colors.gray.50);
     --popover: theme(colors.gray.900);
     --popover-foreground: theme(colors.gray.50);
-    --primary: theme(colors.orange.600);
+    --primary: theme(colors.orange.500);
     --primary-foreground: theme(colors.gray.50);
     --secondary: theme(colors.gray.700);
     --secondary-foreground: theme(colors.gray.50);
@@ -46,7 +46,7 @@
     --destructive-foreground: theme(colors.gray.50);
     --border: theme(colors.gray.700);
     --input: theme(colors.gray.700);
-    --ring: theme(colors.orange.600);
+    --ring: theme(colors.orange.500);
   }
 }
 
