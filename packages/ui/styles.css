@@ -4,49 +4,49 @@
 
 @layer base {
   :root {
-    --background: theme(colors.white);
-    --foreground: theme(colors.gray.950);
-    --card: theme(colors.white);
-    --card-foreground: theme(colors.gray.950);
-    --popover: theme(colors.white);
-    --popover-foreground: theme(colors.gray.950);
-    --primary: theme(colors.orange.400);
-    --primary-foreground: theme(colors.gray.50);
-    --secondary: theme(colors.gray.100);
-    --secondary-foreground: theme(colors.gray.900);
-    --muted: theme(colors.gray.100);
-    --muted-foreground: theme(colors.gray.500);
-    --accent: theme(colors.gray.100);
-    --accent-foreground: theme(colors.gray.900);
-    --destructive: theme(colors.red.500);
-    --destructive-foreground: theme(colors.gray.50);
-    --border: theme(colors.gray.200);
-    --input: theme(colors.gray.200);
-    --ring: theme(colors.orange.400);
+    --background: colorToHsl(theme(colors.white));
+    --foreground: colorToHsl(theme(colors.gray.950));
+    --card: colorToHsl(theme(colors.white));
+    --card-foreground: colorToHsl(theme(colors.gray.950));
+    --popover: colorToHsl(theme(colors.white));
+    --popover-foreground: colorToHsl(theme(colors.gray.950));
+    --primary: colorToHsl(theme(colors.orange.400));
+    --primary-foreground: colorToHsl(theme(colors.gray.50));
+    --secondary: colorToHsl(theme(colors.gray.100));
+    --secondary-foreground: colorToHsl(theme(colors.gray.900));
+    --muted: colorToHsl(theme(colors.gray.100));
+    --muted-foreground: colorToHsl(theme(colors.gray.500));
+    --accent: colorToHsl(theme(colors.gray.100));
+    --accent-foreground: colorToHsl(theme(colors.gray.900));
+    --destructive: colorToHsl(theme(colors.red.500));
+    --destructive-foreground: colorToHsl(theme(colors.gray.50));
+    --border: colorToHsl(theme(colors.gray.200));
+    --input: colorToHsl(theme(colors.gray.200));
+    --ring: colorToHsl(theme(colors.orange.400));
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: theme(colors.gray.900);
-    --foreground: theme(colors.gray.50);
-    --card: theme(colors.gray.900);
-    --card-foreground: theme(colors.gray.50);
-    --popover: theme(colors.gray.900);
-    --popover-foreground: theme(colors.gray.50);
-    --primary: theme(colors.orange.500);
-    --primary-foreground: theme(colors.gray.50);
-    --secondary: theme(colors.gray.700);
-    --secondary-foreground: theme(colors.gray.50);
-    --muted: theme(colors.gray.700);
-    --muted-foreground: theme(colors.gray.400);
-    --accent: theme(colors.gray.700);
-    --accent-foreground: theme(colors.gray.50);
-    --destructive: theme(colors.red.600);
-    --destructive-foreground: theme(colors.gray.50);
-    --border: theme(colors.gray.700);
-    --input: theme(colors.gray.700);
-    --ring: theme(colors.orange.500);
+    --background: colorToHsl(theme(colors.gray.900));
+    --foreground: colorToHsl(theme(colors.gray.50));
+    --card: colorToHsl(theme(colors.gray.900));
+    --card-foreground: colorToHsl(theme(colors.gray.50));
+    --popover: colorToHsl(theme(colors.gray.900));
+    --popover-foreground: colorToHsl(theme(colors.gray.50));
+    --primary: colorToHsl(theme(colors.orange.500));
+    --primary-foreground: colorToHsl(theme(colors.gray.50));
+    --secondary: colorToHsl(theme(colors.gray.700));
+    --secondary-foreground: colorToHsl(theme(colors.gray.50));
+    --muted: colorToHsl(theme(colors.gray.700));
+    --muted-foreground: colorToHsl(theme(colors.gray.400));
+    --accent: colorToHsl(theme(colors.gray.700));
+    --accent-foreground: colorToHsl(theme(colors.gray.50));
+    --destructive: colorToHsl(theme(colors.red.600));
+    --destructive-foreground: colorToHsl(theme(colors.gray.50));
+    --border: colorToHsl(theme(colors.gray.700));
+    --input: colorToHsl(theme(colors.gray.700));
+    --ring: colorToHsl(theme(colors.orange.500));
   }
 }
 

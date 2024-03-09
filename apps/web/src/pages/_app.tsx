@@ -12,8 +12,8 @@
 // import { ErrorToastOptions, useErrorToaster } from '@src/hooks/useErrorToast'
 // import '@src/styles/nprogress.css'
 // import 'focus-visible/dist/focus-visible'
-// import { Session } from 'next-auth'
-// import { SessionProvider } from 'next-auth/react'
+import { Session } from 'next-auth'
+import { SessionProvider } from 'next-auth/react'
 // import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 // import dynamic from 'next/dynamic'
@@ -42,12 +42,11 @@ import { inter, sarabun, sukhumvit } from '../fonts'
 type MyAppProps = AppProps<{
   //   errorData: ErrorToastOptions
   //   fallback: { [key: string]: string }
-  //   session: Session
+  session: Session
 }>
 
 export default function MyApp({ Component, pageProps }: MyAppProps) {
-  const { ...props } = pageProps
-  //   const { errorData, fallback, session, ...props } = pageProps
+  const { session, ...props } = pageProps
   //   useErrorToaster(errorData)
   //   useAnalytics()
   return (
@@ -73,38 +72,33 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           --font-sukhumvit: ${sukhumvit.style.fontFamily};
         }
       `}</style>
-      {/* <SessionProvider session={session}>
-        <SWRProvider fallback={fallback} session={session}>
+      {/*  <SWRProvider fallback={fallback} session={session}>
           <UserProvider>
-            <SocketProvider>
-                <Toaster
-                  position="bottom-center"
-                  toastOptions={{
-                    className: 'dark:bg-gray-800 dark:text-alpha-white-900',
-                  }}
-                />
-                <ConfirmModalProvider>
-                  <TopProgressBar /> */}
+          <SocketProvider>
+          <Toaster
+          position="bottom-center"
+          toastOptions={{
+            className: 'dark:bg-gray-800 dark:text-alpha-white-900',
+          }}
+          />
+          <ConfirmModalProvider>
+        <TopProgressBar /> */}
 
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <div className="min-h-screen flex flex-col">
-          {/* <NavBar /> */}
-          <Component {...props} />
-          {/* {!OFFLINE_MODE && <Chat />}
+      <SessionProvider session={session}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="min-h-screen flex flex-col">
+            {/* <NavBar /> */}
+            <Component {...props} />
+            {/* {!OFFLINE_MODE && <Chat />}
                     <Footer /> */}
-        </div>
-      </ThemeProvider>
-      {/* </ConfirmModalProvider>
-              </ThemeProvider>
-            </SocketProvider>
-          </UserProvider>
-        </SWRProvider>
-      </SessionProvider> */}
+          </div>
+        </ThemeProvider>
+      </SessionProvider>
     </>
   )
 }
