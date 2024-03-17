@@ -69,9 +69,11 @@ const config = {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 2px)',
+        lg: 'var(--radius)',
+        xl: 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
       },
       keyframes: {
         'accordion-down': {
@@ -90,7 +92,7 @@ const config = {
       fontFamily: {
         sans: [
           'var(--font-inter)',
-          'var(--font-sarabun)',
+          'var(--font-anuphan)',
           ...defaultTheme.fontFamily.sans,
         ],
         heading: ['var(--font-sukhumvit)', ...defaultTheme.fontFamily.sans],

@@ -22,7 +22,7 @@ import Head from 'next/head'
 import '@otog/ui/styles.css'
 
 import { ThemeProvider } from '../components/theme-provider'
-import { inter, sarabun, sukhumvit } from '../fonts'
+import { anuphan, inter, sukhumvit } from '../fonts'
 
 // const TopProgressBar = dynamic(
 //   () => import('@src/components/layout/ProgressBar'),
@@ -68,7 +68,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
       <style jsx global>{`
         :root {
           --font-inter: ${inter.style.fontFamily};
-          --font-sarabun: ${sarabun.style.fontFamily};
+          --font-anuphan: ${anuphan.style.fontFamily};
           --font-sukhumvit: ${sukhumvit.style.fontFamily};
         }
       `}</style>

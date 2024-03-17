@@ -1,4 +1,4 @@
-import { Inter, Sarabun } from 'next/font/google'
+import { Anuphan, Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 
 export const inter = Inter({
@@ -7,10 +7,10 @@ export const inter = Inter({
   variable: '--font-inter',
 })
 
-export const sarabun = Sarabun({
+export const anuphan = Anuphan({
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-sarabun',
+  variable: '--font-anuphan',
 })
 
 export const sukhumvit = localFont({
