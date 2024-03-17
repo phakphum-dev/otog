@@ -21,6 +21,8 @@ import Head from 'next/head'
 
 import '@otog/ui/styles.css'
 
+import { Footer } from '../components/footer'
+import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
 import { anuphan, inter, sukhumvit } from '../fonts'
 
@@ -92,10 +94,10 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           disableTransitionOnChange
         >
           <div className="min-h-screen flex flex-col">
-            {/* <NavBar /> */}
+            <Navbar />
             <Component {...props} />
-            {/* {!OFFLINE_MODE && <Chat />}
-                    <Footer /> */}
+            <Footer />
+            {/* {!OFFLINE_MODE && <Chat /> */}
           </div>
         </ThemeProvider>
       </SessionProvider>

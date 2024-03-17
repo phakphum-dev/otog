@@ -24,7 +24,7 @@ export const ClientOnly = ({ children, fallback = null }: ClientOnlyProps) => {
   return show ? children : fallback
 }
 
-export function ModeToggle() {
+export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const toggleColorMode = () => {
     setTheme(resolvedTheme === 'light' ? 'dark' : 'light')

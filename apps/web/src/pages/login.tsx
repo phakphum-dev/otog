@@ -46,14 +46,14 @@ export default function LoginPage() {
     }
   }
   return (
-    <main className="container">
+    <main className="container flex-1">
       <Head>
         <title>Login | OTOG</title>
       </Head>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="mx-auto my-8 max-w-[300px] rounded-2xl border p-6 shadow-md"
+          className="mx-auto my-8 max-w-[300px] rounded-2xl border border-border p-5 shadow-md"
         >
           <div className="flex flex-col gap-4">
             <Image
