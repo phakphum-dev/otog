@@ -103,13 +103,16 @@ export const chatRouter = contract.router({
   },
 })
 
-const UserWithourPasswordSchema = UserModel.pick({
+export const UserWithourPasswordSchema = UserModel.pick({
   id: true,
   username: true,
   showName: true,
   role: true,
   rating: true,
 })
+export type UserWithourPasswordSchema = z.infer<
+  typeof UserWithourPasswordSchema
+>
 
 const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
   id: true,
@@ -552,6 +555,14 @@ export const problemRouter = contract.router(
   { pathPrefix: '/problem' }
 )
 
+export const LoginBody = UserModel.pick({ username: true, password: true })
+export type LoginBody = z.infer<typeof LoginBody>
+export const LoginResponse = z.object({
+  user: UserWithourPasswordSchema,
+  accessToken: z.string(),
+})
+export type LoginResponse = z.infer<typeof LoginResponse>
+
 export const authRouter = contract.router(
   {
     register: {
@@ -567,9 +578,9 @@ export const authRouter = contract.router(
       method: 'POST',
       path: '/login',
       responses: {
-        200: z.object({ message: z.string() }),
+        200: LoginResponse,
       },
-      body: UserModel.pick({ username: true, password: true }),
+      body: LoginBody,
       summary: 'Login and get tokens',
     },
     refreshToken: {

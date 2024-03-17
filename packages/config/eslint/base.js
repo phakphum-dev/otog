@@ -18,6 +18,7 @@ module.exports = defineConfig({
         argsIgnorePattern: '^_',
       },
     ],
+    'no-redeclare': 'off',
   },
   ignorePatterns: [
     // Ignore dotfiles
