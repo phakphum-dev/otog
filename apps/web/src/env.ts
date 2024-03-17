@@ -41,7 +41,7 @@ export const environment = parseEnv(
     OFFLINE_MODE: z.boolean(),
 
     NEXTAUTH_URL: z.string().optional().refine(requireOnServer),
-    NEXTAUTH_SECRET: z.string().optional().refine(requireOnServer),
+    NEXTAUTH_SECRET: z.string().optional(), // this is require in production anyway
 
     CONTACT_LINK: z.string(),
     GITHUB_LINK: z.string(),
