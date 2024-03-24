@@ -17,12 +17,14 @@ import { useRouter } from 'next/router'
 import { Button, ButtonProps, Link } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
+import { useUserContext } from '../context/user-context'
 // import { Avatar } from '../Avatar'
 // import { ToggleColorModeButton } from '../ToggleColorModeButton'
 import { environment } from '../env'
 import { ThemeToggle } from './theme-provider'
 
 export const Navbar = () => {
+  const { isAuthenticated, logout } = useUserContext()
   return (
     <>
       <div className="h-14 w-full" />
@@ -38,7 +40,14 @@ export const Navbar = () => {
               />
             </NextLink>
           </Link>
-          <ThemeToggle />
+          <div className="flex gap-4">
+            <ThemeToggle />
+            {isAuthenticated && (
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
     </>

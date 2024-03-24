@@ -14,12 +14,14 @@ import { Button, Form, FormField, FormItem, FormLabel, Input } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
 import { withSession } from '../api/withSession'
+import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 
 export default function LoginPage() {
   const router = useRouter()
   const form = useForm<LoginBody>()
-  //   const { clearCache } = useUserData()
+
+  const { clearCache } = useUserContext()
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading('กำลังลงชื่อเข้าใช้...')
     try {
@@ -36,8 +38,8 @@ export default function LoginPage() {
         throw response
       }
       toast.success('ลงชื่อเข้าใช้สำเร็จ !', { id: toastId })
-      // clearCache()
-      router.replace(environment.OFFLINE_MODE ? '/contest' : '/problem')
+      clearCache()
+      router.replace(environment.OFFLINE_MODE ? '/contest' : '/')
     } catch (e: unknown) {
       toast.error('ลงชื่อใช้งานไม่สำเร็จ', { id: toastId })
     }
@@ -120,7 +122,7 @@ export const getServerSideProps = withSession(async (session) => {
   if (session) {
     return {
       redirect: {
-        destination: environment.OFFLINE_MODE ? '/contest' : '/problem',
+        destination: environment.OFFLINE_MODE ? '/contest' : '/',
         permanent: false,
       },
     }

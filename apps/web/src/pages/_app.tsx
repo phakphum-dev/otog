@@ -28,6 +28,7 @@ import '@otog/ui/styles.css'
 import { Footer } from '../components/footer'
 import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
+import { UserContextProvider } from '../context/user-context'
 import { inter, sarabun, sukhumvit } from '../fonts'
 
 // const TopProgressBar = dynamic(
@@ -82,30 +83,31 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         }
       `}</style>
       {/* 
-          <UserProvider>
           <SocketProvider>
           <ConfirmModalProvider>
         <TopProgressBar /> */}
 
       <QueryClientProvider client={queryClient}>
         <SessionProvider session={session}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <Component {...props} />
-              <Footer />
-              {/* {!OFFLINE_MODE && <Chat /> */}
-            </div>
-            <Toaster
-              position="bottom-center"
-              toastOptions={{ className: '!text-foreground !bg-background' }}
-            />
-          </ThemeProvider>
+          <UserContextProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <Component {...props} />
+                <Footer />
+                {/* {!OFFLINE_MODE && <Chat /> */}
+              </div>
+              <Toaster
+                position="bottom-center"
+                toastOptions={{ className: '!text-foreground !bg-background' }}
+              />
+            </ThemeProvider>
+          </UserContextProvider>
         </SessionProvider>
       </QueryClientProvider>
     </>

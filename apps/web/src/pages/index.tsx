@@ -5,8 +5,21 @@ import NextLink from 'next/link'
 import { Button } from '@otog/ui'
 
 import ComputerImage from '../../public/computer.svg'
+import { withSession } from '../api/withSession'
+import { useUserContext } from '../context/user-context'
+import { environment } from '../env'
 
 export default function HomePage() {
+  const { isAuthenticated } = useUserContext()
+  if (isAuthenticated) {
+    return (
+      <main className="container flex flex-1">
+        <Head>
+          <title>Problem | OTOG</title>
+        </Head>
+      </main>
+    )
+  }
   return (
     <main className="container flex justify-center items-center flex-1">
       <Head>
@@ -35,22 +48,14 @@ export default function HomePage() {
   )
 }
 
-// export const getServerSideProps = withSession(async (session) => {
-//   if (OFFLINE_MODE) {
-//     return {
-//       redirect: {
-//         permanent: false,
-//         destination: '/login',
-//       },
-//     }
-//   }
-//   if (session) {
-//     return {
-//       redirect: {
-//         permanent: false,
-//         destination: '/problem',
-//       },
-//     }
-//   }
-//   return { props: {} }
-// })
+export const getServerSideProps = withSession(async () => {
+  if (environment.OFFLINE_MODE) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/login',
+      },
+    }
+  }
+  return { props: {} }
+})
