@@ -24,7 +24,7 @@ import '@otog/ui/styles.css'
 import { Footer } from '../components/footer'
 import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
-import { anuphan, inter, sukhumvit } from '../fonts'
+import { inter, sarabun, sukhumvit } from '../fonts'
 
 // const TopProgressBar = dynamic(
 //   () => import('@src/components/layout/ProgressBar'),
@@ -70,7 +70,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
       <style jsx global>{`
         :root {
           --font-inter: ${inter.style.fontFamily};
-          --font-anuphan: ${anuphan.style.fontFamily};
+          --font-sarabun: ${sarabun.style.fontFamily};
           --font-sukhumvit: ${sukhumvit.style.fontFamily};
         }
       `}</style>

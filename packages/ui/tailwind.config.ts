@@ -92,7 +92,7 @@ const config = {
       fontFamily: {
         sans: [
           'var(--font-inter)',
-          'var(--font-anuphan)',
+          'var(--font-sarabun)',
           ...defaultTheme.fontFamily.sans,
         ],
         heading: ['var(--font-sukhumvit)', ...defaultTheme.fontFamily.sans],

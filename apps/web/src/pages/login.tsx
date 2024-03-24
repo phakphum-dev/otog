@@ -68,6 +68,7 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>ชื่อผู้ใช้</FormLabel>
                   <Input
+                    className="placeholder:overflow-visible"
                     {...field}
                     placeholder="ชื่อผู้ใช้"
                     autoFocus
