@@ -10,7 +10,6 @@
 // import { UserProvider } from '@src/context/UserContext'
 // import { useAnalytics } from '@src/hooks/useAnalytics'
 // import { ErrorToastOptions, useErrorToaster } from '@src/hooks/useErrorToast'
-// import '@src/styles/nprogress.css'
 // import 'focus-visible/dist/focus-visible'
 import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -20,7 +19,7 @@ import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
 // import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
-// import dynamic from 'next/dynamic'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 
 import '@otog/ui/styles.css'
@@ -30,13 +29,11 @@ import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
 import { UserContextProvider } from '../context/user-context'
 import { inter, sarabun, sukhumvit } from '../fonts'
+import '../styles/nprogress.css'
 
-// const TopProgressBar = dynamic(
-//   () => import('@src/components/layout/ProgressBar'),
-//   {
-//     ssr: false,
-//   }
-// )
+const ProgressBar = dynamic(() => import('./../components/progress-bar'), {
+  ssr: false,
+})
 
 // if (OFFLINE_MODE) {
 //   loader.config({
@@ -85,7 +82,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
       {/* 
           <SocketProvider>
           <ConfirmModalProvider>
-        <TopProgressBar /> */}
+         */}
 
       <QueryClientProvider client={queryClient}>
         <SessionProvider session={session}>
@@ -97,6 +94,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
               disableTransitionOnChange
             >
               <div className="min-h-screen flex flex-col">
+                <ProgressBar />
                 <Navbar />
                 <Component {...props} />
                 <Footer />
