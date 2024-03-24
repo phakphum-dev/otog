@@ -13,8 +13,8 @@
     "@otog/contract": "workspace:*",
     "@otog/database": "workspace:*",
     "@otog/ui": "workspace:*",
-    "@tanstack/react-query": "^5.28.6",
-    "@ts-rest/react-query": "^3.36.0",
+    "@tanstack/react-query": "~4.33.0",
+    "@ts-rest/react-query": "~3.30.0",
     "cookie": "^0.6.0",
     "jwt-decode": "^4.0.0",
     "next": "^14.0.4",
@@ -29,9 +29,9 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@otog/postcss": "workspace:*",
     "@next/eslint-plugin-next": "^14.0.4",
     "@otog/config": "workspace:*",
+    "@otog/postcss": "workspace:*",
     "@types/cookie": "^0.6.0",
     "@types/eslint": "^8.56.1",
     "@types/node": "^20.10.6",
