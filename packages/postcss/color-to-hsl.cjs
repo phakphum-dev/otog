@@ -38,8 +38,20 @@ const colorToHsl = () => {
           -1,
           { value: hsl[0], type: NumberType.Integer },
         ]),
-        new TokenNode([TokenType.Percentage, s.toString() + '%', -1, -1, { value: hsl[1] }]),
-        new TokenNode([TokenType.Percentage, l.toString() + '%', -1, -1, { value: hsl[2] }]),
+        new TokenNode([
+          TokenType.Percentage,
+          s.toString() + '%',
+          -1,
+          -1,
+          { value: hsl[1] },
+        ]),
+        new TokenNode([
+          TokenType.Percentage,
+          l.toString() + '%',
+          -1,
+          -1,
+          { value: hsl[2] },
+        ]),
       ]
       decl.cloneBefore({ value: channels.map((it) => it.toString()).join(' ') })
       decl.remove()

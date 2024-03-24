@@ -29,9 +29,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@csstools/css-color-parser": "^1.5.2",
-    "@csstools/css-parser-algorithms": "^2.6.0",
-    "@csstools/css-tokenizer": "^2.2.3",
+    "@otog/postcss": "workspace:*",
     "@next/eslint-plugin-next": "^14.0.4",
     "@otog/config": "workspace:*",
     "@types/cookie": "^0.6.0",
