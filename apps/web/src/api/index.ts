@@ -1,8 +1,10 @@
+import { initQueryClient } from '@ts-rest/react-query'
 import wretch, { FetchLike } from 'wretch'
 import FormDataAddon from 'wretch/addons/formData'
 import { createStore } from 'zustand'
 
 import { LoginResponse } from '@otog/contract'
+import { router } from '@otog/contract'
 
 import { environment, isServer } from '../env'
 
@@ -82,3 +84,28 @@ export const client = api
     }
     return req.fetch().json()
   })
+
+export const query = initQueryClient(router, {
+  baseUrl: '',
+  baseHeaders: { 'Content-Type': 'application/json' },
+  api: ({ path, method, headers, body }) => {
+    return client
+      .headers(headers)
+      .fetch(method, path, body)
+      .res()
+      .then(async (response) => {
+        return {
+          status: response.status,
+          body: await response.json(),
+          headers: response.headers,
+        }
+      })
+      .catch((error) => {
+        return {
+          status: error.status,
+          body: error.json,
+          headers: error.headers,
+        }
+      })
+  },
+})

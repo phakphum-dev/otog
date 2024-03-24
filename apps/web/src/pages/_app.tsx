@@ -12,6 +12,10 @@
 // import { ErrorToastOptions, useErrorToaster } from '@src/hooks/useErrorToast'
 // import '@src/styles/nprogress.css'
 // import 'focus-visible/dist/focus-visible'
+import { useState } from 'react'
+import { Toaster } from 'react-hot-toast'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
 // import { ThemeProvider } from 'next-themes'
@@ -49,6 +53,9 @@ type MyAppProps = AppProps<{
 
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const { session, ...props } = pageProps
+
+  const [queryClient] = useState(() => new QueryClient())
+
   //   useErrorToaster(errorData)
   //   useAnalytics()
   return (
@@ -74,33 +81,33 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           --font-sukhumvit: ${sukhumvit.style.fontFamily};
         }
       `}</style>
-      {/*  <SWRProvider fallback={fallback} session={session}>
+      {/* 
           <UserProvider>
           <SocketProvider>
-          <Toaster
-          position="bottom-center"
-          toastOptions={{
-            className: 'dark:bg-gray-800 dark:text-alpha-white-900',
-          }}
-          />
           <ConfirmModalProvider>
         <TopProgressBar /> */}
 
-      <SessionProvider session={session}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <Component {...props} />
-            <Footer />
-            {/* {!OFFLINE_MODE && <Chat /> */}
-          </div>
-        </ThemeProvider>
-      </SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider session={session}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <Component {...props} />
+              <Footer />
+              {/* {!OFFLINE_MODE && <Chat /> */}
+            </div>
+            <Toaster
+              position="bottom-center"
+              toastOptions={{ className: '!text-foreground !bg-background' }}
+            />
+          </ThemeProvider>
+        </SessionProvider>
+      </QueryClientProvider>
     </>
   )
 }

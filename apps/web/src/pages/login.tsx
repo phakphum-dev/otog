@@ -20,31 +20,28 @@ export default function LoginPage() {
   const router = useRouter()
   const form = useForm<LoginBody>()
   //   const { clearCache } = useUserData()
-  const onSubmit = async (credentials: LoginBody) => {
+  const onSubmit = form.handleSubmit(async (values) => {
+    const toastId = toast.loading('กำลังลงชื่อเข้าใช้...')
     try {
       const response = await signIn('otog', {
-        username: credentials.username,
-        password: credentials.password,
+        username: values.username,
+        password: values.password,
         redirect: false,
       })
-      if (response?.ok) {
-        toast.success('ลงชื่อเข้าใช้สำเร็จ !')
-        // clearCache()
-        router.replace(environment.OFFLINE_MODE ? '/contest' : '/problem')
-      } else if (response?.status === 401) {
-        // errorToast({
-        //   title: 'ลงชื่อเข้าใช้งานไม่สำเร็จ !',
-        //   description: 'ชื่อผู้ใช้ หรือ รหัสผ่าน ไม่ถูกต้อง',
-        //   status: 'error',
-        //   code: 401,
-        // })
-      } else {
+      if (response?.status === 401) {
+        toast.error('ชื่อผู้ใช้ หรือ รหัสผ่าน ไม่ถูกต้อง', { id: toastId })
+        return
+      }
+      if (!response?.ok) {
         throw response
       }
+      toast.success('ลงชื่อเข้าใช้สำเร็จ !', { id: toastId })
+      // clearCache()
+      router.replace(environment.OFFLINE_MODE ? '/contest' : '/problem')
     } catch (e: unknown) {
-      //   onErrorToast(e)
+      toast.error('ลงชื่อใช้งานไม่สำเร็จ', { id: toastId })
     }
-  }
+  })
   return (
     <main className="container flex-1">
       <Head>
@@ -52,7 +49,7 @@ export default function LoginPage() {
       </Head>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={onSubmit}
           className="mx-auto my-8 max-w-[300px] rounded-2xl border border-border p-5 shadow-md"
         >
           <div className="flex flex-col gap-4">
@@ -64,12 +61,13 @@ export default function LoginPage() {
             <FormField
               control={form.control}
               name="username"
+              defaultValue=""
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>ชื่อผู้ใช้</FormLabel>
                   <Input
-                    className="placeholder:overflow-visible"
                     {...field}
+                    className="placeholder:overflow-visible"
                     placeholder="ชื่อผู้ใช้"
                     autoFocus
                     required
@@ -80,6 +78,7 @@ export default function LoginPage() {
             <FormField
               control={form.control}
               name="password"
+              defaultValue=""
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>รหัสผ่าน</FormLabel>

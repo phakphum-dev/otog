@@ -563,6 +563,13 @@ export const LoginResponse = z.object({
 })
 export type LoginResponse = z.infer<typeof LoginResponse>
 
+export const RegisterBody = UserModel.pick({
+  username: true,
+  showName: true,
+  password: true,
+})
+export type RegisterBody = z.infer<typeof RegisterBody>
+
 export const authRouter = contract.router(
   {
     register: {
@@ -571,7 +578,7 @@ export const authRouter = contract.router(
       responses: {
         201: z.object({ message: z.string() }),
       },
-      body: UserModel.pick({ username: true, showName: true, password: true }),
+      body: RegisterBody,
       summary: 'Register a user',
     },
     login: {

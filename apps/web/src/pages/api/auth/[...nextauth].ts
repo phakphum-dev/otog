@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         return await api
-          .url('auth/login')
+          .url('/auth/login')
           .post(credentials)
           .res(async (r) => {
             const setCookie = r.headers.get('set-cookie')
@@ -82,7 +82,7 @@ export const authOptions: NextAuthOptions = {
                 secure: secure,
               }),
             })
-            .get('auth/refresh/token')
+            .get('/auth/refresh/token')
             .forbidden((e) => {
               throw e
             })

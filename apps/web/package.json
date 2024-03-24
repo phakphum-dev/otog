@@ -13,6 +13,8 @@
     "@otog/contract": "workspace:*",
     "@otog/database": "workspace:*",
     "@otog/ui": "workspace:*",
+    "@tanstack/react-query": "^5.28.6",
+    "@ts-rest/react-query": "^3.36.0",
     "cookie": "^0.6.0",
     "jwt-decode": "^4.0.0",
     "next": "^14.0.4",
