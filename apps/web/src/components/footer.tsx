@@ -5,7 +5,7 @@ import { environment } from '../env'
 export const Footer = () => (
   <footer className="container mt-8 pb-4 justify-self-end">
     <hr className="mb-2" />
-    <div className="flex flex-col sm:flex-row justify-between">
+    <div className="flex flex-row justify-between text-sm flex-wrap">
       {environment.OFFLINE_MODE ? (
         <span>หากมีข้อสงสัย กรุณายกมือถาม</span>
       ) : (
