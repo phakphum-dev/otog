@@ -6,6 +6,7 @@ import { Button } from '@otog/ui'
 
 import ComputerImage from '../../public/computer.svg'
 import { withSession } from '../api/withSession'
+import { AnnouncementComponent } from '../components/announcement'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 
@@ -13,10 +14,11 @@ export default function HomePage() {
   const { isAuthenticated } = useUserContext()
   if (isAuthenticated) {
     return (
-      <main className="container flex flex-1">
+      <main className="container flex flex-1 lg:max-w-screen-md">
         <Head>
           <title>Problem | OTOG</title>
         </Head>
+        <AnnouncementComponent defaultShow={true} />
       </main>
     )
   }
