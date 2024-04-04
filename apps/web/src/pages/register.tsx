@@ -49,7 +49,6 @@ export default function RegisterPage() {
                   <FormLabel>ชื่อผู้ใช้</FormLabel>
                   <Input
                     {...field}
-                    className="placeholder:overflow-visible"
                     placeholder="ชื่อผู้ใช้"
                     required
                     autoFocus
@@ -80,12 +79,7 @@ export default function RegisterPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>ชื่อที่ใช้แสดง</FormLabel>
-                  <Input
-                    {...field}
-                    className="placeholder:overflow-visible"
-                    placeholder="ชื่อที่ใช้แสดง"
-                    required
-                  />
+                  <Input {...field} placeholder="ชื่อที่ใช้แสดง" required />
                 </FormItem>
               )}
             />
