@@ -41,6 +41,7 @@
     "@otog/config": "workspace:*",
     "@otog/postcss": "workspace:*",
     "@tanstack/eslint-plugin-query": "^5.32.1",
+    "@ts-rest/core": "^3.45.1",
     "@types/cookie": "^0.6.0",
     "@types/eslint": "^8.56.1",
     "@types/is-hotkey": "^0.1.10",
