@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/core/database/prisma.service'
 
-import { Prisma } from '@otog/database'
+import { UpdateAnnouncementSchema } from '@otog/contract'
 
 @Injectable()
 export class AnnouncementService {
@@ -43,7 +43,7 @@ export class AnnouncementService {
 
   async create(value: string, contestId: number | null = null) {
     return await this.prisma.announcement.create({
-      data: { value: JSON.stringify(value), contestId },
+      data: { value: JSON.parse(value), contestId },
     })
   }
 
@@ -62,13 +62,13 @@ export class AnnouncementService {
 
   async updateAnnounce(
     announcementId: number,
-    announcementInput: Prisma.AnnouncementUpdateInput
+    announcementInput: UpdateAnnouncementSchema
   ) {
     return await this.prisma.announcement.update({
       where: { id: announcementId },
       data: {
         ...announcementInput,
-        value: JSON.stringify(announcementInput.value),
+        value: JSON.parse(announcementInput.value),
       },
     })
   }

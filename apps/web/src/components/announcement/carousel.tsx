@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createContext, useContext } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
 import { AnnouncementSchema } from '@otog/contract'
 
-import { query } from '../../api'
 import { useUserContext } from '../../context/user-context'
+import { key } from '../../query/announcement'
 import { HEIGHT, INTERVAL } from './constants'
 import { ReadonlyEditor } from './editor'
 import { AnnouncementModal } from './modal'
@@ -20,14 +21,9 @@ export const AnnouncementCarousel = ({
 }: AnnouncementCarouselProps) => {
   const { isAdmin, isAuthenticated } = useUserContext()
 
-  const getAnnouncements = query.announcement.getAnnouncements.useQuery(
-    [
-      'announcement.getAnnouncements',
-      { show: true, contestId: contestId?.toString() },
-    ],
-    { query: { show: true, contestId: contestId?.toString() } }
-  )
-  const announcements = getAnnouncements.data?.body ?? []
+  const getAnnouncements = useQuery(key.announcement.shown(contestId))
+  const announcements =
+    getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
   const count = announcements.length
 
   const [currentIndex, setIndex] = useState(0)
@@ -38,7 +34,7 @@ export const AnnouncementCarousel = ({
   }, [count, currentIndex])
 
   useEffect(() => {
-    if (isAuthenticated && count > 1) {
+    if (isAuthenticated && count > 0) {
       const interval = setInterval(onNext, INTERVAL)
       return () => clearInterval(interval)
     }
@@ -46,11 +42,15 @@ export const AnnouncementCarousel = ({
 
   return (
     <AnnouncementContext.Provider
-      value={{ contestId, currentIndex, onNext, count: announcements.length }}
+      value={{ contestId, currentIndex, onNext, count }}
     >
       <div className="group relative my-8 flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
         {announcements.map((announcement, index) => (
-          <AnnouncementCard announcement={announcement} index={index} />
+          <AnnouncementCard
+            key={announcement.id}
+            announcement={announcement}
+            index={index}
+          />
         ))}
         {isAdmin && <AnnouncementModal />}
       </div>
@@ -87,8 +87,8 @@ const AnnouncementCard = ({ announcement, index }: AnnouncementCardProps) => {
         show: { y: 0, transition: { duration: 0.5 } },
         hidden: { y: -HEIGHT * 1.5, transition: { duration: 0.5 } },
       }}
-      className="absolute flex h-[180px] max-h-[180px] w-full items-center justify-center overflow-hidden rounded-lg border bg-background text-center"
-      style={{ zIndex: count - index }}
+      className="absolute flex w-full items-center justify-center overflow-hidden rounded-lg border bg-background text-center"
+      style={{ zIndex: count - index, height: HEIGHT, maxHeight: HEIGHT }}
       animate={index >= currentIndex ? 'show' : 'hidden'}
       onClick={onNext}
     >

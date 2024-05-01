@@ -10,7 +10,7 @@
   "main": "./src/index.ts",
   "dependencies": {
     "@otog/database": "workspace:^",
-    "@ts-rest/core": "^3.33.0",
+    "@ts-rest/core": "^3.45.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

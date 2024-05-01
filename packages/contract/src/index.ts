@@ -22,6 +22,9 @@ export const AnnouncementSchema = AnnouncementModel.extend({
 })
 export type AnnouncementSchema = z.infer<typeof AnnouncementSchema>
 
+export const UpdateAnnouncementSchema = AnnouncementSchema.omit({ id: true })
+export type UpdateAnnouncementSchema = z.infer<typeof UpdateAnnouncementSchema>
+
 export const announcementRouter = contract.router(
   {
     getAnnouncements: {
@@ -71,7 +74,7 @@ export const announcementRouter = contract.router(
     updateAnnouncement: {
       method: 'PUT',
       path: '/:announcementId',
-      body: AnnouncementSchema.omit({ id: true }),
+      body: UpdateAnnouncementSchema,
       responses: {
         200: AnnouncementSchema,
       },

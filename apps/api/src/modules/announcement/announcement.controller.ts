@@ -40,7 +40,7 @@ export class AnnouncementController {
       }
       const announcements = await (() => {
         if (query.contestId) {
-          const contestId = z.number().parse(query.contestId)
+          const contestId = z.coerce.number().parse(query.contestId)
           if (query.show) {
             return this.announcementService.findShownWithContestId(contestId)
           }
@@ -82,7 +82,7 @@ export class AnnouncementController {
     return tsRestHandler(
       c.deleteAnnouncement,
       async ({ params: { announcementId } }) => {
-        const id = z.number().parse(announcementId)
+        const id = z.coerce.number().parse(announcementId)
         const announcement = await this.announcementService.delete(id)
         return {
           status: 200,
@@ -98,7 +98,7 @@ export class AnnouncementController {
     return tsRestHandler(
       c.showAnnouncement,
       async ({ params: { announcementId }, body: { show } }) => {
-        const id = z.number().parse(announcementId)
+        const id = z.coerce.number().parse(announcementId)
         const announcement =
           await this.announcementService.updateAnnouncementShow(id, show)
         return {
@@ -115,7 +115,7 @@ export class AnnouncementController {
     return tsRestHandler(
       c.updateAnnouncement,
       async ({ params: { announcementId }, body }) => {
-        const id = z.number().parse(announcementId)
+        const id = z.coerce.number().parse(announcementId)
         const announcement = await this.announcementService.updateAnnounce(
           id,
           body
