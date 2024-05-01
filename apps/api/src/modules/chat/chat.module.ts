@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { JwtModule, JwtModuleOptions } from '@nestjs/jwt'
+import { JwtModule } from '@nestjs/jwt'
 import { environment } from 'src/env'
 
 import { ChatController } from './chat.controller'

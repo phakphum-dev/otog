@@ -1,33 +1,37 @@
+import { useState } from 'react'
+
 import { PlusIcon } from '@heroicons/react/16/solid'
+import { PencilIcon } from '@heroicons/react/24/solid'
 import { produce } from 'immer'
 
-import { Button, Dialog, DialogContent, DialogHeader } from '@otog/ui'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from '@otog/ui'
 
 import { query } from '../../api'
+import { useAnnouncementContext } from './carousel'
 import { AnnouncementEdit } from './editor'
-import { useAnnouncementContext } from './provier'
 import { createEmptyAnnouncement } from './utils'
 
-interface AnnouncementModalProps {
-  open: boolean
-  setOpen: (open: boolean) => void
-}
-export const AnnouncementModal = (props: AnnouncementModalProps) => {
-  const { open, setOpen } = props
+export const AnnouncementModal = () => {
+  const [open, setOpen] = useState(false)
   const getAnnouncements = query.announcement.getAnnouncements.useQuery(
     ['announcement.getAnnouncements'],
-    {},
-    { suspense: true }
+    {}
   )
-  const announcements =
-    getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
+  const announcements = getAnnouncements?.data?.body ?? []
 
   const createAnnouncement = query.announcement.createAnnouncement.useMutation()
   const { contestId } = useAnnouncementContext()
   const insert = async () => {
     try {
       const announcementData = await createAnnouncement.mutateAsync({
-        body: { value: createEmptyAnnouncement() },
+        body: { value: JSON.stringify(createEmptyAnnouncement()) },
+        query: { contestId: contestId?.toString() },
       })
 
       produce((announcements) => {
@@ -39,11 +43,25 @@ export const AnnouncementModal = (props: AnnouncementModalProps) => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} size="3xl">
-      <DialogContent>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="absolute right-0 top-0 z-10"
+          aria-label="edit-announcements"
+          size="icon"
+          variant="ghost"
+        >
+          {announcements.length ? (
+            <PencilIcon className="size-4" />
+          ) : (
+            <PlusIcon className="size-4" />
+          )}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>ประกาศ</DialogHeader>
         <Button onClick={insert}>
-          <PlusIcon />
+          <PlusIcon className="size-4" />
           เพิ่มประกาศ
         </Button>
         {announcements?.map((announcement) => (

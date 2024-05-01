@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import {
   TsRestHandler,
   nestControllerContract,

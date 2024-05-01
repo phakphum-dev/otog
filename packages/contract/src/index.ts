@@ -17,68 +17,63 @@ import {
 
 export const contract: ReturnType<typeof initContract> = initContract()
 
+export const AnnouncementSchema = AnnouncementModel.extend({
+  value: z.string(),
+})
+export type AnnouncementSchema = z.infer<typeof AnnouncementSchema>
+
 export const announcementRouter = contract.router(
   {
     getAnnouncements: {
       method: 'GET',
       path: '',
+      query: z.object({
+        show: z.boolean().optional(),
+        contestId: z.string().optional(),
+      }),
       responses: {
-        200: z.array(AnnouncementModel),
+        200: z.array(AnnouncementSchema),
+        403: z.object({ message: z.string() }),
       },
       summary: 'Get all announcements',
     },
     createAnnouncement: {
       method: 'POST',
       path: '',
-      body: AnnouncementModel.pick({ value: true }),
+      query: z.object({
+        contestId: z.string().optional(),
+      }),
+      body: z.object({ value: z.string() }),
       responses: {
-        201: AnnouncementModel,
+        201: AnnouncementSchema,
         400: z.object({ message: z.string() }),
       },
       summary: 'Create an announcement',
-    },
-    getContestAnnouncments: {
-      method: 'GET',
-      path: '/contest/:contestId',
-      responses: {
-        200: z.array(AnnouncementModel),
-      },
-      summary: 'Get contest announcements',
-    },
-    createContestAnnouncement: {
-      method: 'POST',
-      path: '/contest/:contestId',
-      body: AnnouncementModel.pick({ value: true }),
-      responses: {
-        201: AnnouncementModel,
-        400: z.object({ message: z.string() }),
-      },
-      summary: 'Create an announcement in a contest',
     },
     deleteAnnouncement: {
       method: 'DELETE',
       path: '/:announcementId',
       body: null,
       responses: {
-        200: AnnouncementModel,
+        200: AnnouncementSchema,
       },
       summary: 'Delete an announcement',
     },
     showAnnouncement: {
       method: 'PATCH',
       path: '/:announcementId',
-      body: AnnouncementModel.pick({ show: true }),
+      body: z.object({ show: z.boolean() }),
       responses: {
-        200: AnnouncementModel,
+        200: AnnouncementSchema,
       },
       summary: 'Toggle show of an announcement',
     },
     updateAnnouncement: {
       method: 'PUT',
       path: '/:announcementId',
-      body: AnnouncementModel.omit({ id: true }),
+      body: AnnouncementSchema.omit({ id: true }),
       responses: {
-        200: AnnouncementModel,
+        200: AnnouncementSchema,
       },
       summary: 'Update an announcement',
     },

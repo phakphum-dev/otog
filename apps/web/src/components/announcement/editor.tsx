@@ -26,7 +26,6 @@ import {
 import { Button, Link } from '@otog/ui'
 
 import { HEIGHT } from './constants'
-import { Announcement } from './types'
 
 type CustomText = {
   text: string

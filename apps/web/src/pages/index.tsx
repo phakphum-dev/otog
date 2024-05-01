@@ -6,7 +6,7 @@ import { Button } from '@otog/ui'
 
 import ComputerImage from '../../public/computer.svg'
 import { withSession } from '../api/withSession'
-import { AnnouncementComponent } from '../components/announcement'
+import { AnnouncementCarousel } from '../components/announcement'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 
@@ -18,7 +18,7 @@ export default function HomePage() {
         <Head>
           <title>Problem | OTOG</title>
         </Head>
-        <AnnouncementComponent defaultShow={true} />
+        <AnnouncementCarousel />
       </main>
     )
   }

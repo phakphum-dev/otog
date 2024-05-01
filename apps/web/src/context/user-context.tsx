@@ -1,30 +1,30 @@
-import {
-  PropsWithChildren,
-  createContext,
-  useCallback,
-  useContext,
-} from 'react'
+import { ReactNode, createContext, useCallback, useContext } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { User } from 'next-auth'
+import { Session, User } from 'next-auth'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 
-import { removeAccessToken } from '../api'
+import { removeAccessToken, useHydrateSession } from '../api'
 
-export interface UserProviderProps {
+export interface UserContextValue {
   logout: () => void
   user: User['user'] | null
   isAuthenticated: boolean
   isAdmin: boolean
   clearCache: () => void
 }
+export interface UserProviderProps {
+  session: Session
+  children?: ReactNode
+}
 
-const UserContext = createContext({} as UserProviderProps)
+const UserContext = createContext<UserContextValue>({} as UserContextValue)
 export const useUserContext = () => useContext(UserContext)
-export const UserContextProvider = (props: PropsWithChildren) => {
-  const { data: session } = useSession()
+export const UserContextProvider = (props: UserProviderProps) => {
+  useHydrateSession(props.session)
 
+  const { data: session } = useSession()
   const user = session?.user ?? null
 
   const isAuthenticated = !!user

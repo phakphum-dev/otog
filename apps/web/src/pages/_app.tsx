@@ -84,9 +84,9 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           <ConfirmModalProvider>
          */}
 
-      <QueryClientProvider client={queryClient}>
-        <SessionProvider session={session}>
-          <UserContextProvider>
+      <SessionProvider session={session}>
+        <QueryClientProvider client={queryClient}>
+          <UserContextProvider session={session}>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
@@ -106,8 +106,8 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
               />
             </ThemeProvider>
           </UserContextProvider>
-        </SessionProvider>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </SessionProvider>
     </>
   )
 }
