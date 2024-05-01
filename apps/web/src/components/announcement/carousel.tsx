@@ -6,8 +6,8 @@ import { motion } from 'framer-motion'
 
 import { AnnouncementSchema } from '@otog/contract'
 
+import { keyAnnouncement } from '../../api/query'
 import { useUserContext } from '../../context/user-context'
-import { key } from '../../query/announcement'
 import { HEIGHT, INTERVAL } from './constants'
 import { ReadonlyEditor } from './editor'
 import { AnnouncementModal } from './modal'
@@ -21,7 +21,7 @@ export const AnnouncementCarousel = ({
 }: AnnouncementCarouselProps) => {
   const { isAdmin, isAuthenticated } = useUserContext()
 
-  const getAnnouncements = useQuery(key.announcement.shown(contestId))
+  const getAnnouncements = useQuery(keyAnnouncement.shown(contestId))
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
   const count = announcements.length

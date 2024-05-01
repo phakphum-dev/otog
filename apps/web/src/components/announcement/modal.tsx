@@ -12,15 +12,14 @@ import {
   DialogTrigger,
 } from '@otog/ui'
 
-import { query } from '../../api'
-import { key } from '../../query/announcement'
+import { keyAnnouncement, queryAnnouncement } from '../../api/query'
 import { useAnnouncementContext } from './carousel'
 import { AnnouncementEdit } from './editor'
 import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
   const [open, setOpen] = useState(false)
-  const getAnnouncements = useQuery(key.announcement.all())
+  const getAnnouncements = useQuery(keyAnnouncement.all())
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
 
@@ -28,12 +27,12 @@ export const AnnouncementModal = () => {
   const { contestId } = useAnnouncementContext()
   const onCreate = async () => {
     try {
-      await query.announcement.createAnnouncement.mutation({
+      await queryAnnouncement.createAnnouncement.mutation({
         body: { value: JSON.stringify(createEmptyAnnouncement()) },
         query: { contestId: contestId?.toString() },
       })
       queryClient.invalidateQueries({
-        queryKey: key.announcement.all._def,
+        queryKey: keyAnnouncement.all._def,
       })
     } catch (e) {
       // onErrorToast(e)

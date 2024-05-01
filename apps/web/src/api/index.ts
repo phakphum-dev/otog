@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 
+import { AppRouter } from '@ts-rest/core'
 import { initQueryClient } from '@ts-rest/react-query'
 import { Session } from 'next-auth'
 import { useSession } from 'next-auth/react'
@@ -149,3 +150,30 @@ export const query = initQueryClient(router, {
       })
   },
 })
+export function createQueryClient<T extends AppRouter>(router: T) {
+  return initQueryClient(router, {
+    baseUrl: '',
+    baseHeaders: { 'Content-Type': 'application/json' },
+    api: ({ path, method, headers, body }) => {
+      return client
+        .headers(headers)
+        .auth(`Bearer ${getAccessToken()}`)
+        .fetch(method, path, body)
+        .res()
+        .then(async (response) => {
+          return {
+            status: response.status,
+            body: await response.json(),
+            headers: response.headers,
+          }
+        })
+        .catch((error) => {
+          return {
+            status: error.status,
+            body: error.json,
+            headers: error.headers,
+          }
+        })
+    },
+  })
+}

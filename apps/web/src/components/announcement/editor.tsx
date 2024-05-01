@@ -41,8 +41,7 @@ import {
   Link,
 } from '@otog/ui'
 
-import { query } from '../../api'
-import { key } from '../../query/announcement'
+import { keyAnnouncement, queryAnnouncement } from '../../api/query'
 import { HEIGHT } from './constants'
 
 type CustomText = {
@@ -254,11 +253,13 @@ export const AnnouncementEditor = ({
   const queryClient = useQueryClient()
   const onSave = async () => {
     try {
-      await query.announcement.updateAnnouncement.mutation({
+      await queryAnnouncement.updateAnnouncement.mutation({
         params: { announcementId: announcement.id.toString() },
         body: { ...announcement, value: JSON.stringify(value) },
       })
-      queryClient.invalidateQueries({ queryKey: key.announcement._def })
+      queryClient.invalidateQueries({
+        queryKey: keyAnnouncement.announcement._def,
+      })
       onClose()
       toast.success('บันทึกประกาศแล้ว')
     } catch (e) {
@@ -387,7 +388,7 @@ const ToggleAnnouncement = ({
   const onToggle = async () => {
     const toastId = toast.loading('กำลังอัปเดต...')
     try {
-      const result = await query.announcement.showAnnouncement.mutation({
+      const result = await queryAnnouncement.showAnnouncement.mutation({
         params: { announcementId: announcement.id.toString() },
         body: { show: !announcement.show },
       })
@@ -396,7 +397,7 @@ const ToggleAnnouncement = ({
         return
       }
       queryClient.invalidateQueries({
-        queryKey: key.announcement._def,
+        queryKey: keyAnnouncement._def,
       })
       if (result.body.show) {
         toast.success('ประกาศสำเร็จ', { id: toastId })
@@ -425,7 +426,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   const queryClient = useQueryClient()
   const onSubmit = async () => {
     try {
-      const result = await query.announcement.deleteAnnouncement.mutation({
+      const result = await queryAnnouncement.deleteAnnouncement.mutation({
         params: { announcementId: announcementId.toString() },
       })
       if (result.status !== 200) {
@@ -433,7 +434,9 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
       }
       toast.success('ลบประกาศสำเร็จ')
       setOpen(false)
-      queryClient.invalidateQueries({ queryKey: key.announcement._def })
+      queryClient.invalidateQueries({
+        queryKey: keyAnnouncement._def,
+      })
     } catch (e) {
       toast.error('เกิดข้อผิดพลาด')
     }
