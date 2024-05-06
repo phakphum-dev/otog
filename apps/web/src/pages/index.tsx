@@ -6,9 +6,9 @@ import { Button } from '@otog/ui'
 
 import ComputerImage from '../../public/computer.svg'
 import { withSession } from '../api/withSession'
-import { AnnouncementCarousel } from '../components/announcement'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
+import { AnnouncementCarousel } from '../modules/announcement'
 
 export default function HomePage() {
   const { isAuthenticated } = useUserContext()
