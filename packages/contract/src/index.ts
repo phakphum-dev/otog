@@ -464,18 +464,19 @@ const PassedUserModel = UserModel.pick({
   rating: true,
 })
 
+export const ProblemTableRowSchema = z.union([
+  ProblemWithDetailSchema,
+  ProblemWithoutExampleSchema.merge(PassedCountSchema),
+])
+export type ProblemTableRowSchema = z.infer<typeof ProblemTableRowSchema>
+
 export const problemRouter = contract.router(
   {
-    getProblems: {
+    getProblemTable: {
       method: 'GET',
       path: '',
       responses: {
-        200: z.array(
-          z.union([
-            ProblemWithDetailSchema,
-            ProblemWithoutExampleSchema.merge(PassedCountSchema),
-          ])
-        ),
+        200: z.array(ProblemTableRowSchema),
       },
       summary: 'Get problems',
     },
@@ -484,8 +485,8 @@ export const problemRouter = contract.router(
       path: '/:problemId',
       responses: {
         200: ProblemWithoutExampleSchema,
-        403: z.object({ message: z.string() }),
-        404: z.object({ message: z.string() }),
+        // 403: z.object({ message: z.string() }),
+        // 404: z.object({ message: z.string() }),
       },
       summary: 'Get a problem',
     },

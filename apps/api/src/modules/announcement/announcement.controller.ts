@@ -1,8 +1,5 @@
 import { Controller, UseGuards } from '@nestjs/common'
 import {
-  // NestControllerInterface,
-  // NestRequestShapes,
-  // TsRest,
   TsRestHandler,
   nestControllerContract,
   tsRestHandler,
@@ -20,11 +17,9 @@ import { UserDTO } from '../user/dto/user.dto'
 import { AnnouncementService } from './announcement.service'
 
 const c = nestControllerContract(announcementRouter)
-// type RequestShapes = NestRequestShapes<typeof c>;
 
 @Controller()
 @UseGuards(RolesGuard)
-// implements NestControllerInterface<typeof c>
 export class AnnouncementController {
   constructor(private announcementService: AnnouncementService) {}
 

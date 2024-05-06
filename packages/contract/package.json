@@ -4,13 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "codegen": "tsc --emitDeclarationOnly --declaration --rootDir ./src --outDir ./dist",
+    "codegen:watch": "tsc --watch --emitDeclarationOnly --declaration --rootDir ./src --outDir ./dist",
     "lint": "eslint --ext .ts,.tsx .",
     "typecheck": "tsc --noEmit"
   },
   "main": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "@otog/database": "workspace:^",
-    "@ts-rest/core": "^3.45.1",
+    "@ts-rest/core": "^3.45.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

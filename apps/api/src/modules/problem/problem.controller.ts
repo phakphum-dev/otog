@@ -47,9 +47,9 @@ export class ProblemController {
     private userService: UserService
   ) {}
 
-  @TsRestHandler(c.getProblems)
-  getProblems(@User() user: UserDTO) {
-    return tsRestHandler(c.getProblems, async () => {
+  @TsRestHandler(c.getProblemTable)
+  getProblemTable(@User() user: UserDTO) {
+    return tsRestHandler(c.getProblemTable, async () => {
       if (user.role === Role.Admin) {
         const problems = await this.problemService.findAllWithSubmission(
           user.id

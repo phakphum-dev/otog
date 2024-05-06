@@ -9,16 +9,18 @@ import { withSession } from '../api/withSession'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 import { AnnouncementCarousel } from '../modules/announcement'
+import { ProblemTable } from '../modules/problem/problem-table'
 
 export default function HomePage() {
   const { isAuthenticated } = useUserContext()
   if (isAuthenticated) {
     return (
-      <main className="container flex flex-1 lg:max-w-screen-md">
+      <main className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md">
         <Head>
           <title>Problem | OTOG</title>
         </Head>
         <AnnouncementCarousel />
+        <ProblemTable />
       </main>
     )
   }
