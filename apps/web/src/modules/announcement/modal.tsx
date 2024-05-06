@@ -7,7 +7,7 @@ import {
   Button,
   Dialog,
   DialogContent,
-  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from '@otog/ui'
 
@@ -51,7 +51,7 @@ export const AnnouncementModal = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
-        <DialogHeader>ประกาศ</DialogHeader>
+        <DialogTitle>ประกาศ</DialogTitle>
         <Button onClick={onCreate} variant="secondary" className="ml-auto">
           <PlusIcon />
           เพิ่มประกาศ

@@ -39,7 +39,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
   Link,
   Select,
   SelectContent,
@@ -50,6 +49,7 @@ import {
 } from '@otog/ui'
 
 import { keyProblem, querySubmission } from '../../api/query'
+import { FileInput } from '../../components/file-input'
 import { TableComponent } from '../../components/table-component'
 import { useUserContext } from '../../context/user-context'
 import { environment } from '../../env'
@@ -197,7 +197,7 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
                 <FormItem>
                   <FormLabel>อัปโหลด</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="อัปโหลดไฟล์" />
+                    <FileInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
