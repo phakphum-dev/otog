@@ -446,29 +446,26 @@ export const contestRouter = contract.router(
 )
 
 const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
-const LatestSubmissionModel = z.object({
-  latestSubmissionId: z.number().nullable(),
-  status: z.nativeEnum(SubmissionStatus).nullable(),
+const LatestSubmissionModel = SubmissionModel.pick({
+  id: true,
+  status: true,
 })
-const PassedCountSchema = z.object({
+export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
   passedCount: z.number(),
+  latestSubmission: LatestSubmissionModel.nullable(),
 })
-const ProblemWithDetailSchema = ProblemWithoutExampleSchema.merge(
-  LatestSubmissionModel
-).merge(PassedCountSchema)
-const PassedUserModel = UserModel.pick({
+export type ProblemTableRowSchema = z.infer<typeof ProblemTableRowSchema>
+
+export const PassedUserSchema = UserModel.pick({
   id: true,
   role: true,
   username: true,
   showName: true,
   rating: true,
+}).extend({
+  latestSubmission: LatestSubmissionModel.nullable(),
 })
-
-export const ProblemTableRowSchema = z.union([
-  ProblemWithDetailSchema,
-  ProblemWithoutExampleSchema.merge(PassedCountSchema),
-])
-export type ProblemTableRowSchema = z.infer<typeof ProblemTableRowSchema>
+export type PassedUserSchema = z.infer<typeof PassedUserSchema>
 
 export const problemRouter = contract.router(
   {
@@ -478,7 +475,7 @@ export const problemRouter = contract.router(
       responses: {
         200: z.array(ProblemTableRowSchema),
       },
-      summary: 'Get problems',
+      summary: 'Get a list of problems for main table',
     },
     getProblem: {
       method: 'GET',
@@ -494,7 +491,7 @@ export const problemRouter = contract.router(
       method: 'GET',
       path: '/:problemId/user',
       responses: {
-        200: z.array(PassedUserModel),
+        200: z.array(PassedUserSchema),
       },
       summary: 'Get passed users',
     },

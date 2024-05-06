@@ -51,19 +51,21 @@ export class ProblemController {
   getProblemTable(@User() user: UserDTO) {
     return tsRestHandler(c.getProblemTable, async () => {
       if (user.role === Role.Admin) {
-        const problems = await this.problemService.findAllWithSubmission(
-          user.id
-        )
+        const problems = await this.problemService.findMany({
+          userId: user.id,
+        })
         return { status: 200, body: problems }
       }
       if (user) {
-        const problems = await this.problemService.findOnlyShownWithSubmission(
-          user.id
-        )
+        const problems = await this.problemService.findMany({
+          show: true,
+          userId: user.id,
+        })
         return { status: 200, body: problems }
       }
-
-      const problems = await this.problemService.findOnlyShown()
+      const problems = await this.problemService.findMany({
+        show: true,
+      })
       return { status: 200, body: problems }
     })
   }
@@ -85,14 +87,11 @@ export class ProblemController {
 
   @TsRestHandler(c.getPassedUsers)
   getPassedUsers() {
-    return tsRestHandler(
-      c.getPassedUsers,
-      async ({ params: { problemId } }) => {
-        const id = z.coerce.number().parse(problemId)
-        const users = await this.problemService.findPassedUser(id)
-        return { status: 200, body: users }
-      }
-    )
+    return tsRestHandler(c.getPassedUsers, async ({ params }) => {
+      const problemId = z.coerce.number().parse(params.problemId)
+      const users = await this.problemService.findPassedUser({ problemId })
+      return { status: 200, body: users }
+    })
   }
 
   @OfflineAccess(AccessState.Public)

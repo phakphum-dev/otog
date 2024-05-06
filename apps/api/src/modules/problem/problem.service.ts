@@ -19,18 +19,10 @@ import {
   updateProblemTestCase,
 } from 'src/utils/file.util'
 
-import { Prisma, Problem, SubmissionStatus, User } from '@otog/database'
+import { PassedUserSchema, ProblemTableRowSchema } from '@otog/contract'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { UploadedFilesObject } from './dto/problem.dto'
-
-type ProblemNoExample = Omit<Problem, 'example'>
-type PassedCount = { passedCount: number }
-type LatestSubmission = {
-  latestSubmissionId: number | null
-  status: SubmissionStatus | null
-}
-type ProblemWithDetail = ProblemNoExample & PassedCount & LatestSubmission
-type PassedUser = Pick<User, 'id' | 'role' | 'username' | 'showName' | 'rating'>
 
 export const WITHOUT_EXAMPLE = {
   id: true,
@@ -136,49 +128,64 @@ export class ProblemService {
     }
   }
 
-  async findOnlyShown() {
-    return this.prisma.$queryRaw<Array<ProblemNoExample & PassedCount>>`
-      SELECT "id", "name", "sname", "score", "timeLimit", "memoryLimit", "show", "recentShowTime", "case", "rating", COALESCE("passedCount", 0) as "passedCount" FROM (
-        SELECT COUNT(*)::integer AS "passedCount", "problemId" FROM (
-          SELECT "submissionId", "submission"."problemId", submission."userId" FROM (
-            SELECT MAX(id) as "submissionId", "submission"."problemId", submission."userId" FROM submission GROUP BY submission."problemId", submission."userId"
-          ) AS LatestIdTable JOIN submission ON submission.id = LatestIdTable."submissionId" AND submission.status = 'accept' JOIN "user" ON LatestIdTable."userId" = "user"."id" AND "user"."role" = 'user'
-        ) AS CountTable GROUP BY "problemId"
-      ) AS G RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`
-  }
-
-  async findOnlyShownWithSubmission(userId: number) {
-    return this.prisma.$queryRaw<ProblemWithDetail[]>`
-      SELECT "id", "name", "sname", "score", "timeLimit", "memoryLimit", "show", "recentShowTime", "case", "rating", COALESCE("passedCount", 0) as "passedCount", "latestSubmissionId", "status" FROM (
-        SELECT LatestAndCountTable."problemId", "passedCount", "latestSubmissionId", "status" FROM (
-          SELECT COALESCE(CountIdTable."problemId", LatestIdTable."problemId") as "problemId", "passedCount", "latestSubmissionId" FROM (
-            SELECT COUNT(*)::integer AS "passedCount", "problemId" FROM (
-              SELECT "submissionId", "submission"."problemId", submission."userId" FROM (
-                SELECT MAX(id) as "submissionId", "submission"."problemId", submission."userId" FROM submission GROUP BY submission."problemId", submission."userId"
-              ) AS LatestIdTable JOIN submission ON submission.id = LatestIdTable."submissionId" AND submission.status = 'accept' JOIN "user" ON LatestIdTable."userId" = "user"."id" AND "user"."role" = 'user'
-            ) AS CountTable GROUP BY "problemId"
-          ) AS CountIdTable FULL JOIN (
-            SELECT MAX(id) as "latestSubmissionId", submission."problemId" FROM submission WHERE "userId" = ${userId} GROUP BY submission."problemId"
-          ) AS LatestIdTable ON CountIdTable."problemId" = LatestIdTable."problemId" 
-        ) AS LatestAndCountTable LEFT JOIN submission ON "latestSubmissionId" = "submission".id
-      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" WHERE "show" = true ORDER BY problem."id" DESC`
-  }
-
-  async findAllWithSubmission(userId: number) {
-    return this.prisma.$queryRaw<ProblemWithDetail[]>`
-      SELECT "id", "name", "sname", "score", "timeLimit", "memoryLimit", "show", "recentShowTime", "case", "rating", COALESCE("passedCount", 0) as "passedCount", "latestSubmissionId", "status" FROM (
-        SELECT LatestAndCountTable."problemId", "passedCount", "latestSubmissionId", "status" FROM (
-          SELECT COALESCE(CountIdTable."problemId", LatestIdTable."problemId") as "problemId", "passedCount", "latestSubmissionId" FROM (
-            SELECT COUNT(*)::integer AS "passedCount", "problemId" FROM (
-              SELECT "submissionId", "submission"."problemId", submission."userId" FROM (
-                SELECT MAX(id) as "submissionId", "submission"."problemId", submission."userId" FROM submission GROUP BY submission."problemId", submission."userId"
-              ) AS LatestIdTable JOIN submission ON submission.id = LatestIdTable."submissionId" AND submission.status = 'accept' JOIN "user" ON LatestIdTable."userId" = "user"."id" AND "user"."role" = 'user'
-            ) AS CountTable GROUP BY "problemId"
-          ) AS CountIdTable FULL JOIN (
-            SELECT MAX(id) as "latestSubmissionId", submission."problemId" FROM submission WHERE "userId" = ${userId} GROUP BY submission."problemId"
-          ) AS LatestIdTable ON CountIdTable."problemId" = LatestIdTable."problemId" 
-        ) AS LatestAndCountTable LEFT JOIN submission ON "latestSubmissionId" = "submission".id
-      ) AS AggTable RIGHT JOIN problem ON "problemId" = problem."id" ORDER BY problem."id" DESC`
+  async findMany(args: {
+    show?: boolean
+    userId?: number
+  }): Promise<Array<ProblemTableRowSchema>> {
+    const problems = await this.prisma.problem.findMany({
+      where: { show: args.show },
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+        score: true,
+        timeLimit: true,
+        memoryLimit: true,
+        show: true,
+        recentShowTime: true,
+        case: true,
+        rating: true,
+        submission: args.userId
+          ? {
+              select: {
+                id: true,
+                status: true,
+              },
+              orderBy: { creationDate: 'desc' },
+              where: { userId: args.userId },
+              take: 1,
+            }
+          : undefined,
+      },
+    })
+    const passedCount = await this.prisma.$transaction(
+      problems.map((problem) =>
+        this.prisma.submission.count({
+          where: {
+            problemId: problem.id,
+            status: SubmissionStatus.accept,
+            user: { NOT: { role: UserRole.admin } },
+          },
+        })
+      )
+    )
+    return problems.map(
+      (problem, index) =>
+        ({
+          id: problem.id,
+          name: problem.name,
+          sname: problem.sname,
+          score: problem.score,
+          timeLimit: problem.timeLimit,
+          memoryLimit: problem.memoryLimit,
+          show: problem.show,
+          recentShowTime: problem.recentShowTime,
+          case: problem.case,
+          rating: problem.rating,
+          passedCount: passedCount[index]!,
+          latestSubmission: problem.submission[0] ?? null,
+        }) satisfies ProblemTableRowSchema
+    )
   }
 
   async findOneById(id: number) {
@@ -210,15 +217,41 @@ export class ProblemService {
     })
   }
 
-  async findPassedUser(problemId: number) {
-    return this.prisma.$queryRaw<PassedUser[]>`
-      SELECT "id", "role", "username", "showName", "rating" FROM (
-        SELECT * FROM (
-          SELECT "submissionId", "status", submission."userId" FROM (
-            SELECT MAX(id) as "submissionId", submission."userId" FROM submission WHERE submission."problemId" = ${problemId} GROUP BY submission."userId"
-          ) AS X JOIN submission ON submission.id = "submissionId"
-        ) AS T WHERE "status" = 'accept'
-      ) AS S JOIN "user" ON "user"."id" = "userId" ORDER BY "user"."role"`
+  async findPassedUser(args: {
+    problemId: number
+  }): Promise<Array<PassedUserSchema>> {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        role: true,
+        username: true,
+        showName: true,
+        rating: true,
+        submission: {
+          select: { id: true, status: true },
+          where: { status: SubmissionStatus.accept },
+          orderBy: { creationDate: 'desc' },
+          take: 1,
+        },
+      },
+      where: {
+        submission: {
+          some: { problemId: args.problemId, status: SubmissionStatus.accept },
+        },
+        NOT: { role: UserRole.admin },
+      },
+    })
+    return users.map(
+      (user) =>
+        ({
+          id: user.id,
+          role: user.role,
+          username: user.username,
+          showName: user.showName,
+          rating: user.rating,
+          latestSubmission: user.submission[0] ?? null,
+        }) satisfies PassedUserSchema
+    )
   }
 
   async delete(problemId: number) {
