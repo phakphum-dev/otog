@@ -36,8 +36,8 @@ export const UserContextProvider = (props: UserProviderProps) => {
   }, [queryClient])
   const router = useRouter()
   const logout = useCallback(async () => {
-    await router.push('/login')
     await signOut({ redirect: false })
+    await router.push('/login')
     removeAccessToken()
     clearCache()
   }, [router, clearCache])
