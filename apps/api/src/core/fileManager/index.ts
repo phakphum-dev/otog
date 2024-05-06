@@ -1,5 +1,6 @@
-import * as fs from 'fs-extra'
+import * as fsExtra from 'fs-extra'
 import { S3 } from 'nestjs-s3'
+import fs from 'node:fs'
 import * as path from 'path'
 import { Readable } from 'stream'
 
@@ -33,21 +34,21 @@ class FileFileManager extends FileManager {
   async createDirIfNotExist(dirPath: string) {
     const fullPath = this._getFullPath(dirPath)
 
-    if (!(await fs.pathExists(fullPath))) {
-      await fs.mkdir(fullPath)
+    if (!(await fsExtra.pathExists(fullPath))) {
+      await fsExtra.mkdir(fullPath)
     }
   }
 
   async removeDirIfExist(dirPath: string) {
     const fullPath = this._getFullPath(dirPath)
 
-    if (await fs.pathExists(fullPath)) {
-      await fs.remove(fullPath)
+    if (await fsExtra.pathExists(fullPath)) {
+      await fsExtra.remove(fullPath)
     }
   }
 
   async saveFile(destDirPath: string, buffer: any) {
-    await fs.writeFile(destDirPath, buffer)
+    await fsExtra.writeFile(destDirPath, buffer)
   }
 
   async getFileReadSteam(filePath: string) {
@@ -57,7 +58,7 @@ class FileFileManager extends FileManager {
 
   async isExists(filePath: string) {
     const fullPath = this._getFullPath(filePath)
-    return fs.pathExists(fullPath)
+    return fsExtra.pathExists(fullPath)
   }
 }
 

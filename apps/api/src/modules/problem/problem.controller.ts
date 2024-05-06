@@ -95,7 +95,7 @@ export class ProblemController {
   }
 
   @OfflineAccess(AccessState.Public)
-  @Get('doc/:problemId')
+  @Get('/problem/doc/:problemId')
   async getPdf(
     @Param('problemId', ParseIntPipe) problemId: number,
     @Req() req: Request,

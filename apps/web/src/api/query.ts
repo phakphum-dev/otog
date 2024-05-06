@@ -1,6 +1,10 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory'
 
-import { announcementRouter, problemRouter } from '@otog/contract'
+import {
+  announcementRouter,
+  problemRouter,
+  submissionRouter,
+} from '@otog/contract'
 
 import { createQueryClient } from '.'
 
@@ -32,3 +36,5 @@ export const keyProblem = createQueryKeys('problem', {
     queryFn: () => queryProblem.getProblemTable.query({}),
   }),
 })
+
+export const querySubmission = createQueryClient(submissionRouter)

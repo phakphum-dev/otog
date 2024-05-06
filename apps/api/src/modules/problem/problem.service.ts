@@ -157,6 +157,7 @@ export class ProblemService {
             }
           : undefined,
       },
+      orderBy: { id: 'desc' },
     })
     const passedCount = await this.prisma.$transaction(
       problems.map((problem) =>

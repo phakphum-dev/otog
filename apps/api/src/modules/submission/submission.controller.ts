@@ -92,23 +92,21 @@ export class SubmissionController {
   // @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('sourceCode'))
   uploadFile(@UploadedFile() file: Express.Multer.File, @User() user: UserDTO) {
-    return tsRestHandler(
-      c.uploadFile,
-      async ({ body, params: { problemId } }) => {
-        if (body.contestId) {
-          // TODO validate user if contest is private
-          await this.contestService.addUserToContest(body.contestId, user.id)
-        }
-        const id = z.coerce.number().parse(problemId)
-        const submission = await this.submissionService.create(
-          user,
-          id,
-          body,
-          file
-        )
-        return { status: 200, body: submission }
+    return tsRestHandler(c.uploadFile, async ({ body, params, query }) => {
+      if (query.contestId) {
+        const contestId = z.coerce.number().parse(query.contestId)
+        // TODO validate user if contest is private
+        await this.contestService.addUserToContest(contestId, user.id)
       }
-    )
+      const problemId = z.coerce.number().parse(params.problemId)
+      const submission = await this.submissionService.create(
+        user,
+        problemId,
+        body,
+        file
+      )
+      return { status: 200, body: submission }
+    })
   }
 
   @TsRestHandler(c.getLatestSubmissionByUserId)

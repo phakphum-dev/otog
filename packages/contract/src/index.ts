@@ -175,9 +175,9 @@ export const submissionRouter = contract.router(
       responses: {
         200: SubmissionModel,
       },
+      query: z.object({ contestId: z.string().nullish() }),
       body: SubmissionModel.pick({
         language: true,
-        contestId: true,
       }),
       summary: 'Submit code file',
     },

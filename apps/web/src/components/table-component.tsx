@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { ExclamationTriangleIcon } from '@heroicons/react/16/solid'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { flexRender } from '@tanstack/react-table'
 import { Cell, RowData, Table as TanstackTable } from '@tanstack/table-core'
 
@@ -64,7 +64,18 @@ export function TableComponent<T>({
                       header.getContext()
                     )
                 if (canSort) {
-                  return null // do something
+                  // do something
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={clsx(
+                        classNames?.tableHead,
+                        header.column.columnDef.meta?.headClassName
+                      )}
+                    >
+                      {children}
+                    </TableHead>
+                  )
                 }
                 return (
                   <TableHead
@@ -84,20 +95,23 @@ export function TableComponent<T>({
         <TableBody className={classNames?.tableBody}>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={table._getColumnDefs().length}>
-                <div className="w-full flex justify-center py-20">
-                  <Spinner />
-                </div>
+              <TableCell
+                colSpan={table._getColumnDefs().length}
+                className="py-20 align-middle text-center"
+              >
+                <Spinner />
               </TableCell>
             </TableRow>
           ) : isError ? (
             <TableRow>
               <TableCell
                 colSpan={table.getAllColumns().length}
-                className="h-32 text-center text-danger-base"
+                className="py-20 align-middle text-center"
               >
-                <ExclamationTriangleIcon />
-                Failed to load resource
+                <div className="inline-flex gap-2 items-center">
+                  <ExclamationTriangleIcon className="size-4" />
+                  Failed to load resource
+                </div>
               </TableCell>
             </TableRow>
           ) : table.getRowModel().rows?.length ? (

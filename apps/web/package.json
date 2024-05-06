@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.1",
+    "@hookform/resolvers": "^3.3.4",
     "@lukemorales/query-key-factory": "^1.3.4",
     "@otog/contract": "workspace:*",
     "@otog/database": "workspace:*",
@@ -37,6 +38,7 @@
     "slate-react": "^0.102.0",
     "wretch": "^2.8.1",
     "znv": "^0.4.0",
+    "zod": "~3.22.4",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
