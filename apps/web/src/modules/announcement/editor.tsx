@@ -20,7 +20,7 @@ import {
   EyeSlashIcon,
   PencilIcon,
   TrashIcon,
-} from '@heroicons/react/16/solid'
+} from '@heroicons/react/24/outline'
 import { useQueryClient } from '@tanstack/react-query'
 import isHotkey from 'is-hotkey'
 import { createEditor } from 'slate'

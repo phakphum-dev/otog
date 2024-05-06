@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, useEffect, useState } from 'react'
 
-import { MoonIcon, SunIcon } from '@heroicons/react/16/solid'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes/dist/types'
 

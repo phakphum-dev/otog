@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-import { PlusIcon } from '@heroicons/react/16/solid'
-import { PencilIcon } from '@heroicons/react/24/solid'
+import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
