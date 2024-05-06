@@ -79,7 +79,7 @@ export const AnnouncementEditable = ({
         <ToggleAnnouncement announcement={announcement} />
         <DeleteAnnouncement announcementId={announcement.id} />
         <Button size="icon" variant="outline" onClick={() => setEditing(true)}>
-          <PencilIcon className="size-4" />
+          <PencilIcon />
         </Button>
       </div>
     </div>
@@ -135,49 +135,25 @@ export const AnnouncementEditor = ({
         <div className="flex flex-wrap justify-between gap-2">
           <div className="flex gap-2">
             <ButtonGroup>
-              <MarkButton
-                format="bold"
-                icon={<MdFormatBold className="size-4" />}
-              />
-              <MarkButton
-                format="italic"
-                icon={<MdFormatItalic className="size-4" />}
-              />
-              <MarkButton
-                format="underline"
-                icon={<MdFormatUnderlined className="size-4" />}
-              />
-              <MarkButton format="link" icon={<MdLink className="size-4" />} />
-              <MarkButton format="code" icon={<MdCode className="size-4" />} />
+              <MarkButton format="bold" icon={<MdFormatBold />} />
+              <MarkButton format="italic" icon={<MdFormatItalic />} />
+              <MarkButton format="underline" icon={<MdFormatUnderlined />} />
+              <MarkButton format="link" icon={<MdLink />} />
+              <MarkButton format="code" icon={<MdCode />} />
             </ButtonGroup>
             <ButtonGroup>
-              <BlockButton
-                format="heading-one"
-                icon={<MdLooksOne className="size-4" />}
-              />
-              <BlockButton
-                format="heading-two"
-                icon={<MdLooksTwo className="size-4" />}
-              />
-              <BlockButton
-                format="heading-three"
-                icon={<MdLooks3 className="size-4" />}
-              />
-              <BlockButton
-                format="heading-four"
-                icon={<MdLooks4 className="size-4" />}
-              />
-              <BlockButton
-                format="block-quote"
-                icon={<MdFormatQuote className="size-4" />}
-              />
+              <BlockButton format="heading-one" icon={<MdLooksOne />} />
+              <BlockButton format="heading-two" icon={<MdLooksTwo />} />
+              <BlockButton format="heading-three" icon={<MdLooks3 />} />
+              <BlockButton format="heading-four" icon={<MdLooks4 />} />
+              <BlockButton format="block-quote" icon={<MdFormatQuote />} />
               <BlockButton
                 format="numbered-list"
-                icon={<MdFormatListNumbered className="size-4" />}
+                icon={<MdFormatListNumbered />}
               />
               <BlockButton
                 format="bulleted-list"
-                icon={<MdFormatListBulleted className="size-4" />}
+                icon={<MdFormatListBulleted />}
               />
             </ButtonGroup>
           </div>
@@ -256,11 +232,7 @@ const ToggleAnnouncement = ({
 
   return (
     <Button size="icon" variant="outline" onClick={onToggle}>
-      {announcement.show ? (
-        <EyeIcon className="size-4" />
-      ) : (
-        <EyeSlashIcon className="size-4" />
-      )}
+      {announcement.show ? <EyeIcon /> : <EyeSlashIcon />}
     </Button>
   )
 }
@@ -290,7 +262,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="icon" variant="outline">
-          <TrashIcon className="size-4" />
+          <TrashIcon />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">

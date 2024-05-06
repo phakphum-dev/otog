@@ -48,17 +48,13 @@ export const AnnouncementModal = () => {
           size="icon"
           variant="ghost"
         >
-          {announcements.length ? (
-            <PencilIcon className="size-4" />
-          ) : (
-            <PlusIcon className="size-4" />
-          )}
+          {announcements.length ? <PencilIcon /> : <PlusIcon />}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>ประกาศ</DialogHeader>
         <Button onClick={onCreate} variant="secondary" className="ml-auto">
-          <PlusIcon className="size-4" />
+          <PlusIcon />
           เพิ่มประกาศ
         </Button>
         {announcements?.map((announcement) => (

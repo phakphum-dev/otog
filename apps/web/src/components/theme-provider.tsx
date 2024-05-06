@@ -50,11 +50,7 @@ export function ThemeToggle() {
         className="rounded-full"
         variant="outline"
       >
-        {resolvedTheme === 'light' ? (
-          <MoonIcon className="size-4" />
-        ) : (
-          <SunIcon className="size-4" />
-        )}
+        {resolvedTheme === 'light' ? <MoonIcon /> : <SunIcon />}
       </Button>
     </ClientOnly>
   )
