@@ -123,7 +123,7 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0(zod@3.22.4)
       zod:
-        specifier: ^3.22.4
+        specifier: ~3.22.4
         version: 3.22.4
     devDependencies:
       '@otog/workspace':
@@ -221,7 +221,7 @@ importers:
         version: 8.16.0
       '@ts-rest/react-query':
         specifier: ^3.45.2
-        version: 3.45.2(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.6)
+        version: 3.45.2(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.22.4)
       cookie:
         specifier: ^0.6.0
         version: 0.6.0
@@ -278,7 +278,7 @@ importers:
         version: 2.8.1
       znv:
         specifier: ^0.4.0
-        version: 0.4.0(zod@3.23.6)
+        version: 0.4.0(zod@3.22.4)
       zustand:
         specifier: ^4.5.2
         version: 4.5.2(@types/react@18.2.46)(immer@10.0.4)(react@18.2.0)
@@ -297,7 +297,7 @@ importers:
         version: 5.32.1(eslint@8.56.0)(typescript@5.3.3)
       '@ts-rest/core':
         specifier: ^3.45.2
-        version: 3.45.2(zod@3.23.6)
+        version: 3.45.2(zod@3.22.4)
       '@types/cookie':
         specifier: ^0.6.0
         version: 0.6.0
@@ -377,7 +377,7 @@ importers:
         specifier: ^3.45.2
         version: 3.45.2(zod@3.22.4)
       zod:
-        specifier: ^3.22.4
+        specifier: ~3.22.4
         version: 3.22.4
     devDependencies:
       typescript:
@@ -393,7 +393,7 @@ importers:
         specifier: ^5.8.1
         version: 5.10.2
       zod:
-        specifier: ^3.22.4
+        specifier: ~3.22.4
         version: 3.22.4
     devDependencies:
       '@prisma/client':
@@ -505,7 +505,7 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.1)
       zod:
-        specifier: ^3.22.4
+        specifier: ~3.22.4
         version: 3.22.4
     devDependencies:
       '@otog/config':
@@ -3112,18 +3112,6 @@ packages:
         optional: true
     dependencies:
       zod: 3.22.4
-    dev: false
-
-  /@ts-rest/core@3.45.2(zod@3.23.6):
-    resolution: {integrity: sha512-Eiv+Sa23MbsAd1Gx9vNJ+IFCDyLZNdJ+UuGMKbFvb+/NmgcBR1VL1UIVtEkd5DJxpYMMd8SLvW91RgB2TS8iPw==}
-    peerDependencies:
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      zod:
-        optional: true
-    dependencies:
-      zod: 3.23.6
-    dev: true
 
   /@ts-rest/nest@3.45.2(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(rxjs@7.8.1)(zod@3.22.4):
     resolution: {integrity: sha512-FHtpQb4nZItBQKpXh7GZK5N4Yu0qfqkhIRpfaoUER13ary2aDO8tQOz2VscWXxQvnF0J7ew53IwNJWQOgzksEQ==}
@@ -3152,7 +3140,7 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /@ts-rest/react-query@3.45.2(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.6):
+  /@ts-rest/react-query@3.45.2(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.22.4):
     resolution: {integrity: sha512-OFl54tb+d2vJsPENr0ehmb2KrXmXTbwEDMmoIW7iyAHEIbPiL03QreeiFykZpsRDdTUjQJY2TgOmFKCCtLozWA==}
     peerDependencies:
       '@tanstack/react-query': ^4.0.0
@@ -3164,7 +3152,7 @@ packages:
     dependencies:
       '@tanstack/react-query': 5.32.1(react@18.2.0)
       react: 18.2.0
-      zod: 3.23.6
+      zod: 3.22.4
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -10411,15 +10399,6 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /znv@0.4.0(zod@3.23.6):
-    resolution: {integrity: sha512-6/pGsQhBisLzKdyC90mUCRgYDtCfQ4aQ68sDybexq3GMzqqkp662GH6qIyuCHJC1i72hJPHbWAhccTJVuZUQfA==}
-    peerDependencies:
-      zod: ^3.13.2
-    dependencies:
-      colorette: 2.0.20
-      zod: 3.23.6
-    dev: false
-
   /zod-prisma@0.5.4(prisma@5.10.2)(zod@3.22.4):
     resolution: {integrity: sha512-5Ca4Qd1a1jy1T/NqCEpbr0c+EsbjJfJ/7euEHob3zDvtUK2rTuD1Rc/vfzH8q8PtaR2TZbysD88NHmrLwpv3Xg==}
     engines: {node: '>=14'}
@@ -10441,9 +10420,6 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
-
-  /zod@3.23.6:
-    resolution: {integrity: sha512-RTHJlZhsRbuA8Hmp/iNL7jnfc4nZishjsanDAfEY1QpDQZCahUp3xDzl+zfweE9BklxMUcgBgS1b7Lvie/ZVwA==}
 
   /zustand@4.5.2(@types/react@18.2.46)(immer@10.0.4)(react@18.2.0):
     resolution: {integrity: sha512-2cN1tPkDVkwCy5ickKrI7vijSjPksFRfqS6237NzT0vqSsztTNnQdHw9mmN7uBdk3gceVXU0a+21jFzFzAc9+g==}

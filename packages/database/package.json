@@ -19,7 +19,7 @@
   "dependencies": {
     "pg": "^8.11.3",
     "prisma": "^5.8.1",
-    "zod": "^3.22.4"
+    "zod": "~3.22.4"
   },
   "devDependencies": {
     "@prisma/client": "^5.8.1",
