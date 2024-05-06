@@ -15,6 +15,7 @@
     "@otog/database": "workspace:*",
     "@otog/ui": "workspace:*",
     "@tanstack/react-query": "^5.32.1",
+    "@tanstack/react-table": "^8.16.0",
     "@ts-rest/react-query": "^3.45.1",
     "cookie": "^0.6.0",
     "framer-motion": "^11.0.20",

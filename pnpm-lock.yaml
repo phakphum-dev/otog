@@ -213,6 +213,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.32.1
         version: 5.32.1(react@18.2.0)
+      '@tanstack/react-table':
+        specifier: ^8.16.0
+        version: 8.16.0(react-dom@18.2.0)(react@18.2.0)
       '@ts-rest/react-query':
         specifier: ^3.45.1
         version: 3.45.1(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.6)
@@ -3047,6 +3050,23 @@ packages:
       react: 18.2.0
     dev: false
 
+  /@tanstack/react-table@8.16.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-rKRjnt8ostqN2fercRVOIH/dq7MAmOENCMvVlKx6P9Iokhh6woBGnIZEkqsY/vEJf1jN3TqLOb34xQGLVRuhAg==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      '@tanstack/table-core': 8.16.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@tanstack/table-core@8.16.0:
+    resolution: {integrity: sha512-dCG8vQGk4js5v88/k83tTedWOwjGnIyONrKpHpfmSJB8jwFHl8GSu1sBBxbtACVAPtAQgwNxl0rw1d3RqRM1Tg==}
+    engines: {node: '>=12'}
+    dev: false
+
   /@tootallnate/quickjs-emscripten@0.23.0:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
     dev: true
@@ -3394,12 +3414,6 @@ packages:
     resolution: {integrity: sha512-80CP7B8y4PzZF0GWx15/gVWRrB5y/bIjNI84NK3cmQJu0WZwvmj2WMA5LcofQFVfLqqCSp545+U2LsrVzX36Zg==}
     dependencies:
       undici-types: 5.26.5
-
-  /@types/node@18.19.31:
-    resolution: {integrity: sha512-ArgCD39YpyyrtFKIqMDvjz79jto5fcI/SVUs2HwB+f0dAzq68yqOdyaSivLiLugSziTpNXLQrVb7RZFmdZzbhA==}
-    dependencies:
-      undici-types: 5.26.5
-    dev: true
 
   /@types/node@20.10.6:
     resolution: {integrity: sha512-Vac8H+NlRNNlAmDfGUP7b5h/KA+AtWIzuXy0E6OyP8f1tCLYAtPvKRRDJjAPqhpCb0t6U2j7/xqAuLEebW2kiw==}
@@ -6948,7 +6962,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.19.31
+      '@types/node': 20.10.6
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: true
