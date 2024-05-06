@@ -7,7 +7,11 @@ const TableContainer = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
   return (
-    <div className="relative w-full overflow-auto" {...props} ref={ref}>
+    <div
+      className={cn('relative w-full overflow-auto', className)}
+      {...props}
+      ref={ref}
+    >
       {children}
     </div>
   )
@@ -82,7 +86,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+      'h-12 px-4 text-left text-xs align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
       className
     )}
     {...props}

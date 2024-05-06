@@ -1,4 +1,4 @@
-import { SetStateAction, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
@@ -62,7 +62,14 @@ export const ProblemTable = () => {
     getCoreRowModel: getCoreRowModel(),
   })
   return (
-    <TableComponent table={table} isLoading={isLoading} isError={isError} />
+    <TableComponent
+      classNames={{
+        tableContainer: 'border rounded-lg',
+      }}
+      table={table}
+      isLoading={isLoading}
+      isError={isError}
+    />
   )
 }
 
@@ -72,7 +79,7 @@ const columns = [
     header: () => '#',
     meta: {
       headClassName: 'text-center',
-      cellClassName: 'text-center',
+      cellClassName: 'text-center px-6',
     },
   }),
   columnHelper.accessor('name', {
@@ -229,7 +236,7 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
             ส่ง
           </Button>
           <DialogClose asChild>
-            <Button variant="ghost">ยกเลิก</Button>
+            <Button variant="secondary">ยกเลิก</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
