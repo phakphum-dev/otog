@@ -188,7 +188,7 @@ export const MarkButton = ({ format, icon, className }: MarkButtonProps) => {
         event.preventDefault()
         toggleMark(editor, format)
       }}
-      aria-label={format}
+      title={`Format text to ${format}`}
     >
       {icon}
     </Button>
@@ -213,7 +213,7 @@ export const BlockButton = ({ format, icon, className }: BlockButtonProps) => {
         event.preventDefault()
         toggleBlock(editor, format)
       }}
-      aria-label={format}
+      title={`Format text to ${format}`}
     >
       {icon}
     </Button>

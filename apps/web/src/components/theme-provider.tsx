@@ -33,7 +33,7 @@ export function ThemeToggle() {
     <ClientOnly
       fallback={
         <Button
-          aria-label="Toggle color mode"
+          title="Toggle color mode"
           onClick={toggleColorMode}
           size="icon"
           className="rounded-full"
@@ -44,7 +44,7 @@ export function ThemeToggle() {
       }
     >
       <Button
-        aria-label="Toggle color mode"
+        title="Toggle color mode"
         onClick={toggleColorMode}
         size="icon"
         className="rounded-full"

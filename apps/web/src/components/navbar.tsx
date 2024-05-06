@@ -36,6 +36,7 @@ export const Navbar = () => {
                 src={Logo}
                 width={32}
                 height={32}
+                title="One Tambon One Grader"
                 alt="One Tambon One Grader Logo"
               />
             </NextLink>

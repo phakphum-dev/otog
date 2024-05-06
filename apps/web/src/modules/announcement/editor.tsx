@@ -78,7 +78,12 @@ export const AnnouncementEditable = ({
       <div className="absolute flex gap-1 right-0 top-1">
         <ToggleAnnouncement announcement={announcement} />
         <DeleteAnnouncement announcementId={announcement.id} />
-        <Button size="icon" variant="outline" onClick={() => setEditing(true)}>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => setEditing(true)}
+          title="Edit announcement"
+        >
           <PencilIcon />
         </Button>
       </div>
@@ -231,7 +236,12 @@ const ToggleAnnouncement = ({
   }
 
   return (
-    <Button size="icon" variant="outline" onClick={onToggle}>
+    <Button
+      size="icon"
+      variant="outline"
+      onClick={onToggle}
+      title="Toggle announcement"
+    >
       {announcement.show ? <EyeIcon /> : <EyeSlashIcon />}
     </Button>
   )
@@ -261,7 +271,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline">
+        <Button size="icon" variant="outline" title="Delete announcement">
           <TrashIcon />
         </Button>
       </DialogTrigger>

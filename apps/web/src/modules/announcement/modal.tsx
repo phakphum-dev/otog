@@ -44,7 +44,7 @@ export const AnnouncementModal = () => {
       <DialogTrigger asChild>
         <Button
           className="absolute right-0 top-0 z-10"
-          aria-label="edit-announcements"
+          title="Edit announcements"
           size="icon"
           variant="ghost"
         >
