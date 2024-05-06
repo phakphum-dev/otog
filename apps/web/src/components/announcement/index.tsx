@@ -9,8 +9,8 @@ import { AnnouncementSchema } from '@otog/contract'
 import { keyAnnouncement } from '../../api/query'
 import { useUserContext } from '../../context/user-context'
 import { HEIGHT, INTERVAL } from './constants'
-import { ReadonlyEditor } from './editor'
 import { AnnouncementModal } from './modal'
+import { ReadonlyEditor } from './readonly-editor'
 
 export interface AnnouncementCarouselProps {
   contestId?: number
@@ -87,8 +87,8 @@ const AnnouncementCard = ({ announcement, index }: AnnouncementCardProps) => {
         show: { y: 0, transition: { duration: 0.5 } },
         hidden: { y: -HEIGHT * 1.5, transition: { duration: 0.5 } },
       }}
-      className="absolute flex w-full items-center justify-center overflow-hidden rounded-lg border bg-background text-center"
-      style={{ zIndex: count - index, height: HEIGHT, maxHeight: HEIGHT }}
+      className="absolute flex w-full items-center justify-center overflow-hidden rounded-lg border bg-background"
+      style={{ zIndex: count - index, minHeight: HEIGHT, maxHeight: HEIGHT }}
       animate={index >= currentIndex ? 'show' : 'hidden'}
       onClick={onNext}
     >

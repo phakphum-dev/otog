@@ -200,7 +200,7 @@ importers:
         version: 2.1.1(react@18.2.0)
       '@lukemorales/query-key-factory':
         specifier: ^1.3.4
-        version: 1.3.4(@tanstack/query-core@5.32.1)(@tanstack/react-query@5.32.1)
+        version: 1.3.4(@tanstack/query-core@5.34.2)(@tanstack/react-query@5.32.1)
       '@otog/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -215,7 +215,7 @@ importers:
         version: 5.32.1(react@18.2.0)
       '@ts-rest/react-query':
         specifier: ^3.45.1
-        version: 3.45.1(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.5)
+        version: 3.45.1(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.6)
       cookie:
         specifier: ^0.6.0
         version: 0.6.0
@@ -255,6 +255,9 @@ importers:
       react-hot-toast:
         specifier: ^2.4.1
         version: 2.4.1(csstype@3.1.3)(react-dom@18.2.0)(react@18.2.0)
+      react-icons:
+        specifier: ^5.2.0
+        version: 5.2.0(react@18.2.0)
       slate:
         specifier: ^0.102.0
         version: 0.102.0
@@ -269,7 +272,7 @@ importers:
         version: 2.8.1
       znv:
         specifier: ^0.4.0
-        version: 0.4.0(zod@3.23.5)
+        version: 0.4.0(zod@3.23.6)
       zustand:
         specifier: ^4.5.2
         version: 4.5.2(@types/react@18.2.46)(immer@10.0.4)(react@18.2.0)
@@ -288,7 +291,7 @@ importers:
         version: 5.32.1(eslint@8.56.0)(typescript@5.3.3)
       '@ts-rest/core':
         specifier: ^3.45.1
-        version: 3.45.1(zod@3.23.5)
+        version: 3.45.1(zod@3.23.6)
       '@types/cookie':
         specifier: ^0.6.0
         version: 0.6.0
@@ -1307,14 +1310,14 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@lukemorales/query-key-factory@1.3.4(@tanstack/query-core@5.32.1)(@tanstack/react-query@5.32.1):
+  /@lukemorales/query-key-factory@1.3.4(@tanstack/query-core@5.34.2)(@tanstack/react-query@5.32.1):
     resolution: {integrity: sha512-A3frRDdkmaNNQi6mxIshsDk4chRXWoXa05US8fBo4kci/H+lVmujS6QrwQLLGIkNIRFGjMqp2uKjC4XsLdydRw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@tanstack/query-core': '>= 4.0.0'
       '@tanstack/react-query': '>= 4.0.0'
     dependencies:
-      '@tanstack/query-core': 5.32.1
+      '@tanstack/query-core': 5.34.2
       '@tanstack/react-query': 5.32.1(react@18.2.0)
     dev: false
 
@@ -3031,6 +3034,10 @@ packages:
     resolution: {integrity: sha512-mCWa1wdGb1jiny4+qYegbSeadcFj+Nq65KFSs4A1DRveoIq7SrTwUhqu7hrB6d54cQH5x59DfJvxusn3w1Cj/g==}
     dev: false
 
+  /@tanstack/query-core@5.34.2:
+    resolution: {integrity: sha512-FM1UXldYcoMiWmVbpewV14EVpnr/ETBbdF84tmCktx29e2bXBFhGtAfyDHUD4X1FehaV5tC9GkXZUMZRQV3lcA==}
+    dev: false
+
   /@tanstack/react-query@5.32.1(react@18.2.0):
     resolution: {integrity: sha512-+nXLMB0JK0XwTJ+lQt49DPNLrbSppni9N5W5yMR085yW3YaRKRUFhfVTER3TvQd1UycHpoGPFnt1gHiijXERAg==}
     peerDependencies:
@@ -3084,7 +3091,7 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /@ts-rest/core@3.45.1(zod@3.23.5):
+  /@ts-rest/core@3.45.1(zod@3.23.6):
     resolution: {integrity: sha512-sXYSvqGxvvmeeoz4QePhv8Z5cDy4IjlnXozaB2+gyGIBDBgrmxRDLnT9FvTfDRXuW3niiYo8f/7fMN7rr8LCSA==}
     peerDependencies:
       zod: ^3.22.3
@@ -3092,7 +3099,7 @@ packages:
       zod:
         optional: true
     dependencies:
-      zod: 3.23.5
+      zod: 3.23.6
     dev: true
 
   /@ts-rest/nest@3.33.0(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(rxjs@7.8.1)(zod@3.22.4):
@@ -3122,7 +3129,7 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /@ts-rest/react-query@3.45.1(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.5):
+  /@ts-rest/react-query@3.45.1(@tanstack/react-query@5.32.1)(react@18.2.0)(zod@3.23.6):
     resolution: {integrity: sha512-VcW0DF3HJtx7wpYZvyNc2tjvXGvMAQgbW4KJs1zqAC15p5ASPXNPEEVogakP0yCZ69xB6ONRyaCioD7pRt3x3g==}
     peerDependencies:
       '@tanstack/react-query': ^4.0.0
@@ -3134,7 +3141,7 @@ packages:
     dependencies:
       '@tanstack/react-query': 5.32.1(react@18.2.0)
       react: 18.2.0
-      zod: 3.23.5
+      zod: 3.23.6
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -3387,6 +3394,12 @@ packages:
     resolution: {integrity: sha512-80CP7B8y4PzZF0GWx15/gVWRrB5y/bIjNI84NK3cmQJu0WZwvmj2WMA5LcofQFVfLqqCSp545+U2LsrVzX36Zg==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/node@18.19.31:
+    resolution: {integrity: sha512-ArgCD39YpyyrtFKIqMDvjz79jto5fcI/SVUs2HwB+f0dAzq68yqOdyaSivLiLugSziTpNXLQrVb7RZFmdZzbhA==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
 
   /@types/node@20.10.6:
     resolution: {integrity: sha512-Vac8H+NlRNNlAmDfGUP7b5h/KA+AtWIzuXy0E6OyP8f1tCLYAtPvKRRDJjAPqhpCb0t6U2j7/xqAuLEebW2kiw==}
@@ -6935,7 +6948,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.10.6
+      '@types/node': 18.19.31
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: true
@@ -8443,6 +8456,14 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
       - csstype
+    dev: false
+
+  /react-icons@5.2.0(react@18.2.0):
+    resolution: {integrity: sha512-n52Y7Eb4MgQZHsSZOhSXv1zs2668/hBYKfSRIvKh42yExjyhZu0d1IK2CLLZ3BZB1oo13lDfwx2vOh2z9FTV6Q==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /react-is@16.13.1:
@@ -10335,13 +10356,13 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /znv@0.4.0(zod@3.23.5):
+  /znv@0.4.0(zod@3.23.6):
     resolution: {integrity: sha512-6/pGsQhBisLzKdyC90mUCRgYDtCfQ4aQ68sDybexq3GMzqqkp662GH6qIyuCHJC1i72hJPHbWAhccTJVuZUQfA==}
     peerDependencies:
       zod: ^3.13.2
     dependencies:
       colorette: 2.0.20
-      zod: 3.23.5
+      zod: 3.23.6
     dev: false
 
   /zod-prisma@0.5.4(prisma@5.10.2)(zod@3.22.4):
@@ -10366,8 +10387,8 @@ packages:
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
-  /zod@3.23.5:
-    resolution: {integrity: sha512-fkwiq0VIQTksNNA131rDOsVJcns0pfVUjHzLrNBiF/O/Xxb5lQyEXkhZWcJ7npWsYlvs+h0jFWXXy4X46Em1JA==}
+  /zod@3.23.6:
+    resolution: {integrity: sha512-RTHJlZhsRbuA8Hmp/iNL7jnfc4nZishjsanDAfEY1QpDQZCahUp3xDzl+zfweE9BklxMUcgBgS1b7Lvie/ZVwA==}
 
   /zustand@4.5.2(@types/react@18.2.46)(immer@10.0.4)(react@18.2.0):
     resolution: {integrity: sha512-2cN1tPkDVkwCy5ickKrI7vijSjPksFRfqS6237NzT0vqSsztTNnQdHw9mmN7uBdk3gceVXU0a+21jFzFzAc9+g==}

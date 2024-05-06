@@ -12,9 +12,9 @@ import {
   DialogTrigger,
 } from '@otog/ui'
 
+import { useAnnouncementContext } from '.'
 import { keyAnnouncement, queryAnnouncement } from '../../api/query'
-import { useAnnouncementContext } from './carousel'
-import { AnnouncementEdit } from './editor'
+import { AnnouncementEditable } from './editor'
 import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
@@ -62,7 +62,10 @@ export const AnnouncementModal = () => {
           เพิ่มประกาศ
         </Button>
         {announcements?.map((announcement) => (
-          <AnnouncementEdit announcement={announcement} key={announcement.id} />
+          <AnnouncementEditable
+            announcement={announcement}
+            key={announcement.id}
+          />
         ))}
       </DialogContent>
     </Dialog>

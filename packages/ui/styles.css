@@ -23,6 +23,8 @@
     --border: colorToHsl(theme(colors.gray.200));
     --input: colorToHsl(theme(colors.gray.200));
     --ring: colorToHsl(theme(colors.orange.400));
+    --success: colorToHsl(theme(colors.green.500));
+    --success-foreground: colorToHsl(theme(colors.gray.50));
 
     --radius: 0.75rem;
   }
@@ -47,6 +49,8 @@
     --border: colorToHsl(theme(colors.gray.700));
     --input: colorToHsl(theme(colors.gray.700));
     --ring: colorToHsl(theme(colors.orange.500));
+    --success: colorToHsl(theme(colors.green.600));
+    --success-foreground: colorToHsl(theme(colors.gray.50));
   }
 }
 
