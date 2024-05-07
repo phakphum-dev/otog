@@ -1,4 +1,5 @@
 import { initContract } from '@ts-rest/core'
+import { File } from '@web-std/file'
 import { z } from 'zod'
 
 import {
@@ -138,6 +139,9 @@ const SubmissionWithSourceCodeSchema = SubmissionWithoutSourceCodeSchema.merge(
   SubmissionModel.pick({ sourceCode: true })
 )
 
+const FileSchema = z.instanceof(File)
+type FileSchema = z.infer<typeof FileSchema>
+
 export const submissionRouter = contract.router(
   {
     getSubmissions: {
@@ -176,9 +180,10 @@ export const submissionRouter = contract.router(
         200: SubmissionModel,
       },
       query: z.object({ contestId: z.string().nullish() }),
-      body: SubmissionModel.pick({
-        language: true,
-      }),
+      body: contract.type<{
+        sourceCode: FileSchema
+        language: string | null
+      }>(),
       summary: 'Submit code file',
     },
     getLatestSubmissionByUserId: {

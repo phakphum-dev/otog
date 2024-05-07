@@ -153,12 +153,14 @@ export const query = initQueryClient(router, {
 export function createQueryClient<T extends AppRouter>(router: T) {
   return initQueryClient(router, {
     baseUrl: '',
-    baseHeaders: { 'Content-Type': 'application/json' },
-    api: ({ path, method, headers, body }) => {
-      return client
+    api: async ({ path, method, headers, body, contentType, rawBody }) => {
+      const fetcher =
+        contentType === 'multipart/form-data'
+          ? client.formData(rawBody as any)
+          : client.body(body)
+      return fetcher
         .headers(headers)
-        .auth(`Bearer ${getAccessToken()}`)
-        .fetch(method, path, body)
+        .fetch(method, path)
         .res()
         .then(async (response) => {
           return {

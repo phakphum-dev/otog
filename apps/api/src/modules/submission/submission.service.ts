@@ -4,9 +4,8 @@ import { Multer } from 'multer'
 import { PrismaService } from 'src/core/database/prisma.service'
 import { scodeFileFilter, scodeFileSizeLimit } from 'src/utils'
 
-import { Submission, SubmissionStatus, UserRole } from '@otog/database'
+import { SubmissionStatus, UserRole } from '@otog/database'
 
-import { UserDTO } from '../user/dto/user.dto'
 import { WITHOUT_PASSWORD } from '../user/user.service'
 
 export const WITHOUT_SOURCECODE = {
@@ -90,27 +89,24 @@ export class SubmissionService {
       throw new BadRequestException('File is too large!')
   }
 
-  async create(
-    user: UserDTO,
-    problemId: number,
-    data: Pick<Submission, 'language' | 'contestId'>,
+  async create(args: {
+    userId: number
+    problemId: number
+    language: string | null
     file: Express.Multer.File
-  ) {
-    this.fileCheck(file)
-    try {
-      return await this.prisma.submission.create({
-        data: {
-          userId: user.id,
-          problemId,
-          language: data.language,
-          status: SubmissionStatus.waiting,
-          sourceCode: file.buffer.toString(),
-          contestId: Number(data.contestId) || null,
-        },
-      })
-    } catch {
-      throw new BadRequestException()
-    }
+    contestId: number | null
+  }) {
+    this.fileCheck(args.file)
+    return await this.prisma.submission.create({
+      data: {
+        userId: args.userId,
+        problemId: args.problemId,
+        language: args.language,
+        status: SubmissionStatus.waiting,
+        sourceCode: args.file.buffer.toString(),
+        contestId: args.contestId,
+      },
+    })
   }
 
   findAllByUserIdWithOutContest(userId: number, offset = 1e9, limit = 89) {

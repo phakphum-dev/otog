@@ -2,6 +2,7 @@ import {
   Controller,
   Param,
   ParseIntPipe,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -89,22 +90,30 @@ export class SubmissionController {
   @TsRestHandler(c.uploadFile)
   @OfflineAccess(AccessState.Authenticated)
   @Roles(Role.User, Role.Admin)
-  // @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('sourceCode'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @User() user: UserDTO) {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @User() user: UserDTO,
+    @Req() req: Request
+  ) {
+    console.log(req.formData, req.blob)
     return tsRestHandler(c.uploadFile, async ({ body, params, query }) => {
-      if (query.contestId) {
-        const contestId = z.coerce.number().parse(query.contestId)
+      console.log(body, file, query, params)
+      const contestId = query.contestId
+        ? z.coerce.number().parse(query.contestId)
+        : null
+      if (contestId) {
         // TODO validate user if contest is private
         await this.contestService.addUserToContest(contestId, user.id)
       }
       const problemId = z.coerce.number().parse(params.problemId)
-      const submission = await this.submissionService.create(
-        user,
+      const submission = await this.submissionService.create({
+        userId: user.id,
         problemId,
-        body,
-        file
-      )
+        file,
+        language: body.language,
+        contestId,
+      })
       return { status: 200, body: submission }
     })
   }

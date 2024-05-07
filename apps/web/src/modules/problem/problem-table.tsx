@@ -157,21 +157,22 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
       await uploadFile.mutateAsync(
         {
           params: { problemId: props.problemId.toString() },
-          body: { language: values.language },
+          body: values,
         },
         {
           onError: (result) => {
             console.error(result)
-            toast.error('ส่งโค้ดไม่สำเร็จ', { id: toastId })
+            toast.error('ส่งไม่สำเร็จ', { id: toastId })
           },
           onSuccess: () => {
-            toast.error('ส่งโค้ดสำเร็จ', { id: toastId })
+            toast.success('ส่งสำเร็จแล้ว', { id: toastId })
             setOpen(false)
             router.push('/submission')
           },
         }
       )
     } catch (e) {
+      console.error(e)
       toast.error('ส่งโค้ดไม่สำเร็จ', { id: toastId })
     }
   })
@@ -293,7 +294,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
 }
 
 const PassedUserDialog = ({
-  row,
+  // row,
   open,
   setOpen,
 }: {
