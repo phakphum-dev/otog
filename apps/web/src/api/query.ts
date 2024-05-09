@@ -38,3 +38,16 @@ export const keyProblem = createQueryKeys('problem', {
 })
 
 export const querySubmission = createQueryClient(submissionRouter)
+export const keySubmission = createQueryKeys('submission', {
+  table: () => ({
+    queryKey: ['table'],
+    queryFn: () => querySubmission.getSubmissions.query(),
+  }),
+  getOne: (params: { submissionId: number }) => ({
+    queryKey: ['getOne', params],
+    queryFn: () =>
+      querySubmission.getSubmissionWithSourceCode.query({
+        params: { submissionId: params.submissionId.toString() },
+      }),
+  }),
+})

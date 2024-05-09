@@ -15,6 +15,9 @@ import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import dayjs from 'dayjs'
+import 'dayjs/locale/th'
+import buddhistEra from 'dayjs/plugin/buddhistEra'
 import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
 // import { ThemeProvider } from 'next-themes'
@@ -30,6 +33,9 @@ import { ThemeProvider } from '../components/theme-provider'
 import { UserContextProvider } from '../context/user-context'
 import { inter, sarabun, sukhumvit } from '../fonts'
 import '../styles/nprogress.css'
+
+dayjs.locale('th')
+dayjs.extend(buddhistEra)
 
 const ProgressBar = dynamic(() => import('./../components/progress-bar'), {
   ssr: false,
