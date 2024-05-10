@@ -82,7 +82,7 @@ export class SubmissionController {
             id,
             user.id
           )
-        return { status: 200, body: { latestSubmission } }
+        return { status: 200, body: latestSubmission }
       }
     )
   }
@@ -125,7 +125,7 @@ export class SubmissionController {
       const latestSubmission = await this.submissionService.findFirstByUserId(
         user.id
       )
-      return { status: 200, body: { latestSubmission } }
+      return { status: 200, body: latestSubmission }
     })
   }
 

@@ -6,7 +6,7 @@ import { VariantProps, cva } from 'class-variance-authority'
 import { cn } from '.'
 
 const linkStyles = cva(
-  'rounded cursor-pointer hover:underline focus-visible:underline ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ',
+  'rounded cursor-pointer hover:underline focus-visible:underline ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
   {
     variants: {
       variant: {

@@ -129,15 +129,21 @@ const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
     problem: ProblemModel.pick({
       id: true,
       name: true,
+      timeLimit: true,
+      memoryLimit: true,
     }).nullable(),
   })
   .extend({
     user: UserWithourPasswordSchema.nullable(),
   })
 
-const SubmissionWithSourceCodeSchema = SubmissionWithoutSourceCodeSchema.merge(
-  SubmissionModel.pick({ sourceCode: true })
-)
+export const SubmissionWithSourceCodeSchema =
+  SubmissionWithoutSourceCodeSchema.merge(
+    SubmissionModel.pick({ sourceCode: true })
+  )
+export type SubmissionWithSourceCodeSchema = z.infer<
+  typeof SubmissionWithSourceCodeSchema
+>
 
 const FileSchema = z.instanceof(File)
 type FileSchema = z.infer<typeof FileSchema>
@@ -166,9 +172,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/problem/:problemId/latest',
       responses: {
-        200: z.object({
-          latestSubmission: SubmissionWithSourceCodeSchema.nullable(),
-        }),
+        200: SubmissionWithSourceCodeSchema.nullable(),
       },
       summary: 'Get latest submission for a problem',
     },
@@ -190,9 +194,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/latest',
       responses: {
-        200: z.object({
-          latestSubmission: SubmissionWithSourceCodeSchema.nullable(),
-        }),
+        200: SubmissionWithSourceCodeSchema.nullable(),
       },
       summary: 'Get latest submission for a user',
     },

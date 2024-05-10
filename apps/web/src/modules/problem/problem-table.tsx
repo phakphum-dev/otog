@@ -53,12 +53,11 @@ import {
 } from '@otog/ui'
 
 import { keyProblem, keySubmission, querySubmission } from '../../api/query'
-import { CodeHighlight } from '../../components/code'
+import { CodeHighlight } from '../../components/code-highlight'
 import { FileInput } from '../../components/file-input'
 import { TableComponent } from '../../components/table-component'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
-import { environment } from '../../env'
 import { useClipboard } from '../../hooks/use-clipboard'
 
 export const ProblemTable = () => {
@@ -96,7 +95,7 @@ const columns = [
       return (
         <Link
           isExternal
-          href={`${environment.API_HOST}/problem/doc/${problem.id}`}
+          href={`/api/problem/${problem.id}`}
           className={clsx(!problem.show && 'text-muted-foreground')}
         >
           <p className="text-pretty font-semibold tracking-wide mb-0.5">
@@ -344,11 +343,15 @@ const LatestSubmissionDialog = ({
   const { hasCopied, onCopy } = useClipboard()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogTitle>
-          <NextLink href={`/problem/${submission?.problem?.id}`}>
-            <Link variant="hidden">ข้อ {row.original.name}</Link>
-          </NextLink>
+          <Link
+            isExternal
+            variant="hidden"
+            href={`/api/problem/${submission?.problem?.id}`}
+          >
+            ข้อ {row.original.name}
+          </Link>
         </DialogTitle>
         {submission ? (
           <div className="flex flex-col gap-2 text-sm min-w-0">
@@ -365,25 +368,37 @@ const LatestSubmissionDialog = ({
             </p>
             <p>
               ส่งโดย{' '}
-              <NextLink href={`/user/${submission.user!.id}`}>
-                <Link variant="hidden">{submission.user!.showName}</Link>
-              </NextLink>
+              <Link variant="hidden" asChild>
+                <NextLink href={`/user/${submission.user!.id}`}>
+                  {submission.user!.showName}
+                </NextLink>
+              </Link>
             </p>
             <div className="relative">
               <CodeHighlight
-                className="relative"
+                className="relative border"
                 code={submission.sourceCode ?? ''}
                 language={submission.language ?? 'cpp'}
               />
-              <Button
-                size="icon"
-                title="Copy Code"
-                variant="ghost"
-                className="absolute top-2 right-2"
-                onClick={() => onCopy(submission.sourceCode ?? '')}
-              >
-                {hasCopied ? <DocumentCheckIcon /> : <DocumentDuplicateIcon />}
-              </Button>
+              <div className="flex gap-1 absolute top-1 right-1">
+                <Button
+                  size="icon"
+                  title="Copy Code"
+                  variant="ghost"
+                  onClick={() => onCopy(submission.sourceCode ?? '')}
+                >
+                  {hasCopied ? (
+                    <DocumentCheckIcon />
+                  ) : (
+                    <DocumentDuplicateIcon />
+                  )}
+                </Button>
+                <Button size="icon" title="Edit Code" variant="ghost" asChild>
+                  <NextLink href={`/problem/${submission.problem!.id}`}>
+                    <PencilSquareIcon />
+                  </NextLink>
+                </Button>
+              </div>
             </div>
           </div>
         ) : (

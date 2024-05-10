@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes'
 import { Highlight, Language, themes } from 'prism-react-renderer'
 
 import { cn } from '@otog/ui'
@@ -9,11 +10,12 @@ export interface CodeHighlightProps {
 }
 
 export const CodeHighlight = (props: CodeHighlightProps) => {
+  const { resolvedTheme } = useTheme()
   return (
     <Highlight
       code={props.code ?? ''}
       language={props.language}
-      theme={themes.vsDark}
+      theme={resolvedTheme === 'light' ? themes.vsLight : themes.vsDark}
     >
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
         <pre
