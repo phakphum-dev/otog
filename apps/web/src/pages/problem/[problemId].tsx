@@ -16,10 +16,11 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
+import { Problem } from '@otog/database'
 import { Link } from '@otog/ui'
 
 import { api, client, query } from '../../api'
-import { querySubmission } from '../../api/query'
+import { queryProblem, querySubmission } from '../../api/query'
 import { withSession } from '../../api/withSession'
 
 const defaultSourceCode = `#include <iostream>
@@ -38,21 +39,23 @@ const extension: Record<string, string> = {
 
 export interface WriteSolutionPageProps {
   submission: SubmissionWithSourceCodeSchema | null
+  problem: Problem
 }
 
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const { resolvedTheme } = useTheme()
-  const problem = props.submission!.problem!
+  const problem = props.problem
+  console.log(props)
   return (
     <main className="container max-w-4xl ">
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
-      <section className="flex flex-col flex-1 gap-4 my-8 py-6 px-6 border rounded-2xl">
+      <section className="flex flex-col flex-1 gap-4 mt-8 py-6 px-6 border rounded-2xl">
         <div>
           <h1 className="text-2xl font-semibold inline-flex gap-2 items-center mb-2">
             <PencilSquareIcon className="size-6" />
-            ข้อ {props.submission?.problem?.name}
+            {problem.name}
           </h1>
           <div className="flex justify-between gap-1">
             <p className="text-sm text-muted-foreground">
@@ -83,10 +86,21 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
 }
 
 export const getServerSideProps = withSession<WriteSolutionPageProps>(
-  async (session, context) => {
+  async (_session, context) => {
     const problemId = Number.parseInt(context.query.problemId as string)
     const submissionId = Number.parseInt(context.params?.submissionId as string)
-
+    if (!Number.isInteger(problemId)) {
+      return { notFound: true }
+    }
+    const problemResult = await queryProblem.getProblem.query({
+      params: { problemId: problemId.toString() },
+    })
+    if (problemResult.status === 404) {
+      return { notFound: true }
+    }
+    if (problemResult.status !== 200) {
+      throw problemResult
+    }
     if (Number.isInteger(submissionId)) {
       const submissionResult =
         await querySubmission.getSubmissionWithSourceCode.query({
@@ -99,25 +113,28 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
         throw submissionResult
       }
       return {
-        props: { submission: submissionResult.body },
+        props: {
+          submission: submissionResult.body,
+          problem: problemResult.body,
+        },
       }
     }
-    if (Number.isInteger(problemId)) {
-      const submissionResult =
-        await querySubmission.getLatestSubmissionByProblemId.query({
-          params: { problemId: problemId.toString() },
-        })
-      if (submissionResult.status === 404) {
-        return { notFound: true }
-      }
-      if (submissionResult.status !== 200) {
-        throw submissionResult
-      }
-      return {
-        props: { submission: submissionResult.body },
-      }
+    const submissionResult =
+      await querySubmission.getLatestSubmissionByProblemId.query({
+        params: { problemId: problemId.toString() },
+      })
+    if (submissionResult.status === 404) {
+      return { notFound: true }
     }
-    return { notFound: true }
+    if (submissionResult.status !== 200) {
+      throw submissionResult
+    }
+    return {
+      props: {
+        submission: submissionResult.body.submission,
+        problem: problemResult.body,
+      },
+    }
   }
 )
 

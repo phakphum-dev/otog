@@ -77,12 +77,12 @@ export class SubmissionController {
       c.getLatestSubmissionByProblemId,
       async ({ params: { problemId } }) => {
         const id = z.coerce.number().parse(problemId)
-        const latestSubmission =
+        const submission =
           await this.submissionService.findFirstByProblemIdAndUserId(
             id,
             user.id
           )
-        return { status: 200, body: latestSubmission }
+        return { status: 200, body: { submission } }
       }
     )
   }
@@ -122,10 +122,8 @@ export class SubmissionController {
   @Roles(Role.User, Role.Admin)
   getLatestSubmissionByUserId(@User() user: UserDTO) {
     return tsRestHandler(c.getLatestSubmissionByUserId, async () => {
-      const latestSubmission = await this.submissionService.findFirstByUserId(
-        user.id
-      )
-      return { status: 200, body: latestSubmission }
+      const submission = await this.submissionService.findFirstByUserId(user.id)
+      return { status: 200, body: { submission } }
     })
   }
 

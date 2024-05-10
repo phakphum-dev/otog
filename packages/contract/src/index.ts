@@ -129,8 +129,6 @@ const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
     problem: ProblemModel.pick({
       id: true,
       name: true,
-      timeLimit: true,
-      memoryLimit: true,
     }).nullable(),
   })
   .extend({
@@ -172,7 +170,9 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/problem/:problemId/latest',
       responses: {
-        200: SubmissionWithSourceCodeSchema.nullable(),
+        200: z.object({
+          submission: SubmissionWithSourceCodeSchema.nullable(),
+        }),
       },
       summary: 'Get latest submission for a problem',
     },
@@ -194,7 +194,9 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/latest',
       responses: {
-        200: SubmissionWithSourceCodeSchema.nullable(),
+        200: z.object({
+          submission: SubmissionWithSourceCodeSchema.nullable(),
+        }),
       },
       summary: 'Get latest submission for a user',
     },
@@ -488,7 +490,7 @@ export const problemRouter = contract.router(
       method: 'GET',
       path: '/:problemId',
       responses: {
-        200: ProblemWithoutExampleSchema,
+        200: ProblemModel,
         // 403: z.object({ message: z.string() }),
         // 404: z.object({ message: z.string() }),
       },
