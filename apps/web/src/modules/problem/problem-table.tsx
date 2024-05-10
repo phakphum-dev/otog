@@ -5,8 +5,6 @@ import { MdUploadFile } from 'react-icons/md'
 
 import {
   CodeBracketIcon,
-  DocumentCheckIcon,
-  DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -17,7 +15,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import { Row, createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
-import dayjs from 'dayjs'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -48,17 +45,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Spinner,
   clsx,
 } from '@otog/ui'
 
-import { keyProblem, keySubmission, querySubmission } from '../../api/query'
-import { CodeHighlight } from '../../components/code-highlight'
+import { keyProblem, querySubmission } from '../../api/query'
 import { FileInput } from '../../components/file-input'
+import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
 import { useUserContext } from '../../context/user-context'
-import { Language, LanguageName } from '../../enums'
-import { useClipboard } from '../../hooks/use-clipboard'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())
@@ -288,8 +282,8 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
           <ToggleShowProblem row={row} />
         </DropdownMenuContent>
       </DropdownMenu>
-      <LatestSubmissionDialog
-        row={row}
+      <SubmissionDialog
+        submissionId={row.original.latestSubmission?.id}
         open={openLatestSubmission}
         setOpen={setOpenLatestSubmission}
       />
@@ -317,95 +311,6 @@ const PassedUserDialog = ({
       <DialogContent>
         <DialogTitle>คนผ่าน</DialogTitle>
         <div></div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-const LatestSubmissionDialog = ({
-  row,
-  open,
-  setOpen,
-}: {
-  row: Row<ProblemTableRowSchema>
-  open: boolean
-  setOpen: (open: boolean) => void
-}) => {
-  const getSubmission = useQuery({
-    ...keySubmission.getOne({
-      submissionId: row.original.latestSubmission?.id!,
-    }),
-    enabled: !!row.original.latestSubmission && open,
-  })
-  const submission =
-    getSubmission.data?.status === 200 ? getSubmission.data.body : undefined
-
-  const { hasCopied, onCopy } = useClipboard()
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-3xl">
-        <DialogTitle>
-          <Link
-            isExternal
-            variant="hidden"
-            href={`/api/problem/${submission?.problem?.id}`}
-          >
-            ข้อ {row.original.name}
-          </Link>
-        </DialogTitle>
-        {submission ? (
-          <div className="flex flex-col gap-2 text-sm min-w-0">
-            <code className="bg-muted rounded self-start px-0.5">
-              {submission.result}
-            </code>
-            <p>{submission.score ?? 0} คะแนน</p>
-            <p>ภาษา {LanguageName[submission.language as Language]}</p>
-            <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
-            <p>
-              ส่งเมื่อ{' '}
-              {submission.creationDate &&
-                dayjs(submission.creationDate).format('DD/MM/BBBB HH:mm:ss')}
-            </p>
-            <p>
-              ส่งโดย{' '}
-              <Link variant="hidden" asChild>
-                <NextLink href={`/user/${submission.user!.id}`}>
-                  {submission.user!.showName}
-                </NextLink>
-              </Link>
-            </p>
-            <div className="relative">
-              <CodeHighlight
-                className="relative border"
-                code={submission.sourceCode ?? ''}
-                language={submission.language ?? 'cpp'}
-              />
-              <div className="flex gap-1 absolute top-1 right-1">
-                <Button
-                  size="icon"
-                  title="Copy Code"
-                  variant="ghost"
-                  onClick={() => onCopy(submission.sourceCode ?? '')}
-                >
-                  {hasCopied ? (
-                    <DocumentCheckIcon />
-                  ) : (
-                    <DocumentDuplicateIcon />
-                  )}
-                </Button>
-                <Button size="icon" title="Edit Code" variant="ghost" asChild>
-                  <NextLink href={`/problem/${submission.problem!.id}`}>
-                    <PencilSquareIcon />
-                  </NextLink>
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full h-48 flex justify-center align-items">
-            <Spinner />
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   )
