@@ -355,6 +355,9 @@ importers:
       eslint:
         specifier: ^8.56.0
         version: 8.56.0
+      monaco-editor:
+        specifier: ^0.48.0
+        version: 0.48.0
       postcss:
         specifier: ^8.4.35
         version: 8.4.35
@@ -7521,7 +7524,6 @@ packages:
 
   /monaco-editor@0.48.0:
     resolution: {integrity: sha512-goSDElNqFfw7iDHMg8WDATkfcyeLTNpBHQpO8incK6p5qZt5G/1j41X0xdGzpIkGojGXM+QiRQyLjnfDVvrpwA==}
-    dev: false
 
   /ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}

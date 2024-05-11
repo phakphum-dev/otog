@@ -1,88 +1,37 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useState,
-} from 'react'
+import { useRef } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
-import { FaLightbulb, FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa'
 
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
+import { zodResolver } from '@hookform/resolvers/zod'
 import Editor from '@monaco-editor/react'
-import produce from 'immer'
+import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { z } from 'zod'
 
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
 import { Problem } from '@otog/database'
-import { Link } from '@otog/ui'
+import {
+  Button,
+  Form,
+  FormField,
+  Link,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@otog/ui'
 
-import { api, client, query } from '../../api'
 import { queryProblem, querySubmission } from '../../api/query'
 import { withSession } from '../../api/withSession'
+import { Language, LanguageName } from '../../enums'
 
-const defaultSourceCode = `#include <iostream>
-
-using namespace std;
-
-int main() {
-    return 0;
-}`
-
-const extension: Record<string, string> = {
-  cpp: '.cpp',
-  c: '.c',
-  python: '.py',
-}
-
-export interface WriteSolutionPageProps {
+interface WriteSolutionPageProps {
   submission: SubmissionWithSourceCodeSchema | null
   problem: Problem
-}
-
-export default function WriteSolutionPage(props: WriteSolutionPageProps) {
-  const { resolvedTheme } = useTheme()
-  const problem = props.problem
-  console.log(props)
-  return (
-    <main className="container max-w-4xl ">
-      <Head>
-        <title>One Tambon One Grader</title>
-      </Head>
-      <section className="flex flex-col flex-1 gap-4 mt-8 py-6 px-6 border rounded-2xl">
-        <div>
-          <h1 className="text-2xl font-semibold inline-flex gap-2 items-center mb-2">
-            <PencilSquareIcon className="size-6" />
-            {problem.name}
-          </h1>
-          <div className="flex justify-between gap-1">
-            <p className="text-sm text-muted-foreground">
-              {/* TODO: fix nullish */}(
-              {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-              {problem.memoryLimit} MB)
-            </p>
-            <Link
-              className="text-sm"
-              isExternal
-              href={`/api/problem/${problem.id}`}
-            >
-              [ดาวน์โหลด]
-            </Link>
-          </div>
-        </div>
-
-        <Editor
-          height="90vh"
-          className="overflow-hidden rounded-md border"
-          theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
-          defaultLanguage={props.submission?.language ?? 'cpp'}
-          defaultValue={props.submission?.sourceCode ?? defaultSourceCode}
-        />
-      </section>
-    </main>
-  )
 }
 
 export const getServerSideProps = withSession<WriteSolutionPageProps>(
@@ -138,58 +87,131 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
   }
 )
 
-// function EditorForm(props: {
-//   problem: Problem
-//   submission?: getLatestSubmissionByUserId | null
-// }) {
-//   const { problem, submission } = props
-//   const router = useRouter()
-//   const [language, setLanguage] = useState<string>(
-//     submission?.language ?? 'cpp'
-//   )
-//   const onChange = (event: ChangeEvent<HTMLSelectElement>) => {
-//     setLanguage(event.target.value)
-//   }
+const DEFAULT_SOURCE_CODE = `#include <iostream>
 
-//   const [value, setValue] = useState<string | undefined>(
-//     submission?.sourceCode ?? defaultValue
-//   )
-//   const onEditorChange = (value: string | undefined) => {
-//     setValue(value)
-//   }
-//   const submitProblemMutation = useMutation(submitProblem)
-//   const onSubmit = async () => {
-//     if (!value) return
-//     const blob = new Blob([value])
-//     const file = new File([blob], `${problem.id}${extension[language]}`)
-//     try {
-//       await submitProblemMutation(problem.id, file, language)
-//       router.push('/submission')
-//     } catch (e) {
-//       onErrorToast(e)
-//     }
-//   }
+using namespace std;
 
-//   return (
-//     <>
-//       <Editor
-//         className="overflow-hidden rounded-md"
-//         height="75vh"
-//         language={language}
-//         theme="vs-dark"
-//         value={value}
-//         onChange={onEditorChange}
-//       />
+int main() {
+    return 0;
+}`
 
-//       <div className="mt-2 grid grid-cols-3">
-//         <Select onChange={onChange} value={language}>
-//           <option value="cpp">C++</option>
-//           <option value="c">C</option>
-//           <option value="python">Python</option>
-//         </Select>
-//         <div className="flex-1" />
-//         <Button onClick={onSubmit}>ส่ง</Button>
-//       </div>
-//     </>
-//   )
-// }
+export default function WriteSolutionPage(props: WriteSolutionPageProps) {
+  const problem = props.problem
+  return (
+    <main className="container max-w-4xl ">
+      <Head>
+        <title>One Tambon One Grader</title>
+      </Head>
+      <section className="flex flex-col flex-1 gap-4 mt-8 py-6 px-6 border rounded-2xl">
+        <div>
+          <h1 className="text-2xl font-semibold inline-flex gap-2 items-center mb-2">
+            <PencilSquareIcon className="size-6" />
+            {problem.name}
+          </h1>
+          <div className="flex justify-between gap-1">
+            <p className="text-sm text-muted-foreground">
+              {/* TODO: fix nullish */}(
+              {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
+              {problem.memoryLimit} MB)
+            </p>
+            <Link
+              className="text-sm"
+              isExternal
+              href={`/api/problem/${problem.id}`}
+            >
+              [ดาวน์โหลด]
+            </Link>
+          </div>
+        </div>
+        <CodeEditorForm {...props} />
+      </section>
+    </main>
+  )
+}
+
+const CodeEditorFormSchema = z.object({
+  // sourceCode: z.string(),
+  language: z.nativeEnum(Language),
+})
+type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
+
+function CodeEditorForm(props: WriteSolutionPageProps) {
+  const { resolvedTheme } = useTheme()
+
+  const formRef = useRef<HTMLFormElement>(null)
+  const form = useForm<CodeEditorFormSchema>({
+    defaultValues: { language: 'cpp' },
+    resolver: zodResolver(CodeEditorFormSchema),
+  })
+
+  const editorRef = useRef<editor.IStandaloneCodeEditor>()
+  const router = useRouter()
+  const uploadFile = querySubmission.uploadFile.useMutation({})
+  const onSubmit = form.handleSubmit(async (values) => {
+    if (!editorRef.current) {
+      toast.error(`ไม่พบ VS Code ใน Browser`)
+      return
+    }
+    const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
+    const value = editorRef.current.getValue()
+    const blob = new Blob([value])
+    const file = new File([blob], `${props.problem.id}.${values.language}`)
+    await uploadFile.mutateAsync(
+      {
+        params: { problemId: props.problem.id.toString() },
+        body: {
+          sourceCode: file,
+          language: values.language,
+        },
+      },
+      {
+        onError: (result) => {
+          console.error(result)
+          toast.error('ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', { id: toastId })
+        },
+        onSuccess: () => {
+          toast.success('ส่งสำเร็จแล้ว', { id: toastId })
+          router.push('/submission')
+        },
+      }
+    )
+  }, console.error)
+
+  return (
+    <Form {...form}>
+      <form ref={formRef} onSubmit={onSubmit}>
+        <Editor
+          height="90vh"
+          className="overflow-hidden rounded-md border"
+          theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
+          defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
+          language={form.watch('language')}
+          onMount={(editor) => (editorRef.current = editor)}
+        />
+
+        <div className="grid grid-cols-3 mt-4">
+          <FormField
+            control={form.control}
+            name="language"
+            defaultValue={Language.cpp}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LanguageName).map(([value, label]) => (
+                    <SelectItem value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <Button type="submit" className="col-start-3">
+            ส่ง
+          </Button>
+        </div>
+      </form>
+    </Form>
+  )
+}

@@ -58,7 +58,12 @@ type MyAppProps = AppProps<{
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const { session, ...props } = pageProps
 
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { mutations: { throwOnError: false } },
+      })
+  )
 
   //   useErrorToaster(errorData)
   //   useAnalytics()

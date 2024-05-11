@@ -53,6 +53,7 @@ import { FileInput } from '../../components/file-input'
 import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
 import { useUserContext } from '../../context/user-context'
+import { Language, LanguageName } from '../../enums'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())
@@ -136,7 +137,7 @@ const columns = [
 
 const SubmitCodeFormSchema = z.object({
   sourceCode: z.instanceof(File),
-  language: z.enum(['cpp', 'c', 'python']),
+  language: z.nativeEnum(Language),
 })
 type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
 
@@ -153,28 +154,23 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
   const uploadFile = querySubmission.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problemName}...`)
-    try {
-      await uploadFile.mutateAsync(
-        {
-          params: { problemId: props.problemId.toString() },
-          body: values,
+    await uploadFile.mutateAsync(
+      {
+        params: { problemId: props.problemId.toString() },
+        body: values,
+      },
+      {
+        onError: (result) => {
+          console.error(result)
+          toast.error('ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', { id: toastId })
         },
-        {
-          onError: (result) => {
-            console.error(result)
-            toast.error('ส่งไม่สำเร็จ', { id: toastId })
-          },
-          onSuccess: () => {
-            toast.success('ส่งสำเร็จแล้ว', { id: toastId })
-            setOpen(false)
-            router.push('/submission')
-          },
-        }
-      )
-    } catch (e) {
-      console.error(e)
-      toast.error('ส่งโค้ดไม่สำเร็จ', { id: toastId })
-    }
+        onSuccess: () => {
+          toast.success('ส่งสำเร็จแล้ว', { id: toastId })
+          setOpen(false)
+          router.push('/submission')
+        },
+      }
+    )
   })
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -217,9 +213,9 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="cpp">C++</SelectItem>
-                      <SelectItem value="c">C</SelectItem>
-                      <SelectItem value="python">Python</SelectItem>
+                      {Object.entries(LanguageName).map(([value, label]) => (
+                        <SelectItem value={value}>{label}</SelectItem>
+                      ))}
                     </SelectContent>
                     <FormMessage />
                   </Select>
