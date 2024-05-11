@@ -93,12 +93,9 @@ export class SubmissionController {
   @UseInterceptors(FileInterceptor('sourceCode'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @User() user: UserDTO,
-    @Req() req: Request
+    @User() user: UserDTO
   ) {
-    console.log(req.formData, req.blob)
     return tsRestHandler(c.uploadFile, async ({ body, params, query }) => {
-      console.log(body, file, query, params)
       const contestId = query.contestId
         ? z.coerce.number().parse(query.contestId)
         : null
