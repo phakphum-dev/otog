@@ -12,9 +12,10 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import { Row, createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
+import { produce } from 'immer'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -49,7 +50,7 @@ import {
   clsx,
 } from '@otog/ui'
 
-import { keyProblem, querySubmission } from '../../api/query'
+import { keyProblem, queryProblem, querySubmission } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
@@ -352,11 +353,46 @@ const PassedUserDialog = ({
 
 const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const { user } = useUserContext()
+  const problem = row.original
+  const toggleShowProblem = queryProblem.toggleShowProblem.useMutation()
+  const queryClient = useQueryClient()
   if (user?.role !== UserRole.admin) {
     return null
   }
+
   return (
-    <DropdownMenuItem>
+    <DropdownMenuItem
+      onClick={() => {
+        const showLabel = problem.show ? 'ปิด' : 'เปิด'
+        const toastId = toast.loading(`กำลัง${showLabel}โจทย์...`)
+        toggleShowProblem.mutateAsync(
+          {
+            params: { problemId: problem.id.toString() },
+            body: { show: !problem.show },
+          },
+          {
+            onSuccess: () => {
+              toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
+              queryClient.setQueryData(
+                keyProblem.table().queryKey,
+                produce(
+                  (draftResult: { body: Array<ProblemTableRowSchema> }) => {
+                    const draftProblem = draftResult.body.find(
+                      (p) => p.id === problem.id
+                    )!
+                    draftProblem.show = !problem.show
+                  }
+                )
+              )
+              queryClient.invalidateQueries({ queryKey: keyProblem.table._def })
+            },
+            onError: () => {
+              toast.error(`ไม่สามารถ${showLabel}โจทย์ได้`, { id: toastId })
+            },
+          }
+        )
+      }}
+    >
       {row.original.show ? <EyeSlashIcon /> : <EyeIcon />}
       {row.original.show ? 'ปิดโจทย์' : 'เปิดโจทย์'}
     </DropdownMenuItem>
