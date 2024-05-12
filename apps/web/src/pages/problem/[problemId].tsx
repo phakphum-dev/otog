@@ -179,10 +179,10 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={onSubmit}>
+      <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
         <Editor
-          height="90vh"
           className="overflow-hidden rounded-md border"
+          height="800px"
           theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
           defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
           language={form.watch('language')}
@@ -201,7 +201,9 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(LanguageName).map(([value, label]) => (
-                    <SelectItem value={value}>{label}</SelectItem>
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

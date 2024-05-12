@@ -214,7 +214,9 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
                     </FormControl>
                     <SelectContent>
                       {Object.entries(LanguageName).map(([value, label]) => (
-                        <SelectItem value={value}>{label}</SelectItem>
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                     <FormMessage />

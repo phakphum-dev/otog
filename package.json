@@ -18,5 +18,10 @@
   "packageManager": "pnpm@8.9.0",
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch"
+    }
   }
 }

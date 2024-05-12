@@ -15,6 +15,10 @@ import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+  QueryClient as TsRestQueryClient,
+  QueryClientProvider as TsRestQueryClientProvider,
+} from '@ts-rest/react-query/tanstack'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import buddhistEra from 'dayjs/plugin/buddhistEra'
@@ -58,6 +62,12 @@ type MyAppProps = AppProps<{
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const { session, ...props } = pageProps
 
+  const [tsRestQueryClient] = useState(
+    () =>
+      new TsRestQueryClient({
+        defaultOptions: { mutations: { throwOnError: false } },
+      })
+  )
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -96,28 +106,32 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
          */}
 
       <SessionProvider session={session}>
-        <QueryClientProvider client={queryClient}>
-          <UserContextProvider session={session}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <div className="min-h-screen flex flex-col">
-                <ProgressBar />
-                <Navbar />
-                <Component {...props} />
-                <Footer />
-                {/* {!OFFLINE_MODE && <Chat /> */}
-              </div>
-              <Toaster
-                position="bottom-center"
-                toastOptions={{ className: '!text-foreground !bg-background' }}
-              />
-            </ThemeProvider>
-          </UserContextProvider>
-        </QueryClientProvider>
+        <TsRestQueryClientProvider client={tsRestQueryClient}>
+          <QueryClientProvider client={queryClient}>
+            <UserContextProvider session={session}>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <div className="min-h-screen flex flex-col">
+                  <ProgressBar />
+                  <Navbar />
+                  <Component {...props} />
+                  <Footer />
+                  {/* {!OFFLINE_MODE && <Chat /> */}
+                </div>
+                <Toaster
+                  position="bottom-center"
+                  toastOptions={{
+                    className: '!text-foreground !bg-background',
+                  }}
+                />
+              </ThemeProvider>
+            </UserContextProvider>
+          </QueryClientProvider>
+        </TsRestQueryClientProvider>
       </SessionProvider>
     </>
   )
