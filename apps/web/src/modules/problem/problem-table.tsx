@@ -45,6 +45,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Spinner,
   clsx,
 } from '@otog/ui'
 
@@ -246,6 +247,7 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
 const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const [openLatestSubmission, setOpenLatestSubmission] = useState(false)
   const [openPassedUser, setOpenPassedUser] = useState(false)
+  const { isAdmin } = useUserContext()
   return (
     <>
       <DropdownMenu>
@@ -270,6 +272,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={
+              !isAdmin &&
               row.original.latestSubmission?.status !== SubmissionStatus.accept
             }
             onClick={() => setOpenPassedUser(true)}
@@ -295,7 +298,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
 }
 
 const PassedUserDialog = ({
-  // row,
+  row,
   open,
   setOpen,
 }: {
@@ -303,12 +306,45 @@ const PassedUserDialog = ({
   open: boolean
   setOpen: (open: boolean) => void
 }) => {
-  // TODO: fetch data
+  const getPassedUsers = useQuery({
+    ...keyProblem.passedUsers({ problemId: row.original.id }),
+    enabled: open,
+  })
+
+  const users =
+    getPassedUsers.data?.status === 200 ? getPassedUsers.data.body : undefined
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogTitle>คนผ่าน</DialogTitle>
-        <div></div>
+      <DialogContent className="max-w-sm">
+        <DialogTitle>ผู้ที่ผ่านข้อ {row.original.name}</DialogTitle>
+        {!users ? (
+          <div className="flex items-center justify-center">
+            <Spinner />
+          </div>
+        ) : users.length === 0 ? (
+          '-'
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {users.map((user) => (
+              <li key={user.id} className="flex items-center">
+                <Link
+                  asChild
+                  variant="hidden"
+                  className="mr-2"
+                  title="Passed Submission"
+                >
+                  <NextLink href={`/submission/${user.passedSubmission.id}`}>
+                    <CodeBracketIcon className="size-4" />
+                  </NextLink>
+                </Link>
+                <Link asChild variant="hidden">
+                  <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </DialogContent>
     </Dialog>
   )

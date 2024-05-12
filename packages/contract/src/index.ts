@@ -472,7 +472,7 @@ export const PassedUserSchema = UserModel.pick({
   showName: true,
   rating: true,
 }).extend({
-  latestSubmission: LatestSubmissionModel.nullable(),
+  passedSubmission: LatestSubmissionModel,
 })
 export type PassedUserSchema = z.infer<typeof PassedUserSchema>
 

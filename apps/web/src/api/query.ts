@@ -4,6 +4,7 @@ import {
   announcementRouter,
   problemRouter,
   submissionRouter,
+  userRouter,
 } from '@otog/contract'
 
 import { createQueryClient } from '.'
@@ -35,6 +36,13 @@ export const keyProblem = createQueryKeys('problem', {
     queryKey: ['table'],
     queryFn: () => queryProblem.getProblemTable.query({}),
   }),
+  passedUsers: (params: { problemId: number }) => ({
+    queryKey: ['passedUsers', params],
+    queryFn: () =>
+      queryProblem.getPassedUsers.query({
+        params: { problemId: params.problemId.toString() },
+      }),
+  }),
 })
 
 export const querySubmission = createQueryClient(submissionRouter)
@@ -51,3 +59,6 @@ export const keySubmission = createQueryKeys('submission', {
       }),
   }),
 })
+
+export const queryUser = createQueryClient(userRouter)
+export const keyUser = createQueryKeys('user', {})

@@ -102,7 +102,7 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
-      <section className="flex flex-col flex-1 gap-4 mt-8 py-6 px-6 border rounded-2xl">
+      <section className="flex flex-col flex-1 gap-4 mt-8 p-6 border rounded-2xl">
         <div>
           <h1 className="text-2xl font-semibold inline-flex gap-2 items-center mb-2">
             <PencilSquareIcon className="size-6" />

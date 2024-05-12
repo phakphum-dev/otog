@@ -1,27 +1,15 @@
 'use client'
 
-import { PropsWithChildren, useEffect, useState } from 'react'
-
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes/dist/types'
 
 import { Button } from '@otog/ui'
 
+import { ClientOnly } from './client-only'
+
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
-}
-
-export type ClientOnlyProps = PropsWithChildren<{
-  fallback?: React.ReactNode
-}>
-
-export const ClientOnly = ({ children, fallback = null }: ClientOnlyProps) => {
-  const [show, setShow] = useState(false)
-  useEffect(() => {
-    setShow(true)
-  }, [])
-  return show ? children : fallback
 }
 
 export function ThemeToggle() {

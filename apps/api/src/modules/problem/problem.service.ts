@@ -250,7 +250,7 @@ export class ProblemService {
           username: user.username,
           showName: user.showName,
           rating: user.rating,
-          latestSubmission: user.submission[0] ?? null,
+          passedSubmission: user.submission[0]!,
         }) satisfies PassedUserSchema
     )
   }

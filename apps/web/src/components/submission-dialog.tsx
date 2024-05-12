@@ -1,8 +1,12 @@
 import {
-  DocumentCheckIcon,
+  CheckIcon,
   DocumentDuplicateIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
+import {
+  ArrowTopRightOnSquareIcon,
+  CodeBracketIcon,
+} from '@heroicons/react/24/solid'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import NextLink from 'next/link'
@@ -42,8 +46,16 @@ export const SubmissionDialog = ({
   const { hasCopied, onCopy } = useClipboard()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-3xl">
-        <DialogTitle>
+      <DialogContent className="max-w-3xl rounded-2xl">
+        <NextLink
+          title="Open in full page"
+          href={`/submission/${submission?.id}`}
+          className="absolute right-12 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        >
+          <ArrowTopRightOnSquareIcon className="size-4" />
+        </NextLink>
+        <DialogTitle className="flex items-center gap-2">
+          <CodeBracketIcon className="size-6" />
           <Link
             isExternal
             variant="hidden"
@@ -54,24 +66,32 @@ export const SubmissionDialog = ({
         </DialogTitle>
         {submission ? (
           <div className="flex flex-col gap-2 text-sm min-w-0">
-            <code className="bg-muted rounded self-start px-0.5">
-              {submission.result}
-            </code>
-            <p>{submission.score ?? 0} คะแนน</p>
-            <p>ภาษา {LanguageName[submission.language as Language]}</p>
-            <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
-            <p>
-              ส่งเมื่อ{' '}
-              {submission.creationDate &&
-                dayjs(submission.creationDate).format('DD/MM/BBBB HH:mm:ss')}
-            </p>
-            <p>
-              ส่งโดย{' '}
-              <Link variant="hidden" asChild>
+            <div className="flex justify-between gap-2">
+              <code className="bg-muted rounded self-start px-0.5">
+                {submission.result}
+              </code>
+              <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
+            </div>
+            <div className="flex justify-between gap-2">
+              <p>{submission.score ?? 0} คะแนน</p>
+              <p>ภาษา {LanguageName[submission.language as Language]}</p>
+            </div>
+
+            <p className="flex justify-between text-muted-foreground">
+              <Link
+                asChild
+                variant="hidden"
+                className="inline-flex gap-2 items-center"
+              >
                 <NextLink href={`/user/${submission.user!.id}`}>
+                  <div className="border rounded-full size-6"></div>
                   {submission.user!.showName}
                 </NextLink>
               </Link>
+              <p>
+                ส่งเมื่อ{' '}
+                {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
+              </p>
             </p>
             <div className="relative">
               <CodeHighlight
@@ -86,11 +106,7 @@ export const SubmissionDialog = ({
                   variant="ghost"
                   onClick={() => onCopy(submission.sourceCode ?? '')}
                 >
-                  {hasCopied ? (
-                    <DocumentCheckIcon />
-                  ) : (
-                    <DocumentDuplicateIcon />
-                  )}
+                  {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
                 </Button>
                 <Button size="icon" title="Edit Code" variant="ghost" asChild>
                   <NextLink href={`/problem/${submission.problem!.id}`}>
