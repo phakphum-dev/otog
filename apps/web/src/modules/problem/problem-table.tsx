@@ -269,7 +269,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             disabled={!row.original.latestSubmission}
           >
             <CodeBracketIcon />
-            ดูการส่งล่าสุด
+            การส่งล่าสุด
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={
@@ -279,7 +279,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onClick={() => setOpenPassedUser(true)}
           >
             <ListBulletIcon />
-            ดูคนผ่าน
+            ผู้ที่ผ่าน
           </DropdownMenuItem>
           <ToggleShowProblem row={row} />
         </DropdownMenuContent>

@@ -77,7 +77,7 @@ export const SubmissionDialog = ({
               <p>ภาษา {LanguageName[submission.language as Language]}</p>
             </div>
 
-            <p className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between text-muted-foreground">
               <Link
                 asChild
                 variant="hidden"
@@ -92,7 +92,7 @@ export const SubmissionDialog = ({
                 ส่งเมื่อ{' '}
                 {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
               </p>
-            </p>
+            </div>
             <div className="relative">
               <CodeHighlight
                 className="relative border"
