@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast'
 
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { File } from '@web-std/file'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
 import dynamic from 'next/dynamic'
