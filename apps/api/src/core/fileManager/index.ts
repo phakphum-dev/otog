@@ -1,5 +1,5 @@
 import * as fsExtra from 'fs-extra'
-import { S3 } from 'nestjs-s3'
+// import { S3 } from 'nestjs-s3'
 import fs from 'node:fs'
 import * as path from 'path'
 import { Readable } from 'stream'
@@ -62,69 +62,73 @@ class FileFileManager extends FileManager {
   }
 }
 
-class S3FileManager extends FileManager {
-  private s3: S3
-  private bucket: string
+// class S3FileManager extends FileManager {
+//   private s3: S3
+//   private bucket: string
 
-  constructor(s3: S3, bucket: string) {
-    super()
-    this.s3 = s3
-    this.bucket = bucket
-  }
+//   constructor(s3: S3, bucket: string) {
+//     super()
+//     this.s3 = s3
+//     this.bucket = bucket
+//   }
 
-  _safePath(p: string) {
-    return p.replace(/\\+/g, '/')
-  }
+//   _safePath(p: string) {
+//     return p.replace(/\\+/g, '/')
+//   }
 
-  async createDirIfNotExist(_dirPath: string): Promise<void> {
-    return
-  }
+//   async createDirIfNotExist(_dirPath: string): Promise<void> {
+//     return
+//   }
 
-  async removeDirIfExist(dirPath: string): Promise<void> {
-    await this.s3
-      .deleteObject({
-        Bucket: this.bucket,
-        Key: this._safePath(dirPath),
-      })
-      .promise()
-  }
+//   async removeDirIfExist(dirPath: string): Promise<void> {
+//     await this.s3
+//       .deleteObject({
+//         Bucket: this.bucket,
+//         Key: this._safePath(dirPath),
+//       })
+//       .promise()
+//   }
 
-  async saveFile(destDirPath: string, buffer: any, options?: SaveFileOptions) {
-    const { ContentType } = options || {}
-    await this.s3
-      .putObject({
-        Bucket: this.bucket,
-        Key: this._safePath(destDirPath),
-        Body: buffer,
-        ContentType,
-      })
-      .promise()
-  }
+//   async saveFile(destDirPath: string, buffer: any, options?: SaveFileOptions) {
+//     const { ContentType } = options || {}
+//     await this.s3
+//       .putObject({
+//         Bucket: this.bucket,
+//         Key: this._safePath(destDirPath),
+//         Body: buffer,
+//         ContentType,
+//       })
+//       .promise()
+//   }
 
-  async getFileReadSteam(filePath: string) {
-    const stream = this.s3
-      .getObject({
-        Bucket: this.bucket,
-        Key: this._safePath(filePath),
-      })
-      .createReadStream()
+//   async getFileReadSteam(filePath: string) {
+//     const stream = this.s3
+//       .getObject({
+//         Bucket: this.bucket,
+//         Key: this._safePath(filePath),
+//       })
+//       .createReadStream()
 
-    return stream
-  }
+//     return stream
+//   }
 
-  async isExists(filePath: string) {
-    try {
-      await this.s3
-        .headObject({
-          Bucket: this.bucket,
-          Key: this._safePath(filePath),
-        })
-        .promise()
-      return true
-    } catch (e) {
-      return false
-    }
-  }
+//   async isExists(filePath: string) {
+//     try {
+//       await this.s3
+//         .headObject({
+//           Bucket: this.bucket,
+//           Key: this._safePath(filePath),
+//         })
+//         .promise()
+//       return true
+//     } catch (e) {
+//       return false
+//     }
+//   }
+// }
+
+export {
+  FileFileManager,
+  // S3FileManager,
+  FileManager,
 }
-
-export { FileFileManager, S3FileManager, FileManager }
