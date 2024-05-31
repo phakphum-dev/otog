@@ -4,9 +4,9 @@ import { toast } from 'react-hot-toast'
 
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
-import Editor from '@monaco-editor/react'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -129,6 +129,15 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   )
 }
 
+const ClangdEditor = dynamic(
+  () =>
+    import('../../components/clangd-editor').then((mod) => mod.ClangdEditor),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
+  }
+)
+
 const CodeEditorFormSchema = z.object({
   // sourceCode: z.string(),
   language: z.nativeEnum(Language),
@@ -180,14 +189,15 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
   return (
     <Form {...form}>
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
-        <Editor
+        <ClangdEditor />
+        {/* <Editor
           className="overflow-hidden rounded-md border"
           height="800px"
           theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
           defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
           language={form.watch('language')}
           onMount={(editor) => (editorRef.current = editor)}
-        />
+        /> */}
 
         <div className="grid grid-cols-3 mt-4">
           <FormField
