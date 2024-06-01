@@ -8,6 +8,7 @@ import {
 } from '@otog/contract'
 
 import { createQueryClient } from '.'
+import { getAvatarUrl } from '../firebase/getAvatarUrl'
 
 export const queryAnnouncement = createQueryClient(announcementRouter)
 export const keyAnnouncement = createQueryKeys('announcement', {
@@ -62,3 +63,14 @@ export const keySubmission = createQueryKeys('submission', {
 
 export const queryUser = createQueryClient(userRouter)
 export const keyUser = createQueryKeys('user', {})
+
+export const keyAvatar = createQueryKeys('avatar', {
+  default: (params: { userId: number }) => ({
+    queryKey: ['default', params],
+    queryFn: () => getAvatarUrl({ userId: params.userId }),
+  }),
+  small: (params: { userId: number }) => ({
+    queryKey: ['small', params],
+    queryFn: () => getAvatarUrl({ userId: params.userId, size: 'small' }),
+  }),
+})

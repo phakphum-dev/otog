@@ -1,6 +1,6 @@
 'use client'
 
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/outline'
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes/dist/types'
 
@@ -36,7 +36,7 @@ export function ThemeToggle() {
         onClick={toggleColorMode}
         size="icon"
         className="rounded-full"
-        variant="outline"
+        variant="ghost"
       >
         {resolvedTheme === 'light' ? <MoonIcon /> : <SunIcon />}
       </Button>
