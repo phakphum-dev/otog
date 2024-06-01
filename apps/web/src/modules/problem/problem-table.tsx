@@ -133,7 +133,7 @@ const columns = [
                 <Button
                   title="ผู้ที่ผ่าน"
                   variant="ghost"
-                  className="gap-0 px-2"
+                  className="gap-0 px-1"
                   onClick={() => setOpen(true)}
                 >
                   {row.original.samplePassedUsers.map((user) => (
@@ -170,7 +170,7 @@ const columns = [
           const display = (() => {
             switch (status) {
               case 'accept':
-                return <CheckCircleIcon className="text-green-500" />
+                return <CheckCircleIcon className="text-success" />
               case 'grading':
               case 'waiting':
                 return <ClockIcon className="text-muted-foreground" />
@@ -236,7 +236,7 @@ const columns = [
     id: 'actions',
     cell: ({ row }) => <ActionMenu row={row} />,
     meta: {
-      cellClassName: 'text-center',
+      cellClassName: 'text-center pl-2',
     },
   }),
 ]
