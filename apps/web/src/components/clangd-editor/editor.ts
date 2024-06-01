@@ -38,70 +38,67 @@ const wrapper = new MonacoEditorLanguageClientWrapper()
 
 export const createUserConfig = async (
   code: string,
-  serverWorkerPromise: Promise<Worker>,
-  enableLsp: boolean
+  serverWorker: Worker,
+  theme: string
 ): Promise<UserConfig> => {
   let languageClientConfig: LanguageClientConfig | undefined
-  if (enableLsp) {
-    const serverWorker = await serverWorkerPromise
-    const recreateLsp = async () => {
-      console.log('reloading lsp...')
-      wrapper
-        .getLanguageClientWrapper()
-        ?.restartLanguageClient(serverWorker, false)
-    }
+  const recreateLsp = async () => {
+    console.log('reloading lsp...')
+    wrapper
+      .getLanguageClientWrapper()
+      ?.restartLanguageClient(serverWorker, false)
+  }
 
-    const restart = async () => {
-      if (clientRunning) {
-        try {
-          clientRunning = false
-          setClangdStatus('indeterminate')
-          readerOnError.dispose()
-          readerOnClose.dispose()
-          wrapper
-            .getLanguageClientWrapper()
-            ?.restartLanguageClient(serverWorker, false)
-        } finally {
-          retry++
-          if (retry > 5 && !succeeded) {
-            setClangdStatus('disabled')
-            console.error('Failed to start clangd after 5 retries')
-            return
-          }
-          setTimeout(recreateLsp, 1000)
+  const restart = async () => {
+    if (clientRunning) {
+      try {
+        clientRunning = false
+        setClangdStatus('indeterminate')
+        readerOnError.dispose()
+        readerOnClose.dispose()
+        wrapper
+          .getLanguageClientWrapper()
+          ?.restartLanguageClient(serverWorker, false)
+      } finally {
+        retry++
+        if (retry > 5 && !succeeded) {
+          setClangdStatus('disabled')
+          console.error('Failed to start clangd after 5 retries')
+          return
         }
+        setTimeout(recreateLsp, 1000)
       }
     }
+  }
 
-    const reader = new BrowserMessageReader(serverWorker)
-    const writer = new BrowserMessageWriter(serverWorker)
-    const readerOnError = reader.onError(() => restart)
-    const readerOnClose = reader.onClose(() => restart)
-    const successCallback = reader.listen(() => {
-      succeeded = true
-      setClangdStatus('ready')
-      successCallback.dispose()
-    })
+  const reader = new BrowserMessageReader(serverWorker)
+  const writer = new BrowserMessageWriter(serverWorker)
+  const readerOnError = reader.onError(() => restart)
+  const readerOnClose = reader.onClose(() => restart)
+  const successCallback = reader.listen(() => {
+    succeeded = true
+    setClangdStatus('ready')
+    successCallback.dispose()
+  })
 
-    languageClientConfig = {
-      languageId: LANGUAGE_ID,
-      name: 'Clangd WASM Language Server',
-      options: {
-        $type: 'WorkerDirect',
-        worker: serverWorker,
+  languageClientConfig = {
+    languageId: LANGUAGE_ID,
+    name: 'Clangd WASM Language Server',
+    options: {
+      $type: 'WorkerDirect',
+      worker: serverWorker,
+    },
+    clientOptions: {
+      documentSelector: [LANGUAGE_ID],
+      workspaceFolder: {
+        index: 0,
+        name: 'workspace',
+        uri: Uri.file(WORKSPACE_PATH),
       },
-      clientOptions: {
-        documentSelector: [LANGUAGE_ID],
-        workspaceFolder: {
-          index: 0,
-          name: 'workspace',
-          uri: Uri.file(WORKSPACE_PATH),
-        },
-      },
-      connectionProvider: {
-        get: async () => ({ reader, writer }),
-      },
-    }
+    },
+    connectionProvider: {
+      get: async () => ({ reader, writer }),
+    },
   }
 
   return {
@@ -135,7 +132,7 @@ export const createUserConfig = async (
           },
         },
         userConfiguration: {
-          json: getUserConfigurationJson(),
+          json: getUserConfigurationJson({ theme }),
         },
         useDiffEditor: false,
       },
@@ -148,27 +145,23 @@ export const createUserConfig = async (
 }
 
 export const createEditor = async (
-  element: HTMLElement,
+  element: HTMLElement | null,
   userConfig: UserConfig
 ) => {
+  if (!element) {
+    console.error('element is not found')
+    return
+  }
   element.innerHTML = ''
   await wrapper.initAndStart(userConfig, element!)
-  const editorInstance = wrapper.getEditor()!
-
-  return editorInstance
+  return wrapper
 }
 
-function getUserConfigurationJson(): string {
+function getUserConfigurationJson({ theme }: { theme: string }): string {
   return JSON.stringify({
-    'workbench.colorTheme': getCurrentTheme(),
+    'workbench.colorTheme': theme,
     'editor.wordBasedSuggestions': 'off',
     'editor.inlayHints.enabled': 'offUnlessPressed',
     'editor.quickSuggestionsDelay': 200,
   })
-}
-
-function getCurrentTheme() {
-  return document.body.classList.contains('dark')
-    ? 'Default Dark Modern'
-    : 'Default Light Modern'
 }

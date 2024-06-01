@@ -1,9 +1,11 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import MonacoEditor from '@monaco-editor/react'
 import { File } from '@web-std/file'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
@@ -24,6 +26,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@otog/ui'
 
 import { queryProblem, querySubmission } from '../../api/query'
@@ -99,7 +105,7 @@ int main() {
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
-    <main className="container max-w-4xl ">
+    <main className="container max-w-4xl flex-1">
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
@@ -135,7 +141,11 @@ const ClangdEditor = dynamic(
     import('../../components/clangd-editor').then((mod) => mod.ClangdEditor),
   {
     ssr: false,
-    loading: () => <p>Loading...</p>,
+    loading: () => (
+      <p className="flex items-center justify-center w-full h-[800px]">
+        Loading...
+      </p>
+    ),
   }
 )
 
@@ -187,18 +197,31 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
     )
   }, console.error)
 
+  const [preferOldEditor, setPreferOldEditor] = useState(false)
+
   return (
     <Form {...form}>
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
-        <ClangdEditor />
-        {/* <Editor
-          className="overflow-hidden rounded-md border"
-          height="800px"
-          theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
-          defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-          language={form.watch('language')}
-          onMount={(editor) => (editorRef.current = editor)}
-        /> */}
+        {!preferOldEditor && form.watch('language') === 'cpp' ? (
+          <div className="overflow-hidden rounded-md border">
+            <ClangdEditor
+              className="h-[800px]"
+              defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
+              theme={resolvedTheme === 'light' ? 'light' : 'dark'}
+              onMount={(editor) => (editorRef.current = editor)}
+            />
+            <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} />
+          </div>
+        ) : (
+          <MonacoEditor
+            className="overflow-hidden rounded-md border"
+            height="800px"
+            theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
+            defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
+            language={form.watch('language')}
+            onMount={(editor) => (editorRef.current = editor)}
+          />
+        )}
 
         <div className="grid grid-cols-3 mt-4">
           <FormField
@@ -220,11 +243,57 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
               </Select>
             )}
           />
+
           <Button type="submit" className="col-start-3">
             ส่ง
           </Button>
         </div>
       </form>
     </Form>
+  )
+}
+
+const ClangdEditorFooter = ({
+  setPreferOldEditor,
+}: {
+  setPreferOldEditor: (preferOldEditor: boolean) => void
+}) => {
+  return (
+    <div className="flex justify-between items-center px-4 py-1">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" variant="ghost" className="rounded-full size-6">
+              <InformationCircleIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="whitespace-pre-line flex flex-col items-start">
+            <span>
+              <Link
+                href="https://github.com/Guyutongxue/clangd-in-browser"
+                isExternal
+              >
+                Clangd Editor
+              </Link>{' '}
+              powered by wasm
+            </span>
+            <span>- Error ที่แสดงอาจจะไม่ตรงกับผลลัพธ์หลังการส่ง</span>
+            <span>
+              - <code>{'#include <bits/stdc++.h>'}</code> สามารถใช้งานได้
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div className="flex items-center text-xs gap-2">
+        <p>Editor โหลดช้า ?</p>
+        <Button
+          onClick={() => setPreferOldEditor(true)}
+          variant="link"
+          className="text-xs p-0 h-auto"
+        >
+          สลับไปใช้ Version เดิม
+        </Button>
+      </div>
+    </div>
   )
 }
