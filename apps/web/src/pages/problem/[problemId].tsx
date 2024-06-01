@@ -207,7 +207,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             <ClangdEditor
               className="h-[800px]"
               defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-              theme={resolvedTheme === 'light' ? 'light' : 'dark'}
+              theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
               onMount={(editor) => (editorRef.current = editor)}
             />
             <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} />
@@ -216,7 +216,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
           <MonacoEditor
             className="overflow-hidden rounded-md border"
             height="800px"
-            theme={resolvedTheme === 'light' ? 'vs-light' : 'vs-dark'}
+            theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
             defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
             language={form.watch('language')}
             onMount={(editor) => (editorRef.current = editor)}

@@ -169,23 +169,41 @@ export class ProblemService {
         })
       )
     )
-    return problems.map(
-      (problem, index) =>
-        ({
-          id: problem.id,
-          name: problem.name,
-          sname: problem.sname,
-          score: problem.score,
-          timeLimit: problem.timeLimit,
-          memoryLimit: problem.memoryLimit,
-          show: problem.show,
-          recentShowTime: problem.recentShowTime,
-          case: problem.case,
-          rating: problem.rating,
-          passedCount: passedCount[index]!,
-          latestSubmission: problem.submission[0] ?? null,
-        }) satisfies ProblemTableRowSchema
+    const samplePassedUsers = await this.prisma.$transaction(
+      problems.map((problem) =>
+        this.prisma.user.findMany({
+          where: {
+            NOT: { role: UserRole.admin },
+            submission: {
+              some: {
+                problemId: problem.id,
+                status: SubmissionStatus.accept,
+              },
+            },
+          },
+          take: 3,
+          select: {
+            id: true,
+            showName: true,
+          },
+        })
+      )
     )
+    return problems.map((problem, index) => ({
+      id: problem.id,
+      name: problem.name,
+      sname: problem.sname,
+      score: problem.score,
+      timeLimit: problem.timeLimit,
+      memoryLimit: problem.memoryLimit,
+      show: problem.show,
+      recentShowTime: problem.recentShowTime,
+      case: problem.case,
+      rating: problem.rating,
+      passedCount: passedCount[index]!,
+      latestSubmission: problem.submission[0] ?? null,
+      samplePassedUsers: samplePassedUsers[index]!,
+    }))
   }
 
   async findOneById(id: number) {

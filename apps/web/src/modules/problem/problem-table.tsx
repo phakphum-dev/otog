@@ -4,13 +4,17 @@ import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
 
 import {
+  CheckCircleIcon,
+  ClockIcon,
   CodeBracketIcon,
   EllipsisHorizontalIcon,
   EyeIcon,
   EyeSlashIcon,
   ListBulletIcon,
   PencilSquareIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
@@ -24,6 +28,8 @@ import { z } from 'zod'
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
 import {
+  AvatarGroup,
+  AvatarMore,
   Button,
   Dialog,
   DialogClose,
@@ -52,9 +58,11 @@ import {
 } from '@otog/ui'
 
 import { keyProblem, queryProblem, querySubmission } from '../../api/query'
+import { InlineComponent } from '../../components/InlineComponent'
 import { FileInput } from '../../components/file-input'
 import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
+import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
 
@@ -113,25 +121,120 @@ const columns = [
     enableSorting: false,
   }),
   columnHelper.accessor('passedCount', {
-    header: () => 'ผ่าน',
+    header: 'ผ่านแล้ว',
+    cell: ({ row, getValue }) => (
+      <InlineComponent
+        render={() => {
+          const passedCount = getValue()
+          const [open, setOpen] = useState(false)
+          return passedCount > 0 ? (
+            <>
+              <AvatarGroup asChild>
+                <Button
+                  title="ผู้ที่ผ่าน"
+                  variant="ghost"
+                  className="gap-0 px-2"
+                  onClick={() => setOpen(true)}
+                >
+                  {row.original.samplePassedUsers.map((user) => (
+                    <UserAvatar key={user.id} user={user} />
+                  ))}
+                  {passedCount > 3 && <AvatarMore count={passedCount} />}
+                </Button>
+              </AvatarGroup>
+              <PassedUserDialog
+                problem={row.original}
+                open={open}
+                setOpen={setOpen}
+              />
+            </>
+          ) : (
+            <div className="px-1 text-muted-foreground">-</div>
+          )
+        }}
+      />
+    ),
     meta: {
-      headClassName: 'text-center',
-      cellClassName: 'text-center',
+      headClassName: 'text-end px-0',
+      cellClassName: 'text-end px-0',
+    },
+  }),
+  columnHelper.accessor('latestSubmission.status', {
+    header: () => 'สถานะ',
+    cell: ({ getValue, row }) => (
+      <InlineComponent
+        render={() => {
+          const [open, setOpen] = useState(false)
+
+          const status = getValue() as SubmissionStatus | null
+          const display = (() => {
+            switch (status) {
+              case 'accept':
+                return <CheckCircleIcon className="text-green-500" />
+              case 'grading':
+              case 'waiting':
+                return <ClockIcon className="text-muted-foreground" />
+              case 'reject':
+                return <XCircleIcon className="text-destructive" />
+              default:
+                return (
+                  <div className="size-[15px] border-muted-foreground border rounded-full" />
+                )
+            }
+          })()
+
+          if (!status) {
+            return (
+              <div
+                className="flex justify-center w-full gap-2"
+                title="not submitted"
+              >
+                {display}
+              </div>
+            )
+          }
+          return (
+            <>
+              <Button
+                title={status}
+                variant="ghost"
+                className="[&>svg]:size-5"
+                size="icon"
+                onClick={() => setOpen(true)}
+              >
+                {display}
+              </Button>
+              <SubmissionDialog
+                open={open}
+                setOpen={setOpen}
+                submissionId={row.original.latestSubmission!.id}
+              />
+            </>
+          )
+        }}
+      />
+    ),
+    meta: {
+      cellClassName: 'text-center px-0',
+    },
+  }),
+  columnHelper.display({
+    id: 'submit',
+    header: 'ส่ง',
+    cell: ({ row }) => (
+      <SubmitCode
+        problemId={row.original.id}
+        // TODO: fix nullish
+        problemName={row.original.name ?? '-'}
+      />
+    ),
+    meta: {
+      cellClassName: 'text-center px-0',
     },
   }),
   columnHelper.display({
     id: 'actions',
-    header: () => <div className="w-10 text-center">ส่ง</div>,
-    cell: ({ row }) => (
-      <div className="flex gap-2">
-        <SubmitCode
-          problemId={row.original.id}
-          // TODO: fix nullish
-          problemName={row.original.name ?? '-'}
-        />
-        <ActionMenu row={row} />
-      </div>
-    ),
+    cell: ({ row }) => <ActionMenu row={row} />,
     meta: {
       cellClassName: 'text-center',
     },
@@ -249,7 +352,6 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
 const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const [openLatestSubmission, setOpenLatestSubmission] = useState(false)
   const [openPassedUser, setOpenPassedUser] = useState(false)
-  const { isAdmin } = useUserContext()
   return (
     <>
       <DropdownMenu>
@@ -273,11 +375,8 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             การส่งล่าสุด
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={
-              !isAdmin &&
-              row.original.latestSubmission?.status !== SubmissionStatus.accept
-            }
             onClick={() => setOpenPassedUser(true)}
+            disabled={row.original.passedCount === 0}
           >
             <ListBulletIcon />
             ผู้ที่ผ่าน
@@ -291,7 +390,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
         setOpen={setOpenLatestSubmission}
       />
       <PassedUserDialog
-        row={row}
+        problem={row.original}
         open={openPassedUser}
         setOpen={setOpenPassedUser}
       />
@@ -300,26 +399,27 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
 }
 
 const PassedUserDialog = ({
-  row,
+  problem,
   open,
   setOpen,
 }: {
-  row: Row<ProblemTableRowSchema>
+  problem: Pick<ProblemTableRowSchema, 'id' | 'name'>
   open: boolean
   setOpen: (open: boolean) => void
 }) => {
   const getPassedUsers = useQuery({
-    ...keyProblem.passedUsers({ problemId: row.original.id }),
+    ...keyProblem.passedUsers({ problemId: problem.id }),
     enabled: open,
   })
 
   const users =
     getPassedUsers.data?.status === 200 ? getPassedUsers.data.body : undefined
 
+  const { isAdmin } = useUserContext()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-sm">
-        <DialogTitle>ผู้ที่ผ่านข้อ {row.original.name}</DialogTitle>
+        <DialogTitle>ผู้ที่ผ่านข้อ {problem.name}</DialogTitle>
         {!users ? (
           <div className="flex items-center justify-center">
             <Spinner />
@@ -329,20 +429,23 @@ const PassedUserDialog = ({
         ) : (
           <ul className="flex flex-col gap-2">
             {users.map((user) => (
-              <li key={user.id} className="flex items-center">
-                <Link
-                  asChild
-                  variant="hidden"
-                  className="mr-2"
-                  title="Passed Submission"
-                >
-                  <NextLink href={`/submission/${user.passedSubmission.id}`}>
-                    <CodeBracketIcon className="size-4" />
-                  </NextLink>
-                </Link>
+              <li key={user.id} className="flex items-center gap-2">
+                <UserAvatar user={user} />
                 <Link asChild variant="hidden">
                   <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
                 </Link>
+                {isAdmin && (
+                  <Link
+                    asChild
+                    variant="hidden"
+                    title="Passed Submission"
+                    isExternal
+                  >
+                    <NextLink href={`/submission/${user.passedSubmission.id}`}>
+                      <ArrowTopRightOnSquareIcon className="size-4" />
+                    </NextLink>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

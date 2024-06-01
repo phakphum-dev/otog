@@ -2,11 +2,13 @@ import { forwardRef } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import BoringAvatar from 'boring-avatars'
+import { useTheme } from 'next-themes'
 
 import { Avatar, AvatarFallback, AvatarImage, clsx } from '@otog/ui'
 
 import { keyAvatar } from '../api/query'
 import { AvatarSize } from '../firebase/getAvatarUrl'
+import { ClientOnly } from './client-only'
 
 export type UserAvatarProps = {
   user: {
@@ -20,40 +22,42 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
   (props, ref) => {
     const { user, className } = props
 
+    // TODO: remove query from frontend
     const getAvatarUrl = useQuery({
       ...keyAvatar.getUrl({ userId: user.id, size: props.size ?? 'small' }),
+      enabled: false,
     })
 
+    const { resolvedTheme } = useTheme()
     return (
       <Avatar
         ref={ref}
-        className={clsx(
-          'h-6 w-6 min-w-6 rounded-full object-cover border',
-          className
-        )}
+        className={clsx('h-6 w-6 min-w-6 rounded-full border', className)}
       >
         <AvatarImage
+          className="object-cover"
           src={getAvatarUrl.data!}
           alt={`Profile Picture of ${user.showName}`}
+          title={user.showName}
         />
         <AvatarFallback>
-          <BoringAvatar
-            square
-            size={24}
-            name={user.showName}
-            variant="beam"
-            colors={[
-              '#ffd5ae',
-              '#b1e9fc',
-              '#b9f6ba',
-              '#ffb1b2',
-              '#ffe0ae',
-              '#CBD5E0',
-            ]}
-          />
+          <ClientOnly>
+            <BoringAvatar
+              square
+              size={24}
+              name={user.showName}
+              variant="beam"
+              colors={colors[resolvedTheme === 'dark' ? 'dark' : 'light']}
+            />
+          </ClientOnly>
         </AvatarFallback>
       </Avatar>
     )
   }
 )
 UserAvatar.displayName = 'UserAvatar'
+
+const colors = {
+  light: ['#F7FAFC', '#EDF2F7', '#E2E8F0'],
+  dark: ['#2D3748', '#1A202C', '#171923'],
+}

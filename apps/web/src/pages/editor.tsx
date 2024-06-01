@@ -29,7 +29,7 @@ export default function EditorPage() {
         <ClangdEditor
           className="h-[800px]"
           defaultValue={DEFAULT_SOURCE_CODE}
-          theme={resolvedTheme === 'light' ? 'light' : 'dark'}
+          theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
         />
       </div>
     </div>

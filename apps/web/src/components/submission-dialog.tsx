@@ -66,11 +66,9 @@ export const SubmissionDialog = ({
           </Link>
         </DialogTitle>
         {submission ? (
-          <div className="flex flex-col gap-2 text-sm min-w-0">
+          <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
             <div className="flex justify-between gap-2">
-              <code className="bg-muted rounded self-start px-0.5">
-                {submission.result}
-              </code>
+              <code className="text-foreground">{submission.result}</code>
               <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
             </div>
             <div className="flex justify-between gap-2">
@@ -78,7 +76,7 @@ export const SubmissionDialog = ({
               <p>ภาษา {LanguageName[submission.language as Language]}</p>
             </div>
 
-            <div className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between">
               <Link
                 asChild
                 variant="hidden"

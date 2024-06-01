@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import * as AvatarPrimitive from '@radix-ui/react-avatar'
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from './utils'
 
@@ -46,4 +47,44 @@ const AvatarFallback = React.forwardRef<
 ))
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 
-export { Avatar, AvatarImage, AvatarFallback }
+const AvatarGroup = ({
+  children,
+  className,
+  asChild,
+}: {
+  children: React.ReactNode
+  className?: string
+  asChild?: boolean
+}) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      className={cn(
+        'inline-flex items-center [&>:not(:last-child)]:-mr-2 [&>*]:border-background',
+        className
+      )}
+    >
+      {children}
+    </Comp>
+  )
+}
+
+const AvatarCount = ({ count }: { count: number }) => {
+  return (
+    <span
+      className={cn(
+        'relative h-6 w-6 min-w-6 rounded-full border flex items-center justify-center bg-muted text-[10px] text-muted-foreground font-bold'
+      )}
+    >
+      {count > 100 ? '99+' : count}
+    </span>
+  )
+}
+
+export {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarCount as AvatarMore,
+}

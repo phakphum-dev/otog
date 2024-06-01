@@ -461,6 +461,7 @@ const LatestSubmissionModel = SubmissionModel.pick({
 })
 export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
   passedCount: z.number(),
+  samplePassedUsers: z.array(UserModel.pick({ id: true, showName: true })),
   latestSubmission: LatestSubmissionModel.nullable(),
 })
 export type ProblemTableRowSchema = z.infer<typeof ProblemTableRowSchema>

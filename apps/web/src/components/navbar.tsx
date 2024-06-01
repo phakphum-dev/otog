@@ -1,29 +1,15 @@
-import { ForwardedRef, useEffect, useRef } from 'react'
-
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
   UserIcon,
 } from '@heroicons/react/24/outline'
-import { useQuery } from '@tanstack/react-query'
-import { Session, User } from 'next-auth'
-// import { useUserData } from '@src/context/UserContext'
-// import { useDisclosure } from '@src/hooks/useDisclosure'
-// import { ChevronDownIcon } from '@src/icons/ChevronDownIcon'
-// import { HamburgerIcon } from '@src/icons/HamburgerIcon'
-// import { useUserSmallAvatar } from '@src/profile/useAvartar'
-// import { IconButton } from '@src/ui/IconButton'
-// import { Link } from '@src/ui/Link'
-// import { Menu, MenuButton, MenuItem, MenuList } from '@src/ui/Menu'
-// import clsx from 'clsx'
+import { User } from 'next-auth'
 import Image from 'next/image'
 import NextLink from 'next/link'
-import { useRouter } from 'next/router'
 
 // import { SearchMenu } from './SearchMenu'
 import {
   Button,
-  ButtonProps,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -32,11 +18,7 @@ import {
 } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
-import { keyAvatar } from '../api/query'
 import { useUserContext } from '../context/user-context'
-// import { Avatar } from '../Avatar'
-// import { ToggleColorModeButton } from '../ToggleColorModeButton'
-import { environment } from '../env'
 import { ThemeToggle } from './theme-provider'
 import { UserAvatar } from './user-avatar'
 
@@ -94,7 +76,10 @@ const Menu = ({ user }: MenuProps) => {
             โปรไฟล์
           </NextLink>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={logout} className="text-destructive">
+        <DropdownMenuItem
+          onClick={logout}
+          className="text-destructive focus:text-destructive"
+        >
           <ArrowRightStartOnRectangleIcon />
           ออกจากระบบ
         </DropdownMenuItem>

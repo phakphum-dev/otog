@@ -23,3 +23,5 @@ export * from './textarea'
 export * from './toggle'
 export * from './tooltip'
 export * from './utils'
+
+export { Slot } from '@radix-ui/react-slot'
