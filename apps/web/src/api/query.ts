@@ -65,12 +65,8 @@ export const queryUser = createQueryClient(userRouter)
 export const keyUser = createQueryKeys('user', {})
 
 export const keyAvatar = createQueryKeys('avatar', {
-  default: (params: { userId: number }) => ({
+  getUrl: (params: { userId: number; size: 'default' | 'small' }) => ({
     queryKey: ['default', params],
-    queryFn: () => getAvatarUrl({ userId: params.userId }),
-  }),
-  small: (params: { userId: number }) => ({
-    queryKey: ['small', params],
-    queryFn: () => getAvatarUrl({ userId: params.userId, size: 'small' }),
+    queryFn: () => getAvatarUrl({ userId: params.userId, size: params.size }),
   }),
 })

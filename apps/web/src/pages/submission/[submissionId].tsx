@@ -14,6 +14,7 @@ import { Button, Link } from '@otog/ui'
 import { querySubmission } from '../../api/query'
 import { withSession } from '../../api/withSession'
 import { CodeHighlight } from '../../components/code-highlight'
+import { UserAvatar } from '../../components/user-avatar'
 import { Language, LanguageName } from '../../enums'
 import { useClipboard } from '../../hooks/use-clipboard'
 
@@ -83,7 +84,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
               className="inline-flex gap-2 items-center"
             >
               <NextLink href={`/user/${submission.user!.id}`}>
-                <div className="border rounded-full size-6"></div>
+                <UserAvatar user={submission.user!} />
                 {submission.user!.showName}
               </NextLink>
             </Link>

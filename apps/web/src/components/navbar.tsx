@@ -83,7 +83,7 @@ const Menu = ({ user }: MenuProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost">
-          <MyAvatar user={user} />
+          <UserAvatar user={user} />
           <ChevronDownIcon className="size-2" />
         </Button>
       </DropdownMenuTrigger>
@@ -101,11 +101,4 @@ const Menu = ({ user }: MenuProps) => {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-const MyAvatar = ({ user }: { user: User['user'] }) => {
-  const getAvatarUrl = useQuery({
-    ...keyAvatar.small({ userId: user.id }),
-  })
-  return <UserAvatar name={user.showName} src={getAvatarUrl.data} />
 }

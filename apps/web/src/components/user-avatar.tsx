@@ -1,27 +1,46 @@
 import { forwardRef } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
 import BoringAvatar from 'boring-avatars'
 
 import { Avatar, AvatarFallback, AvatarImage, clsx } from '@otog/ui'
 
-export type AvatarProps = {
-  name: string
-  src?: string | null
+import { keyAvatar } from '../api/query'
+import { AvatarSize } from '../firebase/getAvatarUrl'
+
+export type UserAvatarProps = {
+  user: {
+    id: number
+    showName: string
+  }
+  size?: AvatarSize
   className?: string
 }
-export const UserAvatar = forwardRef<HTMLDivElement, AvatarProps>(
+export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
   (props, ref) => {
-    const { name, src, className } = props
+    const { user, className } = props
+
+    const getAvatarUrl = useQuery({
+      ...keyAvatar.getUrl({ userId: user.id, size: props.size ?? 'small' }),
+    })
+
     return (
       <Avatar
-        className={clsx('h-6 w-6 min-w-6 rounded-full object-cover', className)}
+        ref={ref}
+        className={clsx(
+          'h-6 w-6 min-w-6 rounded-full object-cover border',
+          className
+        )}
       >
-        <AvatarImage src={src!} alt={`Profile Picture of ${name}`} />
+        <AvatarImage
+          src={getAvatarUrl.data!}
+          alt={`Profile Picture of ${user.showName}`}
+        />
         <AvatarFallback>
           <BoringAvatar
             square
             size={24}
-            name={name}
+            name={user.showName}
             variant="beam"
             colors={[
               '#ffd5ae',
@@ -37,3 +56,4 @@ export const UserAvatar = forwardRef<HTMLDivElement, AvatarProps>(
     )
   }
 )
+UserAvatar.displayName = 'UserAvatar'

@@ -1,6 +1,10 @@
 import { storage } from '.'
 
-export type AvatarKey = { userId: number; size?: 'default' | 'small' }
+export type AvatarSize = 'default' | 'small'
+export interface AvatarKey {
+  userId: number
+  size?: AvatarSize
+}
 export async function getAvatarUrl({ userId, size = 'default' }: AvatarKey) {
   try {
     const url = await storage

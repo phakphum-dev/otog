@@ -24,6 +24,7 @@ import { keySubmission } from '../api/query'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
 import { CodeHighlight } from './code-highlight'
+import { UserAvatar } from './user-avatar'
 
 export const SubmissionDialog = ({
   submissionId,
@@ -84,7 +85,7 @@ export const SubmissionDialog = ({
                 className="inline-flex gap-2 items-center"
               >
                 <NextLink href={`/user/${submission.user!.id}`}>
-                  <div className="border rounded-full size-6"></div>
+                  <UserAvatar user={submission.user!} />
                   {submission.user!.showName}
                 </NextLink>
               </Link>
