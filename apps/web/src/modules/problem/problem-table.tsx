@@ -1,10 +1,4 @@
-import {
-  experimental_useEffectEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
@@ -16,7 +10,9 @@ import {
   EllipsisHorizontalIcon,
   EyeIcon,
   EyeSlashIcon,
+  FunnelIcon,
   ListBulletIcon,
+  MagnifyingGlassIcon,
   PencilSquareIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
@@ -31,7 +27,6 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
 } from '@tanstack/table-core'
-import { useDebounce } from '@uidotdev/usehooks'
 import { File } from '@web-std/file'
 import { produce } from 'immer'
 import NextLink from 'next/link'
@@ -60,8 +55,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-  InputProps,
+  InputGroup,
+  InputLeftIcon,
   Link,
   Select,
   SelectContent,
@@ -74,6 +69,7 @@ import {
 } from '@otog/ui'
 
 import { keyProblem, queryProblem, querySubmission } from '../../api/query'
+import { DebouncedInput } from '../../components/DebouncedInput'
 import { InlineComponent } from '../../components/InlineComponent'
 import { FileInput } from '../../components/file-input'
 import { SubmissionDialog } from '../../components/submission-dialog'
@@ -81,7 +77,7 @@ import { TableComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
-import { useEffectEvent } from '../../hooks/useEffectEvent'
+import { exhaustiveGuard } from '../../utils/exhaustiveGuard'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())
@@ -102,28 +98,37 @@ export const ProblemTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   })
-  const statusFilter = table
-    .getState()
-    .columnFilters.find((column) => column.id === 'status')?.value as RowStatus
+  const nameColumn = table.getColumn('name')!
+  const statusColumn = table.getColumn('status')!
+  const statusFilterValue = statusColumn.getFilterValue() as
+    | RowStatus
+    | undefined
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
-        <DebouncedInput
-          placeholder="ค้นหา..."
-          onDebounce={(value) => table.getColumn('name')?.setFilterValue(value)}
-        />
+        <InputGroup>
+          <InputLeftIcon>
+            <MagnifyingGlassIcon />
+          </InputLeftIcon>
+          <DebouncedInput
+            placeholder="ค้นหา..."
+            onDebounce={(value) => nameColumn.setFilterValue(value)}
+          />
+        </InputGroup>
         <Select
-          required={false}
-          onValueChange={table.getColumn('status')?.setFilterValue}
+          value={statusFilterValue ?? ''}
+          onValueChange={statusColumn.setFilterValue}
         >
           <SelectPrimitive.Trigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" className="font-normal">
+              <FunnelIcon />
               สถานะ
-              {statusFilter && (
+              {statusFilterValue && (
                 <>
                   <hr className="h-full border-l" />
+                  {getRowStatusIcon(statusFilterValue)}
                   <div className="font-normal">
-                    {RowStatusLabel[statusFilter]}
+                    {RowStatusLabel[statusFilterValue]}
                   </div>
                 </>
               )}
@@ -131,8 +136,19 @@ export const ProblemTable = () => {
           </SelectPrimitive.Trigger>
           <SelectContent>
             {Object.entries(RowStatusLabel).map(([value, label]) => (
-              <SelectItem value={value} key={value}>
-                {label}
+              <SelectItem
+                value={value}
+                key={value}
+                onPointerUp={() => {
+                  if (value === statusFilterValue) {
+                    statusColumn.setFilterValue('')
+                  }
+                }}
+              >
+                <div className="flex gap-2 items-center">
+                  {getRowStatusIcon(value as RowStatus)}
+                  {label}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -146,19 +162,6 @@ export const ProblemTable = () => {
       />
     </div>
   )
-}
-
-interface DebouncedInputProps extends InputProps {
-  onDebounce: (value: string) => void
-}
-const DebouncedInput = (props: DebouncedInputProps) => {
-  const [input, setInput] = useState('')
-  const onValueChange = useEffectEvent(props.onDebounce)
-  const debouncedInput = useDebounce(input, 300)
-  useEffect(() => {
-    onValueChange(debouncedInput)
-  }, [debouncedInput])
-  return <Input {...props} onChange={(e) => setInput(e.target.value)} />
 }
 
 const RowStatus = {
@@ -180,6 +183,20 @@ function getRowStatus(status: SubmissionStatus | undefined | null): RowStatus {
     return RowStatus.NOT_PASSED
   }
   return RowStatus.PASSED
+}
+function getRowStatusIcon(status: RowStatus) {
+  switch (status) {
+    case RowStatus.PASSED:
+      return <CheckCircleIcon className="size-4 text-muted-foreground" />
+    case RowStatus.NOT_PASSED:
+      return <XCircleIcon className="size-4 text-muted-foreground" />
+    case RowStatus.NOT_SUBMITTED:
+      return (
+        <div className="size-3 m-0.5 border-muted-foreground border rounded-full" />
+      )
+    default:
+      exhaustiveGuard(status)
+  }
 }
 
 const SubmissionStatusLabel: Record<SubmissionStatus, string> = {
