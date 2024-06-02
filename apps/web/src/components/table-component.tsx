@@ -116,32 +116,30 @@ export function TableComponent<T>({
             </TableRow>
           ))
         }
-        itemContent={(index, row) => (
-          <>
-            {row.getVisibleCells().map((cell) => {
-              const columnDef = cell.column.columnDef
+        itemContent={(index, row) =>
+          row.getVisibleCells().map((cell) => {
+            const columnDef = cell.column.columnDef
 
-              const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
-              if (rowSpan !== undefined && rowSpan <= 0) return
+            const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
+            if (rowSpan !== undefined && rowSpan <= 0) return
 
-              // const interactive =
-              //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
+            // const interactive =
+            //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
 
-              return (
-                <TableCell
-                  key={cell.id}
-                  className={clsx(cell.column.columnDef.meta?.cellClassName)}
-                  rowSpan={rowSpan}
-                  // onClick={
-                  //   interactive ? undefined : (e) => onRowClick?.(row, e)
-                  // }
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              )
-            })}
-          </>
-        )}
+            return (
+              <TableCell
+                key={cell.id}
+                className={clsx(cell.column.columnDef.meta?.cellClassName)}
+                rowSpan={rowSpan}
+                // onClick={
+                //   interactive ? undefined : (e) => onRowClick?.(row, e)
+                // }
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            )
+          })
+        }
       />
     </ClientOnly>
   )
