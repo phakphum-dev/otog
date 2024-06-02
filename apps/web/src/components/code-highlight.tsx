@@ -30,17 +30,13 @@ export const CodeHighlight = (props: CodeHighlightProps) => {
             )}
           >
             {tokens.map((line, i) => (
-              <div
-                {...getLineProps({ line, key: i })}
-                key={`r${i}`}
-                className="table-row"
-              >
+              <div {...getLineProps({ line })} key={i} className="table-row">
                 <div className="table-cell pr-3 select-none text-muted-foreground text-right">
                   {i + 1}
                 </div>
                 <div className="table-cell">
                   {line.map((token, key) => (
-                    <span {...getTokenProps({ token, key })} key={`c${key}`} />
+                    <span {...getTokenProps({ token })} key={key} />
                   ))}
                 </div>
               </div>

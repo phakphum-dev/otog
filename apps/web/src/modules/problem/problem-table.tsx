@@ -1,4 +1,10 @@
-import { useRef, useState } from 'react'
+import {
+  experimental_useEffectEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
@@ -18,7 +24,14 @@ import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
-import { Row, createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
+import {
+  ColumnFiltersState,
+  Row,
+  createColumnHelper,
+  getCoreRowModel,
+  getFilteredRowModel,
+} from '@tanstack/table-core'
+import { useDebounce } from '@uidotdev/usehooks'
 import { File } from '@web-std/file'
 import { produce } from 'immer'
 import NextLink from 'next/link'
@@ -47,10 +60,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  Input,
+  InputProps,
   Link,
   Select,
   SelectContent,
   SelectItem,
+  SelectPrimitive,
   SelectTrigger,
   SelectValue,
   Spinner,
@@ -65,24 +81,112 @@ import { TableComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
+import { useEffectEvent } from '../../hooks/useEffectEvent'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())
+  const problems = useMemo(
+    () => (data?.status === 200 ? data.body : []),
+    [data]
+  )
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const table = useReactTable({
     columns,
-    data: data?.status === 200 ? data.body : [],
+    data: problems,
+    filterFns: {},
+    state: {
+      columnFilters,
+    },
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   })
+  const statusFilter = table
+    .getState()
+    .columnFilters.find((column) => column.id === 'status')?.value as RowStatus
   return (
-    <TableComponent
-      classNames={{
-        tableContainer: 'border rounded-lg',
-      }}
-      table={table}
-      isLoading={isLoading}
-      isError={isError}
-    />
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4">
+        <DebouncedInput
+          placeholder="ค้นหา..."
+          onDebounce={(value) => table.getColumn('name')?.setFilterValue(value)}
+        />
+        <Select
+          required={false}
+          onValueChange={table.getColumn('status')?.setFilterValue}
+        >
+          <SelectPrimitive.Trigger asChild>
+            <Button variant="outline">
+              สถานะ
+              {statusFilter && (
+                <>
+                  <hr className="h-full border-l" />
+                  <div className="font-normal">
+                    {RowStatusLabel[statusFilter]}
+                  </div>
+                </>
+              )}
+            </Button>
+          </SelectPrimitive.Trigger>
+          <SelectContent>
+            {Object.entries(RowStatusLabel).map(([value, label]) => (
+              <SelectItem value={value} key={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <TableComponent
+        classNames={{ tableContainer: 'border rounded-lg' }}
+        table={table}
+        isLoading={isLoading}
+        isError={isError}
+      />
+    </div>
   )
+}
+
+interface DebouncedInputProps extends InputProps {
+  onDebounce: (value: string) => void
+}
+const DebouncedInput = (props: DebouncedInputProps) => {
+  const [input, setInput] = useState('')
+  const onValueChange = useEffectEvent(props.onDebounce)
+  const debouncedInput = useDebounce(input, 300)
+  useEffect(() => {
+    onValueChange(debouncedInput)
+  }, [debouncedInput])
+  return <Input {...props} onChange={(e) => setInput(e.target.value)} />
+}
+
+const RowStatus = {
+  NOT_SUBMITTED: 'NOT_SUBMITTED',
+  NOT_PASSED: 'NOT_PASSED',
+  PASSED: 'PASSED',
+} as const
+type RowStatus = keyof typeof RowStatus
+const RowStatusLabel: Record<RowStatus, string> = {
+  NOT_SUBMITTED: 'ยังไม่ส่ง',
+  NOT_PASSED: 'ยังไม่ผ่าน',
+  PASSED: 'ผ่านแล้ว',
+}
+function getRowStatus(status: SubmissionStatus | undefined | null): RowStatus {
+  if (!status) {
+    return RowStatus.NOT_SUBMITTED
+  }
+  if (status !== 'accept') {
+    return RowStatus.NOT_PASSED
+  }
+  return RowStatus.PASSED
+}
+
+const SubmissionStatusLabel: Record<SubmissionStatus, string> = {
+  accept: 'ผ่านแล้ว',
+  grading: 'กำลังตรวจ',
+  waiting: 'กำลังรอตรวจ',
+  reject: 'ไม่ผ่าน',
 }
 
 const columnHelper = createColumnHelper<ProblemTableRowSchema>()
@@ -95,6 +199,7 @@ const columns = [
     },
   }),
   columnHelper.accessor('name', {
+    id: 'name',
     header: () => 'ชื่อ',
     cell: ({ row }) => {
       const problem = row.original
@@ -160,6 +265,7 @@ const columns = [
     },
   }),
   columnHelper.accessor('latestSubmission.status', {
+    id: 'status',
     header: () => 'สถานะ',
     cell: ({ getValue, row }) => (
       <InlineComponent
@@ -167,7 +273,7 @@ const columns = [
           const [open, setOpen] = useState(false)
 
           const status = getValue() as SubmissionStatus | null
-          const display = (() => {
+          const icon = (() => {
             switch (status) {
               case 'accept':
                 return <CheckCircleIcon className="text-success" />
@@ -187,22 +293,22 @@ const columns = [
             return (
               <div
                 className="flex justify-center w-full gap-2"
-                title="not submitted"
+                title={RowStatusLabel.NOT_SUBMITTED}
               >
-                {display}
+                {icon}
               </div>
             )
           }
           return (
             <>
               <Button
-                title={status}
+                title={SubmissionStatusLabel[status]}
                 variant="ghost"
                 className="[&>svg]:size-5"
                 size="icon"
                 onClick={() => setOpen(true)}
               >
-                {display}
+                {icon}
               </Button>
               <SubmissionDialog
                 open={open}
@@ -216,6 +322,9 @@ const columns = [
     ),
     meta: {
       cellClassName: 'text-center px-0',
+    },
+    filterFn: (row, columnId: string, filterValue: RowStatus) => {
+      return getRowStatus(row.original.latestSubmission?.status) === filterValue
     },
   }),
   columnHelper.display({
