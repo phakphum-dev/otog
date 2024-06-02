@@ -48,6 +48,8 @@ export function TableComponent<T>({
         totalCount={table.getRowCount()}
         useWindowScroll
         style={{ minHeight: 228 }}
+        overscan={300}
+        increaseViewportBy={{ bottom: 300, top: 300 }}
         components={{
           Scroller: TableContainer,
           TableHead: TableHeader,
