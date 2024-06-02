@@ -99,7 +99,7 @@ const config = {
           'var(--font-sarabun)',
           ...defaultTheme.fontFamily.sans,
         ],
-        heading: ['var(--font-sukhumvit)', ...defaultTheme.fontFamily.sans],
+        heading: ['var(--font-notosans)', ...defaultTheme.fontFamily.sans],
       },
     },
   },

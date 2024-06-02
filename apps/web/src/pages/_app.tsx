@@ -35,7 +35,7 @@ import { Footer } from '../components/footer'
 import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
 import { UserContextProvider } from '../context/user-context'
-import { inter, sarabun, sukhumvit } from '../fonts'
+import { inter, notosans, sarabun } from '../fonts'
 import '../styles/nprogress.css'
 
 dayjs.locale('th')
@@ -97,7 +97,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         :root {
           --font-inter: ${inter.style.fontFamily};
           --font-sarabun: ${sarabun.style.fontFamily};
-          --font-sukhumvit: ${sukhumvit.style.fontFamily};
+          --font-notosans: ${notosans.style.fontFamily};
         }
       `}</style>
       {/* 

@@ -73,7 +73,7 @@ const AvatarCount = ({ count }: { count: number }) => {
   return (
     <span
       className={cn(
-        'relative h-6 w-6 min-w-6 rounded-full border flex items-center justify-center bg-muted text-[10px] text-muted-foreground font-bold'
+        'relative h-6 w-6 min-w-6 rounded-full border flex items-center justify-center bg-muted text-[10px] text-muted-foreground font-semibold'
       )}
     >
       {count > 100 ? '99+' : count}
