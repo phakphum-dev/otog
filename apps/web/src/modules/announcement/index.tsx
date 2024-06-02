@@ -44,7 +44,7 @@ export const AnnouncementCarousel = ({
     <AnnouncementContext.Provider
       value={{ contestId, currentIndex, onNext, count }}
     >
-      <div className="group relative my-8 flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
+      <div className="group relative mt-8 flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
         {announcements.map((announcement, index) => (
           <AnnouncementCard
             key={announcement.id}

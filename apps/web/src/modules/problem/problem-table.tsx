@@ -154,12 +154,7 @@ export const ProblemTable = () => {
           </SelectContent>
         </Select>
       </div>
-      <TableComponent
-        classNames={{ tableContainer: 'border rounded-lg' }}
-        table={table}
-        isLoading={isLoading}
-        isError={isError}
-      />
+      <TableComponent table={table} isLoading={isLoading} isError={isError} />
     </div>
   )
 }
