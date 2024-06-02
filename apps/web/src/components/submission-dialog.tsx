@@ -49,8 +49,10 @@ export const SubmissionDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-3xl rounded-2xl">
         <NextLink
-          title="Open in full page"
+          title="เปิดแท็บใหม่"
           href={`/submission/${submission?.id}`}
+          target="_blank"
+          rel="noreferrer"
           className="absolute right-12 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
         >
           <ArrowTopRightOnSquareIcon className="size-4" />
@@ -101,13 +103,13 @@ export const SubmissionDialog = ({
               <div className="flex gap-1 absolute top-1 right-1">
                 <Button
                   size="icon"
-                  title="Copy Code"
+                  title="คัดลอก"
                   variant="ghost"
                   onClick={() => onCopy(submission.sourceCode ?? '')}
                 >
                   {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
                 </Button>
-                <Button size="icon" title="Edit Code" variant="ghost" asChild>
+                <Button size="icon" title="แก้ไข" variant="ghost" asChild>
                   <NextLink href={`/problem/${submission.problem!.id}`}>
                     <PencilSquareIcon />
                   </NextLink>

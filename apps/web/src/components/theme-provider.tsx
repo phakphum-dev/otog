@@ -19,7 +19,7 @@ export function ThemeToggle() {
   }
   return (
     <Button
-      title="Toggle color mode"
+      aria-hidden
       onClick={toggleColorMode}
       size="icon"
       className="rounded-full text-muted-foreground"

@@ -100,18 +100,13 @@ export default function SubmissionPage(props: SubmissionPageProps) {
             <div className="flex gap-1 absolute top-1 right-1">
               <Button
                 size="icon"
-                title="Copy Code"
+                title="คัดลอก"
                 variant="ghost"
                 onClick={() => onCopy(submission.sourceCode ?? '')}
               >
                 {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
               </Button>
-              <Button
-                size="icon"
-                title="Write your solution"
-                variant="ghost"
-                asChild
-              >
+              <Button size="icon" title="เขียน" variant="ghost" asChild>
                 <NextLink href={`/problem/${submission.problem!.id}`}>
                   <PencilSquareIcon />
                 </NextLink>

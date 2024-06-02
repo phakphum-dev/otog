@@ -253,7 +253,8 @@ const columns = [
             <>
               <AvatarGroup asChild>
                 <Button
-                  title="ผู้ที่ผ่าน"
+                  title={`${passedCount} คน`}
+                  aria-label={`${passedCount} คน`}
                   variant="ghost"
                   className="gap-0 px-1"
                   onClick={() => setOpen(true)}
@@ -261,7 +262,9 @@ const columns = [
                   {row.original.samplePassedUsers.map((user) => (
                     <UserAvatar key={user.id} user={user} />
                   ))}
-                  {passedCount > 3 && <AvatarMore count={passedCount} />}
+                  {passedCount > 3 && (
+                    <AvatarMore aria-hidden count={passedCount} />
+                  )}
                 </Button>
               </AvatarGroup>
               <PassedUserDialog
@@ -407,7 +410,7 @@ const SubmitCode = (props: { problemId: number; problemName: string }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button title="Submit code" size="icon" variant="outline">
+        <Button title="ส่ง" size="icon" variant="outline">
           <MdUploadFile />
         </Button>
       </DialogTrigger>
@@ -482,7 +485,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" title="More options" size="icon">
+          <Button variant="ghost" title="เพิ่มเติม" size="icon">
             <EllipsisHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
@@ -564,7 +567,7 @@ const PassedUserDialog = ({
                   <Link
                     asChild
                     variant="hidden"
-                    title="Passed Submission"
+                    title="การส่งที่ผ่าน"
                     isExternal
                   >
                     <NextLink href={`/submission/${user.passedSubmission.id}`}>

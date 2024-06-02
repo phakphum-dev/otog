@@ -47,7 +47,7 @@ export const Link = forwardRef(
         className={cn(linkStyles({ variant, className }))}
         href={href}
         target={isExternal ? '_blank' : undefined}
-        rel={isExternal ? 'norefe' : undefined}
+        rel={isExternal ? 'noreferrer' : undefined}
         data-active={isActive}
         ref={ref as any}
         {...props}

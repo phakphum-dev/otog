@@ -82,7 +82,7 @@ export const AnnouncementEditable = ({
           size="icon"
           variant="outline"
           onClick={() => setEditing(true)}
-          title="Edit announcement"
+          title="แก้ไขประกาศ"
         >
           <PencilIcon />
         </Button>
@@ -240,7 +240,7 @@ const ToggleAnnouncement = ({
       size="icon"
       variant="outline"
       onClick={onToggle}
-      title="Toggle announcement"
+      title="เปิดปิดประกาศ"
     >
       {announcement.show ? <EyeIcon /> : <EyeSlashIcon />}
     </Button>
@@ -271,7 +271,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline" title="Delete announcement">
+        <Button size="icon" variant="outline" title="ลบประกาศ">
           <TrashIcon />
         </Button>
       </DialogTrigger>
