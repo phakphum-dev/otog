@@ -47,7 +47,7 @@ export function TableComponent<T>({
         data={table.getRowModel().rows}
         totalCount={table.getRowCount()}
         useWindowScroll
-        style={{ minHeight: 228 }}
+        style={{ minHeight: table.getRowCount() === 0 ? 228 : 0 }}
         overscan={300}
         increaseViewportBy={{ bottom: 300, top: 300 }}
         components={{
