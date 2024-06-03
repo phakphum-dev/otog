@@ -282,6 +282,7 @@ export class ProblemService {
         },
         NOT: { role: UserRole.admin },
       },
+      orderBy: { id: 'desc' },
     })
     return users.map(
       (user) =>
