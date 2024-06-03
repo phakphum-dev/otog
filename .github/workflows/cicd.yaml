@@ -33,6 +33,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up environment
+        run: |
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.local
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -53,7 +57,7 @@ jobs:
           organization: ${{ secrets.CLOUDFLARE_ORGANIZATION }}
           auth_client_id: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_ID }}
           auth_client_secret: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_SECRET }}
-      
+
       - name: Deploy to host
         uses: appleboy/ssh-action@v1.0.3
         with:
