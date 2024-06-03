@@ -6,6 +6,9 @@ services:
       - HOSTNAME=0.0.0.0
     networks:
       - api-gateway
+    env_file:
+      - apps/web/.env.production
+      - apps/web/.env.local
 
   api:
     image: ghcr.io/phakphum-dev/otog-api:latest

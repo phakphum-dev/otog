@@ -25,7 +25,7 @@ class ServerContext {
   }
 }
 export const serverContext = new ServerContext()
-console.log(typeof environment.NEXTAUTH_SECRET)
+
 export const authOptions: NextAuthOptions = {
   secret: environment.NEXTAUTH_SECRET,
   pages: {
