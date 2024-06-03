@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import NextLink from 'next/link'
 
+import { SubmissionWithSourceCodeSchema } from '@otog/contract'
 import {
   Button,
   Dialog,
@@ -44,7 +45,6 @@ export const SubmissionDialog = ({
   const submission =
     getSubmission.data?.status === 200 ? getSubmission.data.body : undefined
 
-  const { hasCopied, onCopy } = useClipboard()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-3xl rounded-2xl">
@@ -68,55 +68,7 @@ export const SubmissionDialog = ({
           </Link>
         </DialogTitle>
         {submission ? (
-          <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
-            <div className="flex justify-between gap-2">
-              <code className="text-foreground">{submission.result}</code>
-              <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
-            </div>
-            <div className="flex justify-between gap-2">
-              <p>{submission.score ?? 0} คะแนน</p>
-              <p>ภาษา {LanguageName[submission.language as Language]}</p>
-            </div>
-
-            <div className="flex justify-between">
-              <Link
-                asChild
-                variant="hidden"
-                className="inline-flex gap-2 items-center"
-              >
-                <NextLink href={`/user/${submission.user!.id}`}>
-                  <UserAvatar user={submission.user!} />
-                  {submission.user!.showName}
-                </NextLink>
-              </Link>
-              <p>
-                ส่งเมื่อ{' '}
-                {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
-              </p>
-            </div>
-            <div className="relative">
-              <CodeHighlight
-                className="relative border"
-                code={submission.sourceCode ?? ''}
-                language={submission.language ?? 'cpp'}
-              />
-              <div className="flex gap-1 absolute top-1 right-1">
-                <Button
-                  size="icon"
-                  title="คัดลอก"
-                  variant="ghost"
-                  onClick={() => onCopy(submission.sourceCode ?? '')}
-                >
-                  {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
-                </Button>
-                <Button size="icon" title="แก้ไข" variant="ghost" asChild>
-                  <NextLink href={`/problem/${submission.problem!.id}`}>
-                    <PencilSquareIcon />
-                  </NextLink>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <SubmissionDetail submission={submission} />
         ) : (
           <div className="w-full h-48 flex justify-center align-items">
             <Spinner />
@@ -124,5 +76,64 @@ export const SubmissionDialog = ({
         )}
       </DialogContent>
     </Dialog>
+  )
+}
+
+export const SubmissionDetail = ({
+  submission,
+}: {
+  submission: SubmissionWithSourceCodeSchema
+}) => {
+  const { hasCopied, onCopy } = useClipboard()
+  return (
+    <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
+      <div className="flex justify-between gap-2">
+        <code className="text-foreground">{submission.result}</code>
+        <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
+      </div>
+      <div className="flex justify-between gap-2">
+        <p>{submission.score ?? 0} คะแนน</p>
+        <p>ภาษา {LanguageName[submission.language as Language]}</p>
+      </div>
+
+      <div className="flex justify-between">
+        <Link
+          asChild
+          variant="hidden"
+          className="inline-flex gap-2 items-center"
+        >
+          <NextLink href={`/user/${submission.user!.id}`}>
+            <UserAvatar user={submission.user!} />
+            {submission.user!.showName}
+          </NextLink>
+        </Link>
+        <p>
+          ส่งเมื่อ{' '}
+          {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
+        </p>
+      </div>
+      <div className="relative">
+        <CodeHighlight
+          className="relative border"
+          code={submission.sourceCode ?? ''}
+          language={submission.language ?? 'cpp'}
+        />
+        <div className="flex gap-1 absolute top-1 right-1">
+          <Button
+            size="icon"
+            title="คัดลอก"
+            variant="ghost"
+            onClick={() => onCopy(submission.sourceCode ?? '')}
+          >
+            {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
+          </Button>
+          <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
+            <NextLink href={`/problem/${submission.problem!.id}`}>
+              <PencilSquareIcon />
+            </NextLink>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }
