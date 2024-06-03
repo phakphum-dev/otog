@@ -13,6 +13,7 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -80,6 +81,7 @@ export const ProblemTable = () => {
     filterFns: {},
     state: {
       columnFilters,
+      columnVisibility: { recentShowTime: false },
     },
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -106,15 +108,15 @@ const OtogButtons = ({
   isLoading: boolean
 }) => {
   const counts = useMemo(() => {
-    const counts: Record<RowStatus | 'NEW', number> = {
+    const counts: Record<RowStatus | NewProblemValue, number> = {
       NOT_PASSED: 0,
       NOT_SUBMITTED: 0,
       PASSED: 0,
-      NEW: 0,
+      NEW_PROBLEM: 0,
     }
     problems.forEach((problem) => {
-      if (dayjs().isBefore(dayjs(problem.recentShowTime).add(1, 'day'))) {
-        counts.NEW += 1
+      if (isNewProblem(problem)) {
+        counts.NEW_PROBLEM += 1
       }
       const status = getRowStatus(problem.latestSubmission?.status)
       counts[status] += 1
@@ -126,11 +128,21 @@ const OtogButtons = ({
   const statusFilterValue = statusColumn.getFilterValue() as
     | RowStatus
     | undefined
-  const createOnClick = (status: RowStatus) => {
+  const createStatusFilterToggle = (status: RowStatus) => {
     return () =>
       statusColumn.setFilterValue(
         statusFilterValue === status ? undefined : status
       )
+  }
+
+  const recentShowTimeColumn = table.getColumn('recentShowTime')!
+  const newProblemFilterValue = recentShowTimeColumn.getFilterValue() as
+    | NewProblemValue
+    | undefined
+  const toggleNewProblemFilter = () => {
+    recentShowTimeColumn.setFilterValue(
+      newProblemFilterValue === NEW_PROBLEM ? undefined : NEW_PROBLEM
+    )
   }
   return (
     <div className="flex flex-wrap justify-center gap-3">
@@ -146,37 +158,50 @@ const OtogButtons = ({
         number={counts.PASSED}
         colorScheme="green"
         isLoading={isLoading}
-        onClick={createOnClick(RowStatus.PASSED)}
+        onClick={createStatusFilterToggle(RowStatus.PASSED)}
       />
       <OtogButton
         label="ยังไม่ผ่าน"
         number={counts.NOT_PASSED}
         colorScheme="red"
         isLoading={isLoading}
-        onClick={createOnClick(RowStatus.NOT_PASSED)}
+        onClick={createStatusFilterToggle(RowStatus.NOT_PASSED)}
       />
       <OtogButton
         label="ยังไม่ส่ง"
         number={counts.NOT_SUBMITTED}
         colorScheme="yellow"
         isLoading={isLoading}
-        onClick={createOnClick(RowStatus.NOT_SUBMITTED)}
+        onClick={createStatusFilterToggle(RowStatus.NOT_SUBMITTED)}
       />
       <OtogButton
         label="โจทย์วันนี้"
-        number={counts.NEW}
+        number={counts.NEW_PROBLEM}
         colorScheme="blue"
         isLoading={isLoading}
+        onClick={toggleNewProblemFilter}
       />
     </div>
   )
 }
+
 const TableFilter = ({ table }: { table: Table<any> }) => {
   const nameColumn = table.getColumn('name')!
   const statusColumn = table.getColumn('status')!
   const statusFilterValue = statusColumn.getFilterValue() as
     | RowStatus
     | undefined
+
+  const recentShowTimeColumn = table.getColumn('recentShowTime')!
+  const newProblemFilterValue = recentShowTimeColumn.getFilterValue() as
+    | NewProblemValue
+    | undefined
+
+  const toggleNewProblemFilter = () => {
+    recentShowTimeColumn.setFilterValue(
+      newProblemFilterValue === NEW_PROBLEM ? undefined : NEW_PROBLEM
+    )
+  }
   return (
     <div className="flex gap-4">
       <InputGroup>
@@ -188,44 +213,56 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
           onDebounce={(value) => nameColumn.setFilterValue(value)}
         />
       </InputGroup>
-      <Select
-        value={statusFilterValue ?? ''}
-        onValueChange={statusColumn.setFilterValue}
-      >
-        <SelectPrimitive.Trigger asChild>
-          <Button variant="outline" className="font-normal">
-            <FunnelIcon />
-            สถานะ
-            {statusFilterValue && (
-              <>
-                <hr className="h-full border-l" />
-                {getRowStatusIcon(statusFilterValue)}
-                <div className="font-normal">
-                  {RowStatusLabel[statusFilterValue]}
+      <div className="flex gap-2">
+        <Select
+          value={statusFilterValue ?? ''}
+          onValueChange={statusColumn.setFilterValue}
+        >
+          <SelectPrimitive.Trigger asChild>
+            <Button variant="outline" className="font-normal">
+              <FunnelIcon />
+              สถานะ
+              {statusFilterValue && (
+                <>
+                  <hr className="h-full border-l" />
+                  {getRowStatusIcon(statusFilterValue)}
+                  <div className="font-normal">
+                    {RowStatusLabel[statusFilterValue]}
+                  </div>
+                </>
+              )}
+            </Button>
+          </SelectPrimitive.Trigger>
+          <SelectContent>
+            {Object.entries(RowStatusLabel).map(([value, label]) => (
+              <SelectItem
+                value={value}
+                key={value}
+                onPointerUp={() => {
+                  if (value === statusFilterValue) {
+                    statusColumn.setFilterValue('')
+                  }
+                }}
+              >
+                <div className="flex gap-2 items-center">
+                  {getRowStatusIcon(value as RowStatus)}
+                  {label}
                 </div>
-              </>
-            )}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {newProblemFilterValue && (
+          <Button
+            variant="outline"
+            className="font-normal"
+            onClick={toggleNewProblemFilter}
+          >
+            โจทย์วันนี้
+            <XMarkIcon />
           </Button>
-        </SelectPrimitive.Trigger>
-        <SelectContent>
-          {Object.entries(RowStatusLabel).map(([value, label]) => (
-            <SelectItem
-              value={value}
-              key={value}
-              onPointerUp={() => {
-                if (value === statusFilterValue) {
-                  statusColumn.setFilterValue('')
-                }
-              }}
-            >
-              <div className="flex gap-2 items-center">
-                {getRowStatusIcon(value as RowStatus)}
-                {label}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        )}
+      </div>
     </div>
   )
 }
@@ -338,6 +375,12 @@ const columns = [
         >
           <p className="text-pretty font-semibold tracking-wide mb-0.5">
             {problem.name}
+            {isNewProblem(problem) && (
+              <span className="ml-2 inline-flex px-1 text-xs tracking-tight text-accent-foreground font-semibold font-heading bg-accent rounded">
+                {' '}
+                ใหม่ !
+              </span>
+            )}
           </p>
           <p className="text-sm">
             {/* TODO: fix nullish */}(
@@ -390,7 +433,7 @@ const columns = [
       />
     ),
     meta: {
-      headClassName: 'text-end px-0',
+      headClassName: 'text-end px-0 whitespace-pre',
       cellClassName: 'text-end px-0',
     },
   }),
@@ -478,7 +521,27 @@ const columns = [
       cellClassName: 'text-center pl-2',
     },
   }),
+  columnHelper.accessor('recentShowTime', {
+    id: 'recentShowTime',
+    filterFn: (
+      row,
+      columnId: string,
+      filterValue: NewProblemValue | undefined
+    ) => {
+      if (filterValue === NEW_PROBLEM) {
+        return isNewProblem(row.original)
+      }
+      return true
+    },
+  }),
 ]
+const NEW_PROBLEM = 'NEW_PROBLEM'
+type NewProblemValue = typeof NEW_PROBLEM
+function isNewProblem(problem: { recentShowTime: Date | null; show: boolean }) {
+  return (
+    problem.show && dayjs(problem.recentShowTime).add(1, 'day').isAfter(dayjs())
+  )
+}
 
 const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const [openLatestSubmission, setOpenLatestSubmission] = useState(false)
