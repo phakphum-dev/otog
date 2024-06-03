@@ -111,7 +111,7 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
       </Head>
       <section className="flex flex-col flex-1 gap-4 mt-8 p-6 border rounded-2xl">
         <div>
-          <h1 className="text-2xl font-semibold inline-flex gap-2 items-center mb-2">
+          <h1 className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2">
             <PencilSquareIcon className="size-6" />
             {problem.name}
           </h1>

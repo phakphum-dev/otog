@@ -61,7 +61,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
           isExternal
           variant="hidden"
           href={`/api/problem/${submission.problem!.id}`}
-          className="text-lg font-semibold inline-flex gap-2 items-center mb-2"
+          className="text-lg font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
         >
           <CodeBracketIcon className="size-6" />
           <h1>ข้อ {submission.problem!.name}</h1>
