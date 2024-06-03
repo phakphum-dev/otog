@@ -144,6 +144,12 @@ const OtogButtons = ({
       newProblemFilterValue === NEW_PROBLEM ? undefined : NEW_PROBLEM
     )
   }
+
+  const clearFilter = () => {
+    statusColumn.setFilterValue(undefined)
+    recentShowTimeColumn.setFilterValue(undefined)
+  }
+
   return (
     <div className="flex flex-wrap justify-center gap-3">
       <OtogButton
@@ -151,7 +157,7 @@ const OtogButtons = ({
         number={problems.length}
         colorScheme="default"
         isLoading={isLoading}
-        onClick={() => statusColumn.setFilterValue(undefined)}
+        onClick={clearFilter}
       />
       <OtogButton
         label="ผ่านแล้ว"
