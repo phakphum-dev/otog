@@ -272,11 +272,13 @@ const otogButtonVariants = cva(
   {
     variants: {
       colorScheme: {
-        default: 'bg-accent hover:bg-accent/90 text-foreground',
-        green: 'bg-otog-green hover:bg-otog-green/90',
-        red: 'bg-otog-red hover:bg-otog-red/90',
-        yellow: 'bg-otog-yellow hover:bg-otog-yellow/90',
-        blue: 'bg-otog-blue hover:bg-otog-blue/90',
+        default: 'text-foreground bg-accent hover:bg-accent/90',
+        green:
+          'text-background bg-otog-green hover:bg-otog-green/90 dark:bg-otog-green-200 hover:dark:bg-otog-green-200/90',
+        red: 'text-background bg-otog-red hover:bg-otog-red/90 dark:bg-otog-red-200 hover:dark:bg-otog-red-200/90',
+        yellow:
+          'text-background bg-otog-yellow hover:bg-otog-yellow/90 dark:bg-otog-yellow-200 hover:dark:bg-otog-yellow-200/90',
+        blue: 'text-background bg-otog-blue hover:bg-otog-blue/90 dark:bg-otog-blue-200 hover:dark:bg-otog-blue-200/90',
       },
       isLoading: { true: 'animate-pulse' },
     },
