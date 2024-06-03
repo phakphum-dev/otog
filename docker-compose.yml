@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: web
+    container_name: otog-web
     build:
       context: .
       dockerfile: ./Dockerfile.web
@@ -11,7 +11,7 @@ services:
       - otog-network
 
   api:
-    container_name: api
+    container_name: otog-api
     build:
       context: .
       dockerfile: ./Dockerfile.api
