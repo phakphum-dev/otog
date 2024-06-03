@@ -25,6 +25,7 @@ import {
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
 } from '@tanstack/table-core'
 import dayjs from 'dayjs'
 import { produce } from 'immer'
@@ -86,6 +87,7 @@ export const ProblemTable = () => {
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
   return (
     <>
@@ -401,7 +403,6 @@ const columns = [
     meta: {
       cellClassName: 'w-full',
     },
-    enableSorting: false,
   }),
   columnHelper.accessor('passedCount', {
     header: 'ผ่านแล้ว',
@@ -445,15 +446,15 @@ const columns = [
       cellClassName: 'text-end px-0',
     },
   }),
-  columnHelper.accessor('latestSubmission.status', {
+  columnHelper.display({
     id: 'status',
     header: () => 'สถานะ',
-    cell: ({ getValue, row }) => (
+    cell: ({ row }) => (
       <InlineComponent
         render={() => {
           const [open, setOpen] = useState(false)
 
-          const status = getValue() as SubmissionStatus | null
+          const status = row.original.latestSubmission?.status
           const icon = (() => {
             switch (status) {
               case 'accept':

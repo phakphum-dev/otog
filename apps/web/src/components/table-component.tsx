@@ -1,10 +1,20 @@
 import { TableVirtuoso } from 'react-virtuoso'
 
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronUpDownIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline'
 import { flexRender } from '@tanstack/react-table'
 import { Cell, RowData, Table as TanstackTable } from '@tanstack/table-core'
 
 import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectPrimitive,
   Spinner,
   Table,
   TableBody,
@@ -47,6 +57,7 @@ export function TableComponent<T>({
         data={table.getRowModel().rows}
         totalCount={table.getRowCount()}
         useWindowScroll
+        // hack to get EmptyPlaceholder showing when overflow-hidden
         style={{ minHeight: table.getRowCount() === 0 ? 228 : 0 }}
         overscan={300}
         increaseViewportBy={{ bottom: 300, top: 300 }}
@@ -90,7 +101,7 @@ export function TableComponent<T>({
                       header.getContext()
                     )
                 if (canSort) {
-                  // do something
+                  const sortDirection = header.column.getIsSorted()
                   return (
                     <TableHead
                       key={header.id}
@@ -98,7 +109,57 @@ export function TableComponent<T>({
                         header.column.columnDef.meta?.headClassName
                       )}
                     >
-                      {children}
+                      <Select
+                        value={sortDirection || ''}
+                        onValueChange={(sortDirection) => {
+                          header.column.toggleSorting(sortDirection === 'desc')
+                        }}
+                      >
+                        <SelectPrimitive.Trigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs [&>svg]:size-3 -mx-2 px-2"
+                          >
+                            {children}
+                            {sortDirection === 'asc' ? (
+                              <ArrowUpIcon />
+                            ) : sortDirection === 'desc' ? (
+                              <ArrowDownIcon />
+                            ) : (
+                              <ChevronUpDownIcon />
+                            )}
+                          </Button>
+                        </SelectPrimitive.Trigger>
+                        <SelectContent>
+                          <SelectItem
+                            value="asc"
+                            onPointerUp={() => {
+                              if (sortDirection === 'asc') {
+                                header.column.clearSorting()
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              เรียงขึ้น
+                              <ArrowUpIcon className="size-4" />
+                            </div>
+                          </SelectItem>
+                          <SelectItem
+                            value="desc"
+                            onPointerUp={() => {
+                              if (sortDirection === 'desc') {
+                                header.column.clearSorting()
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              เรียงลง
+                              <ArrowDownIcon className="size-4" />
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableHead>
                   )
                 }
