@@ -18,7 +18,7 @@ import {
 } from 'src/utils/file.util'
 
 import { PassedUserSchema, ProblemTableRowSchema } from '@otog/contract'
-import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
+import { Prisma, SubmissionStatus, User, UserRole } from '@otog/database'
 
 import { UploadedFilesObject } from './dto/problem.dto'
 
@@ -131,65 +131,89 @@ export class ProblemService {
     show?: boolean
     userId?: number
   }): Promise<Array<ProblemTableRowSchema>> {
-    const problems = await this.prisma.problem.findMany({
-      where: { show: args.show },
-      select: {
-        id: true,
-        name: true,
-        sname: true,
-        score: true,
-        timeLimit: true,
-        memoryLimit: true,
-        show: true,
-        recentShowTime: true,
-        case: true,
-        rating: true,
-        submission: args.userId
-          ? {
-              select: {
-                id: true,
-                status: true,
-              },
-              orderBy: { creationDate: 'desc' },
-              where: { userId: args.userId },
-              take: 1,
-            }
-          : undefined,
-      },
-      orderBy: { id: 'desc' },
-    })
-    const passedCount = await this.prisma.$transaction(
-      problems.map((problem) =>
-        this.prisma.submission.count({
-          where: {
-            problemId: problem.id,
-            status: SubmissionStatus.accept,
-            user: { NOT: { role: UserRole.admin } },
-          },
-        })
-      )
-    )
-    const samplePassedUsers = await this.prisma.$transaction(
-      problems.map((problem) =>
-        this.prisma.user.findMany({
-          where: {
-            NOT: { role: UserRole.admin },
-            submission: {
-              some: {
-                problemId: problem.id,
-                status: SubmissionStatus.accept,
+    const where = { show: args.show }
+    const [problems, submissions, problemsWithSampleUsers] = await Promise.all([
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          name: true,
+          sname: true,
+          score: true,
+          timeLimit: true,
+          memoryLimit: true,
+          show: true,
+          recentShowTime: true,
+          case: true,
+          rating: true,
+          submission: args.userId
+            ? {
+                select: {
+                  id: true,
+                  status: true,
+                },
+                orderBy: { creationDate: 'desc' },
+                where: { userId: args.userId },
+                take: 1,
+              }
+            : undefined,
+        },
+        orderBy: { id: 'desc' },
+      }),
+      // TODO: do simpler query by making problem to user connection in db
+      this.prisma.submission.groupBy({
+        by: ['problemId', 'userId'],
+        _max: {
+          creationDate: true,
+        },
+        where: {
+          problem: where,
+          status: SubmissionStatus.accept,
+          user: { NOT: { role: UserRole.admin } },
+        },
+      }),
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          submission: {
+            take: 3,
+            where: {
+              status: SubmissionStatus.accept,
+              user: { NOT: { role: UserRole.admin } },
+            },
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  showName: true,
+                },
               },
             },
           },
-          take: 3,
-          select: {
-            id: true,
-            showName: true,
-          },
-        })
+        },
+      }),
+    ])
+
+    const problemIdToPassedCount = new Map<number, number>()
+    submissions.forEach((submission) => {
+      const problemId = submission.problemId!
+      const count = problemIdToPassedCount.get(problemId)
+      problemIdToPassedCount.set(problemId, (count ?? 0) + 1)
+    })
+
+    const problemIdToSampleUsers = new Map<
+      number,
+      Array<Pick<User, 'id' | 'showName'>>
+    >()
+    problemsWithSampleUsers.forEach((problem) => {
+      problemIdToSampleUsers.set(
+        problem.id,
+        problem.submission.map((s) => s.user)
       )
-    )
-    return problems.map((problem, index) => ({
+    })
+
+    return problems.map((problem) => ({
       id: problem.id,
       name: problem.name,
       sname: problem.sname,
@@ -200,9 +224,9 @@ export class ProblemService {
       recentShowTime: problem.recentShowTime,
       case: problem.case,
       rating: problem.rating,
-      passedCount: passedCount[index]!,
       latestSubmission: problem.submission[0] ?? null,
-      samplePassedUsers: samplePassedUsers[index]!,
+      passedCount: problemIdToPassedCount.get(problem.id) ?? 0,
+      samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
     }))
   }
 
