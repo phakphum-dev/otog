@@ -16,12 +16,10 @@ export const ReadonlyEditor = ({ value }: ReadonlyEditorProps) => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     <Slate editor={editor} initialValue={value} onChange={() => {}}>
       <Editable
-        className="outline-none overflow-hidden text-center flex flex-col justify-center gap-2"
+        className="outline-none overflow-hidden text-center flex flex-col justify-center gap-2 whitespace-pre-wrap break-words"
         style={{
           minHeight: HEIGHT,
           maxHeight: HEIGHT,
-          overflowWrap: 'unset',
-          whiteSpace: 'nowrap',
         }}
         readOnly
         renderElement={Element}
