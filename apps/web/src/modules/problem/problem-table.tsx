@@ -69,15 +69,15 @@ import {
 } from '@otog/ui'
 
 import { keyProblem, queryProblem, querySubmission } from '../../api/query'
-import { DebouncedInput } from '../../components/DebouncedInput'
-import { InlineComponent } from '../../components/InlineComponent'
+import { DebouncedInput } from '../../components/debounced-input'
 import { FileInput } from '../../components/file-input'
+import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
-import { exhaustiveGuard } from '../../utils/exhaustiveGuard'
+import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())

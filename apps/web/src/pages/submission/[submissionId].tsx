@@ -12,7 +12,7 @@ import { SubmissionWithSourceCodeSchema } from '@otog/contract'
 import { Button, Link } from '@otog/ui'
 
 import { querySubmission } from '../../api/query'
-import { withSession } from '../../api/withSession'
+import { withSession } from '../../api/with-session'
 import { CodeHighlight } from '../../components/code-highlight'
 import { UserAvatar } from '../../components/user-avatar'
 import { Language, LanguageName } from '../../enums'

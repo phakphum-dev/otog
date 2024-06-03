@@ -13,7 +13,7 @@ import { LoginBody } from '@otog/contract'
 import { Button, Form, FormField, FormItem, FormLabel, Input } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
-import { withSession } from '../api/withSession'
+import { withSession } from '../api/with-session'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 

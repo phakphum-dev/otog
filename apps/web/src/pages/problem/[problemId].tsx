@@ -33,7 +33,7 @@ import {
 } from '@otog/ui'
 
 import { queryProblem, querySubmission } from '../../api/query'
-import { withSession } from '../../api/withSession'
+import { withSession } from '../../api/with-session'
 import { Language, LanguageName } from '../../enums'
 
 interface WriteSolutionPageProps {

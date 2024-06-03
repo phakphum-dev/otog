@@ -8,7 +8,7 @@ import {
 } from '@otog/contract'
 
 import { createQueryClient } from '.'
-import { getAvatarUrl } from '../firebase/getAvatarUrl'
+import { getAvatarUrl } from '../firebase/get-avatar-url'
 
 export const queryAnnouncement = createQueryClient(announcementRouter)
 export const keyAnnouncement = createQueryKeys('announcement', {

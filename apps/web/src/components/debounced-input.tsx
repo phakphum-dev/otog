@@ -4,7 +4,7 @@ import { useDebounce } from '@uidotdev/usehooks'
 
 import { Input, InputProps } from '@otog/ui'
 
-import { useEffectEvent } from '../hooks/useEffectEvent'
+import { useEffectEvent } from '../hooks/use-effect-event'
 
 export interface DebouncedInputProps extends InputProps {
   onDebounce: (value: string) => void
