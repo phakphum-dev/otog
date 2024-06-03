@@ -1,7 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { forwardRef, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { MdUploadFile } from 'react-icons/md'
 
 import {
   CheckCircleIcon,
@@ -17,21 +15,19 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   ColumnFiltersState,
   Row,
+  Table,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
 } from '@tanstack/table-core'
-import { File } from '@web-std/file'
+import dayjs from 'dayjs'
 import { produce } from 'immer'
 import NextLink from 'next/link'
-import { useRouter } from 'next/router'
-import { z } from 'zod'
 
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
@@ -39,22 +35,14 @@ import {
   AvatarGroup,
   AvatarMore,
   Button,
+  ButtonProps,
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogFooter,
   DialogTitle,
-  DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
   InputGroup,
   InputLeftIcon,
   Link,
@@ -62,22 +50,21 @@ import {
   SelectContent,
   SelectItem,
   SelectPrimitive,
-  SelectTrigger,
-  SelectValue,
   Spinner,
+  VariantProps,
   clsx,
+  cva,
 } from '@otog/ui'
 
-import { keyProblem, queryProblem, querySubmission } from '../../api/query'
+import { keyProblem, queryProblem } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
-import { FileInput } from '../../components/file-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
 import { TableComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
-import { Language, LanguageName } from '../../enums'
 import { exhaustiveGuard } from '../../utils/exhaustive-guard'
+import { SubmitCode } from './submit-code'
 
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(keyProblem.table())
@@ -98,66 +85,194 @@ export const ProblemTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   })
+  return (
+    <>
+      <OtogButtons table={table} problems={problems} isLoading={isLoading} />
+      <div className="flex flex-col gap-4">
+        <TableFilter table={table} />
+        <TableComponent table={table} isLoading={isLoading} isError={isError} />
+      </div>
+    </>
+  )
+}
+
+const OtogButtons = ({
+  table,
+  problems,
+  isLoading,
+}: {
+  table: Table<any>
+  problems: ProblemTableRowSchema[]
+  isLoading: boolean
+}) => {
+  const counts = useMemo(() => {
+    const counts: Record<RowStatus | 'NEW', number> = {
+      NOT_PASSED: 0,
+      NOT_SUBMITTED: 0,
+      PASSED: 0,
+      NEW: 0,
+    }
+    problems.forEach((problem) => {
+      if (dayjs().isBefore(dayjs(problem.recentShowTime).add(1, 'day'))) {
+        counts.NEW += 1
+      }
+      const status = getRowStatus(problem.latestSubmission?.status)
+      counts[status] += 1
+    })
+    return counts
+  }, [problems])
+
+  const statusColumn = table.getColumn('status')!
+  const statusFilterValue = statusColumn.getFilterValue() as
+    | RowStatus
+    | undefined
+  const createOnClick = (status: RowStatus) => {
+    return () =>
+      statusColumn.setFilterValue(
+        statusFilterValue === status ? undefined : status
+      )
+  }
+  return (
+    <div className="flex flex-wrap justify-center gap-3">
+      <OtogButton
+        label="ทั้งหมด"
+        number={problems.length}
+        colorScheme="default"
+        isLoading={isLoading}
+        onClick={() => statusColumn.setFilterValue(undefined)}
+      />
+      <OtogButton
+        label="ผ่านแล้ว"
+        number={counts.PASSED}
+        colorScheme="green"
+        isLoading={isLoading}
+        onClick={createOnClick(RowStatus.PASSED)}
+      />
+      <OtogButton
+        label="ยังไม่ผ่าน"
+        number={counts.NOT_PASSED}
+        colorScheme="red"
+        isLoading={isLoading}
+        onClick={createOnClick(RowStatus.NOT_PASSED)}
+      />
+      <OtogButton
+        label="ยังไม่ส่ง"
+        number={counts.NOT_SUBMITTED}
+        colorScheme="yellow"
+        isLoading={isLoading}
+        onClick={createOnClick(RowStatus.NOT_SUBMITTED)}
+      />
+      <OtogButton
+        label="โจทย์วันนี้"
+        number={counts.NEW}
+        colorScheme="blue"
+        isLoading={isLoading}
+      />
+    </div>
+  )
+}
+const TableFilter = ({ table }: { table: Table<any> }) => {
   const nameColumn = table.getColumn('name')!
   const statusColumn = table.getColumn('status')!
   const statusFilterValue = statusColumn.getFilterValue() as
     | RowStatus
     | undefined
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-4">
-        <InputGroup>
-          <InputLeftIcon>
-            <MagnifyingGlassIcon />
-          </InputLeftIcon>
-          <DebouncedInput
-            placeholder="ค้นหา..."
-            onDebounce={(value) => nameColumn.setFilterValue(value)}
-          />
-        </InputGroup>
-        <Select
-          value={statusFilterValue ?? ''}
-          onValueChange={statusColumn.setFilterValue}
-        >
-          <SelectPrimitive.Trigger asChild>
-            <Button variant="outline" className="font-normal">
-              <FunnelIcon />
-              สถานะ
-              {statusFilterValue && (
-                <>
-                  <hr className="h-full border-l" />
-                  {getRowStatusIcon(statusFilterValue)}
-                  <div className="font-normal">
-                    {RowStatusLabel[statusFilterValue]}
-                  </div>
-                </>
-              )}
-            </Button>
-          </SelectPrimitive.Trigger>
-          <SelectContent>
-            {Object.entries(RowStatusLabel).map(([value, label]) => (
-              <SelectItem
-                value={value}
-                key={value}
-                onPointerUp={() => {
-                  if (value === statusFilterValue) {
-                    statusColumn.setFilterValue('')
-                  }
-                }}
-              >
-                <div className="flex gap-2 items-center">
-                  {getRowStatusIcon(value as RowStatus)}
-                  {label}
+    <div className="flex gap-4">
+      <InputGroup>
+        <InputLeftIcon>
+          <MagnifyingGlassIcon />
+        </InputLeftIcon>
+        <DebouncedInput
+          placeholder="ค้นหา..."
+          onDebounce={(value) => nameColumn.setFilterValue(value)}
+        />
+      </InputGroup>
+      <Select
+        value={statusFilterValue ?? ''}
+        onValueChange={statusColumn.setFilterValue}
+      >
+        <SelectPrimitive.Trigger asChild>
+          <Button variant="outline" className="font-normal">
+            <FunnelIcon />
+            สถานะ
+            {statusFilterValue && (
+              <>
+                <hr className="h-full border-l" />
+                {getRowStatusIcon(statusFilterValue)}
+                <div className="font-normal">
+                  {RowStatusLabel[statusFilterValue]}
                 </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <TableComponent table={table} isLoading={isLoading} isError={isError} />
+              </>
+            )}
+          </Button>
+        </SelectPrimitive.Trigger>
+        <SelectContent>
+          {Object.entries(RowStatusLabel).map(([value, label]) => (
+            <SelectItem
+              value={value}
+              key={value}
+              onPointerUp={() => {
+                if (value === statusFilterValue) {
+                  statusColumn.setFilterValue('')
+                }
+              }}
+            >
+              <div className="flex gap-2 items-center">
+                {getRowStatusIcon(value as RowStatus)}
+                {label}
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
+
+const otogButtonVariants = cva(
+  'aspect-[5/4] h-auto flex flex-col rounded-lg py-2 max-sm:w-28 sm:h-full sm:flex-1 sm:gap-2',
+  {
+    variants: {
+      colorScheme: {
+        default: 'bg-accent hover:bg-accent/90 text-foreground',
+        green: 'bg-otog-green hover:bg-otog-green/90',
+        red: 'bg-otog-red hover:bg-otog-red/90',
+        yellow: 'bg-otog-yellow hover:bg-otog-yellow/90',
+        blue: 'bg-otog-blue hover:bg-otog-blue/90',
+      },
+      isLoading: { true: 'animate-pulse' },
+    },
+  }
+)
+
+interface OtogButtonProps
+  extends ButtonProps,
+    VariantProps<typeof otogButtonVariants> {
+  isLoading: boolean
+  label: string
+  number: number
+}
+
+const OtogButton = forwardRef<HTMLButtonElement, OtogButtonProps>(
+  ({ label, number, isLoading, colorScheme = 'default', ...props }, ref) => {
+    return (
+      <Button
+        className={clsx(otogButtonVariants({ isLoading, colorScheme }))}
+        {...props}
+        ref={ref}
+      >
+        {isLoading ? null : (
+          <>
+            <h6>{label}</h6>
+            <h3 className="text-3xl font-bold md:text-4xl">{number}</h3>
+          </>
+        )}
+      </Button>
+    )
+  }
+)
+OtogButton.displayName = 'OtogButton'
 
 const RowStatus = {
   NOT_SUBMITTED: 'NOT_SUBMITTED',
@@ -364,114 +479,6 @@ const columns = [
     },
   }),
 ]
-
-const SubmitCodeFormSchema = z.object({
-  sourceCode: z.instanceof(File),
-  language: z.nativeEnum(Language),
-})
-type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
-
-const SubmitCode = (props: { problemId: number; problemName: string }) => {
-  const [open, setOpen] = useState(false)
-
-  const formRef = useRef<HTMLFormElement>(null)
-  const form = useForm<SubmitCodeFormSchema>({
-    defaultValues: { language: 'cpp' },
-    resolver: zodResolver(SubmitCodeFormSchema),
-  })
-
-  const router = useRouter()
-  const uploadFile = querySubmission.uploadFile.useMutation({})
-  const onSubmit = form.handleSubmit(async (values) => {
-    const toastId = toast.loading(`กำลังส่งข้อ ${props.problemName}...`)
-    await uploadFile.mutateAsync(
-      {
-        params: { problemId: props.problemId.toString() },
-        body: values,
-      },
-      {
-        onError: (result) => {
-          console.error(result)
-          toast.error('ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', { id: toastId })
-        },
-        onSuccess: () => {
-          toast.success('ส่งสำเร็จแล้ว', { id: toastId })
-          setOpen(false)
-          router.push('/submission')
-        },
-      }
-    )
-  })
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button title="ส่ง" size="icon" variant="outline">
-          <MdUploadFile />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogTitle>ส่งข้อ {props.problemName}</DialogTitle>
-        <Form {...form}>
-          <form
-            ref={formRef}
-            onSubmit={onSubmit}
-            className="flex flex-col gap-4"
-          >
-            <FormField
-              control={form.control}
-              name="sourceCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>อัปโหลด</FormLabel>
-                  <FormControl>
-                    <FileInput {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="language"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>อัปโหลด</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger {...field}>
-                        <SelectValue placeholder="เลือกภาษา" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(LanguageName).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                    <FormMessage />
-                  </Select>
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-        <DialogFooter>
-          <Button
-            type="submit"
-            onClick={() => formRef.current?.requestSubmit()}
-            disabled={uploadFile.isPending}
-          >
-            ส่ง
-          </Button>
-          <DialogClose asChild>
-            <Button variant="secondary">ยกเลิก</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const [openLatestSubmission, setOpenLatestSubmission] = useState(false)
