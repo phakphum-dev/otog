@@ -89,7 +89,9 @@ export const SubmissionDetail = ({
     <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
       <div className="flex justify-between gap-2">
         <code className="text-foreground">{submission.result}</code>
-        <p>เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที</p>
+        <p className="whitespace-nowrap">
+          เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที
+        </p>
       </div>
       <div className="flex justify-between gap-2">
         <p>{submission.score ?? 0} คะแนน</p>

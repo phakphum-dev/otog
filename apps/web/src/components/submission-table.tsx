@@ -21,17 +21,20 @@ export const SubmissionTable = ({
   data,
   isLoading,
   isError,
-  loadMore,
+  fetchNextPage,
+  hasNextPage,
 }: {
   data: Array<SubmissionSchema>
   isLoading: boolean
   isError: boolean
-  loadMore: () => void
+  fetchNextPage: () => void
+  hasNextPage: boolean
 }) => {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.id.toString(),
   })
   const [ref, entry] = useIntersectionObserver({
     threshold: 0,
@@ -41,7 +44,7 @@ export const SubmissionTable = ({
   const isIntersecting = entry?.isIntersecting
   useEffect(() => {
     if (isIntersecting) {
-      loadMore()
+      fetchNextPage()
     }
   }, [isIntersecting])
   return (
@@ -50,7 +53,7 @@ export const SubmissionTable = ({
       isLoading={isLoading}
       isError={isError}
       footer={
-        !isLoading && (
+        hasNextPage && (
           <TableFooter className="bg-inherit" ref={ref}>
             <TableRow>
               <TableCell

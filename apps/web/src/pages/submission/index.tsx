@@ -40,11 +40,8 @@ export default function SubmissionPage() {
         data={submissions}
         isLoading={isLoading}
         isError={isError}
-        loadMore={() => {
-          if (hasNextPage) {
-            fetchNextPage()
-          }
-        }}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
       />
     </main>
   )
