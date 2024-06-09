@@ -16,6 +16,7 @@ import { Link, Spinner } from '@otog/ui'
 
 import { keySubmission } from '../../api/query'
 import { withSession } from '../../api/with-session'
+import { SubmissionStatusButton } from '../../components/submission-status'
 import { TableComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 
@@ -59,13 +60,12 @@ const columns = [
   columnHelper.accessor('user.showName', {
     header: 'ชื่อ',
     cell: ({ getValue, row }) => (
-      <NextLink
-        href={`/user/${row.original.user!.id}`}
-        className="flex gap-2 items-center"
-      >
-        <UserAvatar user={row.original.user!} />
-        {getValue()}
-      </NextLink>
+      <Link asChild variant="hidden" className="inline-flex gap-2 items-center">
+        <NextLink href={`/user/${row.original.user!.id}`}>
+          <UserAvatar user={row.original.user!} />
+          {getValue()}
+        </NextLink>
+      </Link>
     ),
     enableSorting: false,
   }),
@@ -97,14 +97,26 @@ const columns = [
     enableSorting: false,
   }),
   columnHelper.accessor('timeUsed', {
-    header: 'เวลารวม',
+    header: 'เวลารวม (s)',
     cell: ({ getValue }) => {
-      return `${((getValue() ?? 0) / 1000).toFixed(3)} s`
+      return ((getValue() ?? 0) / 1000).toFixed(3)
     },
     enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end tabular-nums',
+    },
+  }),
+
+  columnHelper.accessor('status', {
+    header: 'สถานะ',
+    cell: ({ row }) => {
+      return <SubmissionStatusButton submission={row.original} />
+    },
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-center',
+      cellClassName: 'text-center',
     },
   }),
 ]

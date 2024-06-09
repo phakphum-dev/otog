@@ -3,7 +3,6 @@ import toast from 'react-hot-toast'
 
 import {
   CheckCircleIcon,
-  ClockIcon,
   CodeBracketIcon,
   EllipsisHorizontalIcon,
   EyeIcon,
@@ -62,6 +61,7 @@ import { keyProblem, queryProblem } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
+import { SubmissionStatusButton } from '../../components/submission-status'
 import { TableVirtuosoComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
@@ -180,7 +180,7 @@ const OtogButtons = ({
         onClick={createStatusFilterToggle(RowStatus.NOT_PASSED)}
       />
       <OtogButton
-        label="ยังไม่ส่ง"
+        label="ยังไม่ได้ส่ง"
         number={counts.NOT_SUBMITTED}
         colorScheme="yellow"
         isLoading={isLoading}
@@ -332,7 +332,7 @@ const RowStatus = {
 } as const
 type RowStatus = keyof typeof RowStatus
 const RowStatusLabel: Record<RowStatus, string> = {
-  NOT_SUBMITTED: 'ยังไม่ส่ง',
+  NOT_SUBMITTED: 'ยังไม่ได้ส่ง',
   NOT_PASSED: 'ยังไม่ผ่าน',
   PASSED: 'ผ่านแล้ว',
 }
@@ -358,13 +358,6 @@ function getRowStatusIcon(status: RowStatus) {
     default:
       exhaustiveGuard(status)
   }
-}
-
-const SubmissionStatusLabel: Record<SubmissionStatus, string> = {
-  accept: 'ผ่านแล้ว',
-  grading: 'กำลังตรวจ',
-  waiting: 'กำลังรอตรวจ',
-  reject: 'ไม่ผ่าน',
 }
 
 const columnHelper = createColumnHelper<ProblemTableRowSchema>()
@@ -454,57 +447,7 @@ const columns = [
     id: 'status',
     header: () => 'สถานะ',
     cell: ({ row }) => (
-      <InlineComponent
-        render={() => {
-          const [open, setOpen] = useState(false)
-
-          const status = row.original.latestSubmission?.status
-          const icon = (() => {
-            switch (status) {
-              case 'accept':
-                return <CheckCircleIcon className="text-success" />
-              case 'grading':
-              case 'waiting':
-                return <ClockIcon className="text-muted-foreground" />
-              case 'reject':
-                return <XCircleIcon className="text-destructive" />
-              default:
-                return (
-                  <div className="size-[15px] border-muted-foreground border rounded-full" />
-                )
-            }
-          })()
-
-          if (!status) {
-            return (
-              <div
-                className="flex justify-center w-full gap-2"
-                title={RowStatusLabel.NOT_SUBMITTED}
-              >
-                {icon}
-              </div>
-            )
-          }
-          return (
-            <>
-              <Button
-                title={SubmissionStatusLabel[status]}
-                variant="ghost"
-                className="[&>svg]:size-5"
-                size="icon"
-                onClick={() => setOpen(true)}
-              >
-                {icon}
-              </Button>
-              <SubmissionDialog
-                open={open}
-                setOpen={setOpen}
-                submissionId={row.original.latestSubmission!.id}
-              />
-            </>
-          )
-        }}
-      />
+      <SubmissionStatusButton submission={row.original.latestSubmission} />
     ),
     meta: {
       cellClassName: 'text-center px-0',

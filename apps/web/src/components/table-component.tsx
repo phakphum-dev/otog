@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 
 import {
@@ -43,22 +44,31 @@ declare module '@tanstack/table-core' {
 }
 
 interface TableComponentProps<T> {
-  className?: string
   table: TanstackTable<T>
   isLoading?: boolean
   isError?: boolean
+  className?: string
+  classNames?: {
+    container?: string
+    header?: string
+    headRow?: string
+    head?: string
+    body?: string
+    bodyRow?: string
+    cell?: string
+  }
 }
 
 export function TableVirtuosoComponent<T>({
-  className,
   table,
   isLoading = false,
   isError = false,
+  className,
+  classNames,
 }: TableComponentProps<T>) {
   return (
     <ClientOnly>
       <TableVirtuoso
-        className={className}
         data={table.getRowModel().rows}
         totalCount={table.getRowCount()}
         useWindowScroll
@@ -67,11 +77,19 @@ export function TableVirtuosoComponent<T>({
         overscan={300}
         increaseViewportBy={{ bottom: 300, top: 300 }}
         components={{
-          Scroller: TableContainer,
-          TableHead: TableHeader,
-          TableBody: TableBody,
-          TableRow: TableRow,
-          Table: Table,
+          Scroller: (props) => (
+            <TableContainer {...props} className={classNames?.container} />
+          ),
+          TableHead: forwardRef((props, ref) => (
+            <TableHeader ref={ref} {...props} className={classNames?.header} />
+          )),
+          TableBody: forwardRef((props, ref) => (
+            <TableBody ref={ref} {...props} className={classNames?.header} />
+          )),
+          TableRow: (props) => (
+            <TableRow {...props} className={classNames?.bodyRow} />
+          ),
+          Table: (props) => <Table {...props} className={className} />,
           EmptyPlaceholder: () => (
             <TableEmptyPlaceholder
               table={table}
@@ -82,9 +100,13 @@ export function TableVirtuosoComponent<T>({
         }}
         fixedHeaderContent={() =>
           table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className={classNames?.headRow}>
               {headerGroup.headers.map((header) => (
-                <TableHeaderComponent key={header.id} header={header} />
+                <TableHeadComponent
+                  key={header.id}
+                  header={header}
+                  className={classNames?.head}
+                />
               ))}
             </TableRow>
           ))
@@ -92,7 +114,7 @@ export function TableVirtuosoComponent<T>({
         itemContent={(index, row) =>
           row
             .getVisibleCells()
-            .map((cell) => <TableCellComponent cell={cell} />)
+            .map((cell) => <TableCellComponent key={cell.id} cell={cell} />)
         }
       />
     </ClientOnly>
@@ -100,41 +122,50 @@ export function TableVirtuosoComponent<T>({
 }
 
 export const TableComponent = <T,>({
-  className,
   table,
   isLoading = false,
   isError = false,
+  className,
+  classNames,
 }: TableComponentProps<T>) => {
   return (
     <ClientOnly>
-      <TableContainer>
+      <TableContainer className={classNames?.container}>
         <Table className={className}>
-          <TableHeader>
+          <TableHeader className={classNames?.header}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className={classNames?.headRow}>
                 {headerGroup.headers.map((header) => (
-                  <TableHeaderComponent header={header} />
+                  <TableHeadComponent
+                    key={header.id}
+                    header={header}
+                    className={classNames?.head}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowCount() === 0 ? (
-              <TableEmptyPlaceholder
-                table={table}
-                isError={isError}
-                isLoading={isLoading}
-              />
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+          {table.getRowCount() === 0 ? (
+            <TableEmptyPlaceholder
+              table={table}
+              isError={isError}
+              isLoading={isLoading}
+            />
+          ) : (
+            <TableBody className={classNames?.body}>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className={classNames?.bodyRow}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCellComponent key={cell.id} cell={cell} />
+                    <TableCellComponent
+                      key={cell.id}
+                      cell={cell}
+                      className={classNames?.cell}
+                    />
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
+              ))}
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </ClientOnly>
@@ -154,7 +185,7 @@ const TableEmptyPlaceholder = ({
     <TableBody>
       <TableRow>
         <TableCell
-          colSpan={table.getAllLeafColumns().length}
+          colSpan={table.getAllColumns().length}
           className="h-[180px] align-middle text-center"
         >
           {isLoading ? (
@@ -173,7 +204,13 @@ const TableEmptyPlaceholder = ({
   )
 }
 
-const TableHeaderComponent = ({ header }: { header: Header<any, unknown> }) => {
+const TableHeadComponent = ({
+  header,
+  className,
+}: {
+  header: Header<any, unknown>
+  className?: string
+}) => {
   const canSort = header.column.getCanSort()
   const children = header.isPlaceholder
     ? null
@@ -181,7 +218,9 @@ const TableHeaderComponent = ({ header }: { header: Header<any, unknown> }) => {
   if (canSort) {
     const sortDirection = header.column.getIsSorted()
     return (
-      <TableHead className={clsx(header.column.columnDef.meta?.headClassName)}>
+      <TableHead
+        className={clsx(className, header.column.columnDef.meta?.headClassName)}
+      >
         <Select
           value={sortDirection || ''}
           onValueChange={(sortDirection) => {
@@ -237,13 +276,21 @@ const TableHeaderComponent = ({ header }: { header: Header<any, unknown> }) => {
     )
   }
   return (
-    <TableHead className={clsx(header.column.columnDef.meta?.headClassName)}>
+    <TableHead
+      className={clsx(className, header.column.columnDef.meta?.headClassName)}
+    >
       {children}
     </TableHead>
   )
 }
 
-const TableCellComponent = ({ cell }: { cell: Cell<any, unknown> }) => {
+const TableCellComponent = ({
+  cell,
+  className,
+}: {
+  cell: Cell<any, unknown>
+  className?: string
+}) => {
   const columnDef = cell.column.columnDef
 
   const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
@@ -254,7 +301,7 @@ const TableCellComponent = ({ cell }: { cell: Cell<any, unknown> }) => {
 
   return (
     <TableCell
-      className={clsx(cell.column.columnDef.meta?.cellClassName)}
+      className={clsx(className, cell.column.columnDef.meta?.cellClassName)}
       rowSpan={rowSpan}
       // onClick={
       //   interactive ? undefined : (e) => onRowClick?.(row, e)
