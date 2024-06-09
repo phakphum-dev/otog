@@ -18,7 +18,7 @@ export default function SubmissionPage() {
       // TODO: https://github.com/lukemorales/query-key-factory/issues/89
       queryFn: ({ pageParam }) =>
         querySubmission.getSubmissions.query({
-          query: { offset: pageParam as number },
+          query: { offset: pageParam },
         }),
       initialPageParam: undefined as number | undefined,
       getNextPageParam: (lastPage) =>

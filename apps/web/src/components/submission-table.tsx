@@ -33,7 +33,11 @@ export const SubmissionTable = ({
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
-  const [ref, entry] = useIntersectionObserver()
+  const [ref, entry] = useIntersectionObserver({
+    threshold: 0,
+    root: null,
+    rootMargin: '0px',
+  })
   const isIntersecting = entry?.isIntersecting
   useEffect(() => {
     if (isIntersecting) {
