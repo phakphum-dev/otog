@@ -58,6 +58,13 @@ export const keySubmission = createQueryKeys('submission', {
   getOne: (params: { submissionId: number }) => ({
     queryKey: ['getOne', params],
     queryFn: () =>
+      querySubmission.getSubmission.query({
+        params: { submissionId: params.submissionId.toString() },
+      }),
+  }),
+  getOneWithSourceCode: (params: { submissionId: number }) => ({
+    queryKey: ['getOneWithSourceCode', params],
+    queryFn: () =>
       querySubmission.getSubmissionWithSourceCode.query({
         params: { submissionId: params.submissionId.toString() },
       }),

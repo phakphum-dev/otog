@@ -172,8 +172,9 @@ const columns = [
 
 function useSubmissionPolling(originalSubmission: SubmissionSchema) {
   const result = useQuery({
-    // TODO: exclude source code to reduce bandwidth
-    ...keySubmission.getOne({ submissionId: originalSubmission.id }),
+    ...keySubmission.getOne({
+      submissionId: originalSubmission.id,
+    }),
     enabled:
       originalSubmission.status === SubmissionStatus.waiting ||
       originalSubmission.status === SubmissionStatus.grading,
