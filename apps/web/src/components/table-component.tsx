@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { ReactNode, forwardRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 
 import {
@@ -57,6 +57,7 @@ interface TableComponentProps<T> {
     bodyRow?: string
     cell?: string
   }
+  footer?: ReactNode
 }
 
 export function TableVirtuosoComponent<T>({
@@ -65,6 +66,7 @@ export function TableVirtuosoComponent<T>({
   isError = false,
   className,
   classNames,
+  footer,
 }: TableComponentProps<T>) {
   return (
     <ClientOnly>
@@ -97,6 +99,7 @@ export function TableVirtuosoComponent<T>({
               isError={isError}
             />
           ),
+          TableFoot: () => footer,
         }}
         fixedHeaderContent={() =>
           table.getHeaderGroups().map((headerGroup) => (
@@ -127,6 +130,7 @@ export const TableComponent = <T,>({
   isError = false,
   className,
   classNames,
+  footer,
 }: TableComponentProps<T>) => {
   return (
     <ClientOnly>
@@ -166,6 +170,7 @@ export const TableComponent = <T,>({
               ))}
             </TableBody>
           )}
+          {footer}
         </Table>
       </TableContainer>
     </ClientOnly>

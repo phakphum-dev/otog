@@ -50,7 +50,10 @@ export const querySubmission = createQueryClient(submissionRouter)
 export const keySubmission = createQueryKeys('submission', {
   list: () => ({
     queryKey: ['list'],
-    queryFn: () => querySubmission.getSubmissions.query(),
+    queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
+      querySubmission.getSubmissions.query({
+        query: { offset: pageParam },
+      }),
   }),
   getOne: (params: { submissionId: number }) => ({
     queryKey: ['getOne', params],
