@@ -50,16 +50,18 @@ export const SubmissionTable = ({
       isLoading={isLoading}
       isError={isError}
       footer={
-        <TableFooter className="bg-inherit" ref={ref}>
-          <TableRow>
-            <TableCell
-              colSpan={table.getAllColumns().length}
-              className="align-middle text-center"
-            >
-              <Spinner />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
+        !isLoading && (
+          <TableFooter className="bg-inherit" ref={ref}>
+            <TableRow>
+              <TableCell
+                colSpan={table.getAllColumns().length}
+                className="align-middle text-center"
+              >
+                <Spinner />
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )
       }
     />
   )
