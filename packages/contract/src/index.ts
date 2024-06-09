@@ -113,7 +113,7 @@ export type UserWithourPasswordSchema = z.infer<
   typeof UserWithourPasswordSchema
 >
 
-const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
+const SubmissionSchema = SubmissionModel.pick({
   id: true,
   result: true,
   score: true,
@@ -134,11 +134,11 @@ const SubmissionWithoutSourceCodeSchema = SubmissionModel.pick({
   .extend({
     user: UserWithourPasswordSchema.nullable(),
   })
+export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
-export const SubmissionWithSourceCodeSchema =
-  SubmissionWithoutSourceCodeSchema.merge(
-    SubmissionModel.pick({ sourceCode: true })
-  )
+export const SubmissionWithSourceCodeSchema = SubmissionSchema.merge(
+  SubmissionModel.pick({ sourceCode: true })
+)
 export type SubmissionWithSourceCodeSchema = z.infer<
   typeof SubmissionWithSourceCodeSchema
 >
@@ -152,7 +152,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '',
       responses: {
-        200: z.array(SubmissionWithoutSourceCodeSchema),
+        200: z.array(SubmissionSchema),
       },
       query: PaginationQuerySchema,
       summary: 'Get paginated submissions',
@@ -161,7 +161,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/contest',
       responses: {
-        200: z.array(SubmissionWithoutSourceCodeSchema),
+        200: z.array(SubmissionSchema),
       },
       query: PaginationQuerySchema,
       summary: 'Get paginated contest submissions',
@@ -204,7 +204,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/user/:userId',
       responses: {
-        200: z.array(SubmissionWithoutSourceCodeSchema),
+        200: z.array(SubmissionSchema),
         400: z.object({ message: z.string() }),
       },
       query: PaginationQuerySchema,
@@ -214,7 +214,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/:submissionId',
       responses: {
-        200: SubmissionWithoutSourceCodeSchema,
+        200: SubmissionSchema,
         404: z.object({ message: z.string() }),
       },
       summary: 'Get a submission without source code',
@@ -244,7 +244,7 @@ export const submissionRouter = contract.router(
       method: 'PATCH',
       path: '/:submissionId/rejudge',
       responses: {
-        200: SubmissionWithoutSourceCodeSchema,
+        200: SubmissionSchema,
         404: z.object({ message: z.string() }),
       },
       body: null,

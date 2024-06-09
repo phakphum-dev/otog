@@ -7,7 +7,12 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { flexRender } from '@tanstack/react-table'
-import { Cell, RowData, Table as TanstackTable } from '@tanstack/table-core'
+import {
+  Cell,
+  Header,
+  RowData,
+  Table as TanstackTable,
+} from '@tanstack/table-core'
 
 import {
   Button,
@@ -44,7 +49,7 @@ interface TableComponentProps<T> {
   isError?: boolean
 }
 
-export function TableComponent<T>({
+export function TableVirtuosoComponent<T>({
   className,
   table,
   isLoading = false,
@@ -68,140 +73,194 @@ export function TableComponent<T>({
           TableRow: TableRow,
           Table: Table,
           EmptyPlaceholder: () => (
-            <TableBody>
-              <TableRow>
-                <TableCell
-                  colSpan={table.getAllLeafColumns().length}
-                  className="h-[180px] align-middle text-center"
-                >
-                  {isLoading ? (
-                    <Spinner />
-                  ) : isError ? (
-                    <div className="inline-flex gap-2 items-center">
-                      <ExclamationTriangleIcon className="size-4" />
-                      การโหลดข้อมูลผิดพลาด
-                    </div>
-                  ) : (
-                    'ไม่มีข้อมูล'
-                  )}
-                </TableCell>
-              </TableRow>
-            </TableBody>
+            <TableEmptyPlaceholder
+              table={table}
+              isLoading={isLoading}
+              isError={isError}
+            />
           ),
         }}
         fixedHeaderContent={() =>
           table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                const canSort = header.column.getCanSort()
-                const children = header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )
-                if (canSort) {
-                  const sortDirection = header.column.getIsSorted()
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={clsx(
-                        header.column.columnDef.meta?.headClassName
-                      )}
-                    >
-                      <Select
-                        value={sortDirection || ''}
-                        onValueChange={(sortDirection) => {
-                          header.column.toggleSorting(sortDirection === 'desc')
-                        }}
-                      >
-                        <SelectPrimitive.Trigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs [&>svg]:size-3 -mx-2 px-2"
-                          >
-                            {children}
-                            {sortDirection === 'asc' ? (
-                              <ArrowUpIcon />
-                            ) : sortDirection === 'desc' ? (
-                              <ArrowDownIcon />
-                            ) : (
-                              <ChevronUpDownIcon />
-                            )}
-                          </Button>
-                        </SelectPrimitive.Trigger>
-                        <SelectContent>
-                          <SelectItem
-                            value="asc"
-                            onPointerUp={() => {
-                              if (sortDirection === 'asc') {
-                                header.column.clearSorting()
-                              }
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              เรียงขึ้น
-                              <ArrowUpIcon className="size-4" />
-                            </div>
-                          </SelectItem>
-                          <SelectItem
-                            value="desc"
-                            onPointerUp={() => {
-                              if (sortDirection === 'desc') {
-                                header.column.clearSorting()
-                              }
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              เรียงลง
-                              <ArrowDownIcon className="size-4" />
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableHead>
-                  )
-                }
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={clsx(
-                      header.column.columnDef.meta?.headClassName
-                    )}
-                  >
-                    {children}
-                  </TableHead>
-                )
-              })}
+              {headerGroup.headers.map((header) => (
+                <TableHeaderComponent key={header.id} header={header} />
+              ))}
             </TableRow>
           ))
         }
         itemContent={(index, row) =>
-          row.getVisibleCells().map((cell) => {
-            const columnDef = cell.column.columnDef
-
-            const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
-            if (rowSpan !== undefined && rowSpan <= 0) return
-
-            // const interactive =
-            //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
-
-            return (
-              <TableCell
-                key={cell.id}
-                className={clsx(cell.column.columnDef.meta?.cellClassName)}
-                rowSpan={rowSpan}
-                // onClick={
-                //   interactive ? undefined : (e) => onRowClick?.(row, e)
-                // }
-              >
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            )
-          })
+          row
+            .getVisibleCells()
+            .map((cell) => <TableCellComponent cell={cell} />)
         }
       />
     </ClientOnly>
+  )
+}
+
+export const TableComponent = <T,>({
+  className,
+  table,
+  isLoading = false,
+  isError = false,
+}: TableComponentProps<T>) => {
+  return (
+    <ClientOnly>
+      <TableContainer>
+        <Table className={className}>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHeaderComponent header={header} />
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowCount() === 0 ? (
+              <TableEmptyPlaceholder
+                table={table}
+                isError={isError}
+                isLoading={isLoading}
+              />
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCellComponent key={cell.id} cell={cell} />
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </ClientOnly>
+  )
+}
+
+const TableEmptyPlaceholder = ({
+  table,
+  isLoading,
+  isError,
+}: {
+  table: TanstackTable<any>
+  isLoading: boolean
+  isError: boolean
+}) => {
+  return (
+    <TableBody>
+      <TableRow>
+        <TableCell
+          colSpan={table.getAllLeafColumns().length}
+          className="h-[180px] align-middle text-center"
+        >
+          {isLoading ? (
+            <Spinner />
+          ) : isError ? (
+            <div className="inline-flex gap-2 items-center">
+              <ExclamationTriangleIcon className="size-4" />
+              การโหลดข้อมูลผิดพลาด
+            </div>
+          ) : (
+            'ไม่มีข้อมูล'
+          )}
+        </TableCell>
+      </TableRow>
+    </TableBody>
+  )
+}
+
+const TableHeaderComponent = ({ header }: { header: Header<any, unknown> }) => {
+  const canSort = header.column.getCanSort()
+  const children = header.isPlaceholder
+    ? null
+    : flexRender(header.column.columnDef.header, header.getContext())
+  if (canSort) {
+    const sortDirection = header.column.getIsSorted()
+    return (
+      <TableHead className={clsx(header.column.columnDef.meta?.headClassName)}>
+        <Select
+          value={sortDirection || ''}
+          onValueChange={(sortDirection) => {
+            header.column.toggleSorting(sortDirection === 'desc')
+          }}
+        >
+          <SelectPrimitive.Trigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs [&>svg]:size-3 -mx-2 px-2"
+            >
+              {children}
+              {sortDirection === 'asc' ? (
+                <ArrowDownIcon />
+              ) : sortDirection === 'desc' ? (
+                <ArrowUpIcon />
+              ) : (
+                <ChevronUpDownIcon />
+              )}
+            </Button>
+          </SelectPrimitive.Trigger>
+          <SelectContent>
+            <SelectItem
+              value="asc"
+              onPointerUp={() => {
+                if (sortDirection === 'asc') {
+                  header.column.clearSorting()
+                }
+              }}
+            >
+              <div className="flex items-center gap-2">
+                น้อยไปมาก
+                <ArrowDownIcon className="size-4" />
+              </div>
+            </SelectItem>
+            <SelectItem
+              value="desc"
+              onPointerUp={() => {
+                if (sortDirection === 'desc') {
+                  header.column.clearSorting()
+                }
+              }}
+            >
+              <div className="flex items-center gap-2">
+                มากไปน้อย
+                <ArrowUpIcon className="size-4" />
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </TableHead>
+    )
+  }
+  return (
+    <TableHead className={clsx(header.column.columnDef.meta?.headClassName)}>
+      {children}
+    </TableHead>
+  )
+}
+
+const TableCellComponent = ({ cell }: { cell: Cell<any, unknown> }) => {
+  const columnDef = cell.column.columnDef
+
+  const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
+  if (rowSpan !== undefined && rowSpan <= 0) return
+
+  // const interactive =
+  //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
+
+  return (
+    <TableCell
+      className={clsx(cell.column.columnDef.meta?.cellClassName)}
+      rowSpan={rowSpan}
+      // onClick={
+      //   interactive ? undefined : (e) => onRowClick?.(row, e)
+      // }
+    >
+      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+    </TableCell>
   )
 }

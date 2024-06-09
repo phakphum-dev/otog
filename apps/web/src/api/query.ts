@@ -33,9 +33,9 @@ export const keyAnnouncement = createQueryKeys('announcement', {
 
 export const queryProblem = createQueryClient(problemRouter)
 export const keyProblem = createQueryKeys('problem', {
-  table: () => ({
-    queryKey: ['table'],
-    queryFn: () => queryProblem.getProblemTable.query({}),
+  list: () => ({
+    queryKey: ['list'],
+    queryFn: () => queryProblem.getProblemTable.query(),
   }),
   passedUsers: (params: { problemId: number }) => ({
     queryKey: ['passedUsers', params],
@@ -48,8 +48,8 @@ export const keyProblem = createQueryKeys('problem', {
 
 export const querySubmission = createQueryClient(submissionRouter)
 export const keySubmission = createQueryKeys('submission', {
-  table: () => ({
-    queryKey: ['table'],
+  list: () => ({
+    queryKey: ['list'],
     queryFn: () => querySubmission.getSubmissions.query(),
   }),
   getOne: (params: { submissionId: number }) => ({

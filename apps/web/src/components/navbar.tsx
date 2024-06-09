@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
@@ -6,6 +8,7 @@ import {
 import { User } from 'next-auth'
 import Image from 'next/image'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 
 // import { SearchMenu } from './SearchMenu'
 import {
@@ -15,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Link,
+  clsx,
 } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
@@ -29,17 +33,23 @@ export const Navbar = () => {
       <div className="h-14 w-full" />
       <nav className="fixed inset-x-0 top-0 z-20 h-14 border-b border-border bg-background shadow-sm">
         <div className="container flex h-full justify-between items-center">
-          <Link asChild className="p-1 rounded-full">
-            <NextLink href="/">
-              <Image
-                src={Logo}
-                width={32}
-                height={32}
-                title="One Tambon One Grader"
-                alt="One Tambon One Grader Logo"
-              />
-            </NextLink>
-          </Link>
+          <div className="flex gap-2 items-center">
+            <Link asChild className="p-1 rounded-full">
+              <NextLink href="/">
+                <Image
+                  src={Logo}
+                  width={32}
+                  height={32}
+                  title="One Tambon One Grader"
+                  alt="One Tambon One Grader Logo"
+                />
+              </NextLink>
+            </Link>
+            <NavButton href="/" exact className="ml-6">
+              โจทย์
+            </NavButton>
+            <NavButton href="/submission">ผลตรวจ</NavButton>
+          </div>
           <div className="flex gap-2">
             <ThemeToggle />
             {user ? (
@@ -53,6 +63,39 @@ export const Navbar = () => {
         </div>
       </nav>
     </>
+  )
+}
+
+function usePathActive(props: { href: string; exact?: boolean }) {
+  const { pathname } = useRouter()
+  return props.exact
+    ? props.href === pathname
+    : props.href.split('/')[1] === pathname.split('/')[1]
+}
+
+const NavButton = (props: {
+  href: string
+  exact?: boolean
+  children: ReactNode
+  className?: string
+}) => {
+  const isActive = usePathActive(props)
+  const { pathname } = useRouter()
+
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      className={clsx(
+        'data-[active=true]:text-foreground text-muted-foreground',
+        props.className
+      )}
+      data-active={isActive}
+    >
+      <NextLink href={props.href} scroll={pathname === props.href}>
+        {props.children}
+      </NextLink>
+    </Button>
   )
 }
 

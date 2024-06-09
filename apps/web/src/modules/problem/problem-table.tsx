@@ -62,14 +62,14 @@ import { keyProblem, queryProblem } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
-import { TableComponent } from '../../components/table-component'
+import { TableVirtuosoComponent } from '../../components/table-component'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
 import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 import { SubmitCode } from './submit-code'
 
 export const ProblemTable = () => {
-  const { data, isLoading, isError } = useQuery(keyProblem.table())
+  const { data, isLoading, isError } = useQuery(keyProblem.list())
   const problems = useMemo(
     () => (data?.status === 200 ? data.body : []),
     [data]
@@ -94,7 +94,11 @@ export const ProblemTable = () => {
       <OtogButtons table={table} problems={problems} isLoading={isLoading} />
       <div className="flex flex-col gap-4">
         <TableFilter table={table} />
-        <TableComponent table={table} isLoading={isLoading} isError={isError} />
+        <TableVirtuosoComponent
+          table={table}
+          isLoading={isLoading}
+          isError={isError}
+        />
       </div>
     </>
   )
@@ -369,7 +373,7 @@ const columns = [
     header: () => '#',
     meta: {
       headClassName: 'text-center',
-      cellClassName: 'text-center px-6',
+      cellClassName: 'text-center px-6 tabular-nums',
     },
   }),
   columnHelper.accessor('name', {
@@ -681,7 +685,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onSuccess: () => {
               toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
               queryClient.setQueryData(
-                keyProblem.table().queryKey,
+                keyProblem.list().queryKey,
                 produce(
                   (draftResult: { body: Array<ProblemTableRowSchema> }) => {
                     const draftProblem = draftResult.body.find(
@@ -691,7 +695,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
                   }
                 )
               )
-              queryClient.invalidateQueries({ queryKey: keyProblem.table._def })
+              queryClient.invalidateQueries({ queryKey: keyProblem.list._def })
             },
             onError: () => {
               toast.error(`ไม่สามารถ${showLabel}โจทย์ได้`, { id: toastId })
