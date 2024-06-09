@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -13,6 +14,8 @@ import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
 import { Link, Spinner, TableCell, TableFooter, TableRow } from '@otog/ui'
 
+import { keySubmission } from '../api/query'
+import { InlineComponent } from './inline-component'
 import { SubmissionStatusButton } from './submission-status'
 import { TableComponent } from './table-component'
 import { UserAvatar } from './user-avatar'
@@ -104,22 +107,29 @@ const columns = [
   }),
   columnHelper.accessor('result', {
     header: 'ผลลัพธ์',
-    cell: ({ getValue, row }) => {
-      if (
-        row.original.status === SubmissionStatus.waiting ||
-        row.original.status === SubmissionStatus.grading
-      ) {
-        return (
-          <div className="inline-flex gap-2 items-center">
-            <Spinner size="sm" />
-            {getValue()}
-          </div>
-        )
-      }
-      return (
-        <code className="font-mono line-clamp-3 text-pretty">{getValue()}</code>
-      )
-    },
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          if (
+            submission.status === SubmissionStatus.waiting ||
+            submission.status === SubmissionStatus.grading
+          ) {
+            return (
+              <div className="inline-flex gap-2 items-center">
+                <Spinner size="sm" />
+                {submission.result}
+              </div>
+            )
+          }
+          return (
+            <code className="font-mono line-clamp-3 text-pretty">
+              {submission.result}
+            </code>
+          )
+        }}
+      />
+    ),
     enableSorting: false,
     meta: {
       cellClassName: 'max-w-[200px] whitespace-pre-wrap',
@@ -127,9 +137,14 @@ const columns = [
   }),
   columnHelper.accessor('timeUsed', {
     header: 'เวลารวม (วินาที)',
-    cell: ({ getValue }) => {
-      return ((getValue() ?? 0) / 1000).toFixed(3)
-    },
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return ((submission.timeUsed ?? 0) / 1000).toFixed(3)
+        }}
+      />
+    ),
     enableSorting: false,
     meta: {
       headClassName: 'text-end',
@@ -139,9 +154,14 @@ const columns = [
 
   columnHelper.accessor('status', {
     header: 'สถานะ',
-    cell: ({ row }) => {
-      return <SubmissionStatusButton submission={row.original} />
-    },
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return <SubmissionStatusButton submission={submission} />
+        }}
+      />
+    ),
     enableSorting: false,
     meta: {
       headClassName: 'text-center',
@@ -149,3 +169,25 @@ const columns = [
     },
   }),
 ]
+
+function useSubmissionPolling(originalSubmission: SubmissionSchema) {
+  const result = useQuery({
+    // TODO: exclude source code to reduce bandwidth
+    ...keySubmission.getOne({ submissionId: originalSubmission.id }),
+    enabled:
+      originalSubmission.status === SubmissionStatus.waiting ||
+      originalSubmission.status === SubmissionStatus.grading,
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (
+        data?.status === 200 &&
+        (data.body.status === SubmissionStatus.waiting ||
+          data.body.status === SubmissionStatus.grading)
+      ) {
+        return 1000
+      }
+      return false
+    },
+  })
+  return result.data?.status === 200 ? result.data.body : originalSubmission
+}
