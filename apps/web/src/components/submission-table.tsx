@@ -111,9 +111,14 @@ const columns = [
           </div>
         )
       }
-      return <code className="font-mono">{getValue()}</code>
+      return (
+        <code className="font-mono line-clamp-3 text-pretty">{getValue()}</code>
+      )
     },
     enableSorting: false,
+    meta: {
+      cellClassName: 'max-w-[200px] whitespace-pre-wrap',
+    },
   }),
   columnHelper.accessor('timeUsed', {
     header: 'เวลารวม (วินาที)',

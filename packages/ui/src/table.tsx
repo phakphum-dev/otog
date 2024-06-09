@@ -9,7 +9,7 @@ const TableContainer = React.forwardRef<
   return (
     <div
       className={cn(
-        'relative w-full border rounded-lg overflow-hidden',
+        'relative w-full border rounded-lg overflow-x-auto overflow-y-hidden',
         className
       )}
       {...props}
