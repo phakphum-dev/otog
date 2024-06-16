@@ -378,9 +378,12 @@ const columns = [
         <Link
           isExternal
           href={`/api/problem/${problem.id}`}
-          className={clsx(!problem.show && 'text-muted-foreground')}
+          className={clsx(
+            'flex flex-col',
+            !problem.show && 'text-muted-foreground'
+          )}
         >
-          <p className="text-pretty font-semibold tracking-wide mb-0.5">
+          <span className="text-pretty font-semibold tracking-wide mb-0.5">
             {problem.name}
             {isNewProblem(problem) && (
               <span className="ml-2 inline-flex px-1 text-xs tracking-tight text-accent-foreground font-semibold font-heading bg-accent rounded">
@@ -388,12 +391,12 @@ const columns = [
                 ใหม่ !
               </span>
             )}
-          </p>
-          <p className="text-sm">
+          </span>
+          <span className="text-sm">
             {/* TODO: fix nullish */}(
             {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
             {problem.memoryLimit} MB)
-          </p>
+          </span>
         </Link>
       )
     },
@@ -459,13 +462,7 @@ const columns = [
   columnHelper.display({
     id: 'submit',
     header: 'ส่ง',
-    cell: ({ row }) => (
-      <SubmitCode
-        problemId={row.original.id}
-        // TODO: fix nullish
-        problemName={row.original.name ?? '-'}
-      />
-    ),
+    cell: ({ row }) => <SubmitCode problem={row.original} />,
     meta: {
       cellClassName: 'text-center px-0',
     },

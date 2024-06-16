@@ -129,6 +129,8 @@ const SubmissionSchema = SubmissionModel.pick({
     problem: ProblemModel.pick({
       id: true,
       name: true,
+      memoryLimit: true,
+      timeLimit: true,
     }).nullable(),
   })
   .extend({

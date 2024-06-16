@@ -4,10 +4,12 @@ import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { File } from '@web-std/file'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
+import { Problem } from '@otog/database'
 import {
   Button,
   Dialog,
@@ -29,7 +31,7 @@ import {
   SelectValue,
 } from '@otog/ui'
 
-import { querySubmission } from '../../api/query'
+import { keySubmission, querySubmission } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { Language, LanguageName } from '../../enums'
 
@@ -40,8 +42,7 @@ const SubmitCodeFormSchema = z.object({
 type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
 
 export const SubmitCode = (props: {
-  problemId: number
-  problemName: string
+  problem: Pick<Problem, 'id' | 'name'>
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -53,11 +54,12 @@ export const SubmitCode = (props: {
 
   const router = useRouter()
   const uploadFile = querySubmission.uploadFile.useMutation({})
+  const queryClient = useQueryClient()
   const onSubmit = form.handleSubmit(async (values) => {
-    const toastId = toast.loading(`กำลังส่งข้อ ${props.problemName}...`)
+    const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
     await uploadFile.mutateAsync(
       {
-        params: { problemId: props.problemId.toString() },
+        params: { problemId: props.problem.id.toString() },
         body: values,
       },
       {
@@ -69,6 +71,7 @@ export const SubmitCode = (props: {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
           setOpen(false)
           router.push('/submission')
+          queryClient.invalidateQueries({ queryKey: keySubmission.list._def })
         },
       }
     )
@@ -76,12 +79,12 @@ export const SubmitCode = (props: {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button title="ส่ง" size="icon" variant="outline">
+        <Button title="ส่ง" size="icon" variant="secondary">
           <MdUploadFile />
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>ส่งข้อ {props.problemName}</DialogTitle>
+        <DialogTitle>ส่งข้อ {props.problem.name ?? '-'}</DialogTitle>
         <Form {...form}>
           <form
             ref={formRef}

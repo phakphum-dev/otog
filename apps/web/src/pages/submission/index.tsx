@@ -3,15 +3,76 @@ import { useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import Head from 'next/head'
 
+import { SubmissionSchema } from '@otog/contract'
+import { Link } from '@otog/ui'
+
 import { keySubmission, querySubmission } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { SubmissionTable } from '../../components/submission-table'
+import { SubmitCode } from '../../modules/problem/submit-code'
 
-export const getServerSideProps = withSession(async () => {
-  return { props: {} }
+interface SubmissionPageProps {
+  latestSubmission: SubmissionSchema | null
+}
+
+export const getServerSideProps = withSession<SubmissionPageProps>(async () => {
+  const getLatestSubmissionByUserId =
+    await querySubmission.getLatestSubmissionByUserId.query()
+  if (getLatestSubmissionByUserId.status !== 200) {
+    return {
+      props: {
+        latestSubmission: null,
+      },
+    }
+  }
+  return {
+    props: {
+      latestSubmission: getLatestSubmissionByUserId.body.submission,
+    },
+  }
 })
 
-export default function SubmissionPage() {
+export default function SubmissionPage(props: SubmissionPageProps) {
+  return (
+    <main className="container flex-1 flex flex-col gap-4">
+      <Head>
+        <title>One Tambon One Grader</title>
+      </Head>
+      <h1 className="font-heading text-2xl mt-8 font-semibold">ผลตรวจ</h1>
+      <LatestSubmissionSecion latestSubmission={props.latestSubmission} />
+      <SubmissionSection />
+    </main>
+  )
+}
+
+const LatestSubmissionSecion = ({
+  latestSubmission,
+}: {
+  latestSubmission: SubmissionSchema | null
+}) => {
+  if (!latestSubmission) {
+    return null
+  }
+  const problem = latestSubmission.problem!
+  return (
+    <section className="p-4 rounded-lg border flex gap-2 items-center justify-between">
+      <h2 className="font-semibold">ส่งข้อล่าสุด</h2>
+      <div className="flex gap-8 items-center text-sm">
+        <Link isExternal href={`/api/problem/${problem.id}`}>
+          <span>{problem.name}</span>
+          <p className="text-sm">
+            {/* TODO: fix nullish */}(
+            {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
+            {problem.memoryLimit} MB)
+          </p>
+        </Link>
+        <SubmitCode problem={problem} />
+      </div>
+    </section>
+  )
+}
+
+const SubmissionSection = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: keySubmission.list._def,
@@ -31,18 +92,12 @@ export default function SubmissionPage() {
     [data]
   )
   return (
-    <main className="container flex-1 flex flex-col gap-4">
-      <Head>
-        <title>One Tambon One Grader</title>
-      </Head>
-      <h1 className="font-heading text-2xl mt-8 font-semibold">ผลตรวจ</h1>
-      <SubmissionTable
-        data={submissions}
-        isLoading={isLoading}
-        isError={isError}
-        hasNextPage={hasNextPage}
-        fetchNextPage={fetchNextPage}
-      />
-    </main>
+    <SubmissionTable
+      data={submissions}
+      isLoading={isLoading}
+      isError={isError}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    />
   )
 }
