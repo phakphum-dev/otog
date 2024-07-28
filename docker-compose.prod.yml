@@ -14,6 +14,10 @@ services:
     image: ghcr.io/phakphum-dev/otog-api:latest
     networks:
       - api-gateway
+    volumes:
+      - ./apps/api/volumes/upload:/app/apps/api/volumes/upload:rw
+      - ./apps/api/docs:/app/apps/api/docs:rw
+      - ./apps/api/source:/app/apps/api/source:rw
 
 networks:
   api-gateway:
