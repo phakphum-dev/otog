@@ -17,9 +17,9 @@ services:
       dockerfile: ./Dockerfile.api
     restart: unless-stopped
     volumes:
-      - ./apps/api/volumes/upload:/app/apps/api/volumes/upload:rw
-      - ./apps/api/docs:/app/apps/api/docs:rw
-      - ./apps/api/source:/app/apps/api/source:rw
+      - ./apps/api/volumes/upload:/app/volumes/upload:rw
+      - ./apps/api/docs:/app/docs:rw
+      - ./apps/api/source:/app/source:rw
     env_file:
       - ./apps/api/.env
     ports:
