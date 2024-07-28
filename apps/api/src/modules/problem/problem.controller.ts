@@ -106,14 +106,14 @@ export class ProblemController {
     if (rid) {
       const refreshToken = await this.authService.findOneByRID(rid)
       if (!refreshToken?.userId) {
-        throw new NotFoundException()
+        throw new NotFoundException('Cannot find user with RID', `${rid}`)
       }
       user = await this.userService.findOneById(refreshToken.userId)
     }
 
     const problem = await this.problemService.findOneById(problemId)
     if (!problem) {
-      throw new NotFoundException()
+      throw new NotFoundException('Cannot find problem with id', `${problemId}`)
     }
     if (problem.show === false && user?.role !== Role.Admin) {
       // TODO validate user if contest is private
