@@ -101,28 +101,37 @@ export class ProblemController {
     @Req() req: Request,
     @Res() res: Response
   ) {
-    let user = null
-    const rid = await req.cookies['RID']
-    if (rid) {
-      const refreshToken = await this.authService.findOneByRID(rid)
-      if (!refreshToken?.userId) {
-        throw new NotFoundException('Cannot find user with RID', `${rid}`)
-      }
-      user = await this.userService.findOneById(refreshToken.userId)
-    }
-
     const problem = await this.problemService.findOneById(problemId)
     if (!problem) {
-      throw new NotFoundException('Cannot find problem with id', `${problemId}`)
+      console.error('Cannot find problem with id', `${problemId}`)
+      throw new NotFoundException()
     }
-    if (problem.show === false && user?.role !== Role.Admin) {
+    if (problem.show === false) {
+      const rid = req.cookies['RID']
+      if (!rid) {
+        console.error('rid not found', `${rid}`)
+        throw new ForbiddenException()
+      }
+      const refreshToken = await this.authService.findOneByRID(rid)
+      if (!refreshToken?.userId) {
+        console.error('Cannot find user with RID', `${rid}`)
+        throw new NotFoundException()
+      }
+      const user = await this.userService.findOneById(refreshToken.userId)
+
       // TODO validate user if contest is private
       const contest = await this.contestService.getStartedAndUnFinishedContest()
       if (
-        !contest ||
+        user?.role !== Role.Admin &&
+        contest &&
         !contest.contestProblem.some((p) => p.problemId === problem.id)
-      )
+      ) {
+        console.error(
+          'There is no contest right now and you are not admin',
+          `${user?.id}`
+        )
         throw new ForbiddenException()
+      }
     }
 
     const readStream = await this.problemService.getProblemDocStream(problem.id)

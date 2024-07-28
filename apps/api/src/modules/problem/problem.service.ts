@@ -250,7 +250,10 @@ export class ProblemService {
       this.fileManager
     )
 
-    if (!docStream) throw new NotFoundException()
+    if (!docStream) {
+      console.error('Cannot find pdf of problem', `${problemId}`)
+      throw new NotFoundException()
+    }
     return docStream
   }
 
