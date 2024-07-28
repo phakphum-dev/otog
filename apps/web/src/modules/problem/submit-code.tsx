@@ -79,7 +79,7 @@ export const SubmitCode = (props: {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button title="ส่ง" size="icon" variant="secondary">
+        <Button title="ส่งด้วยไฟล์" size="icon" variant="secondary">
           <MdUploadFile />
         </Button>
       </DialogTrigger>

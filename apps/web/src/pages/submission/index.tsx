@@ -8,6 +8,7 @@ import { Link } from '@otog/ui'
 
 import { keySubmission, querySubmission } from '../../api/query'
 import { withSession } from '../../api/with-session'
+import { SubmissionStatusButton } from '../../components/submission-status'
 import { SubmissionTable } from '../../components/submission-table'
 import { SubmitCode } from '../../modules/problem/submit-code'
 
@@ -55,18 +56,19 @@ const LatestSubmissionSecion = ({
   }
   const problem = latestSubmission.problem!
   return (
-    <section className="p-4 rounded-lg border flex gap-2 items-center justify-between">
+    <section className="p-4 rounded-lg border flex gap-6 items-center">
       <h2 className="font-semibold">ส่งข้อล่าสุด</h2>
-      <div className="flex gap-8 items-center text-sm">
-        <Link isExternal href={`/api/problem/${problem.id}`}>
-          <span>{problem.name}</span>
-          <p className="text-sm">
-            {/* TODO: fix nullish */}(
-            {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-            {problem.memoryLimit} MB)
-          </p>
-        </Link>
+      <Link isExternal href={`/api/problem/${problem.id}`} className="text-sm">
+        <span>{problem.name}</span>
+        <p>
+          {/* TODO: fix nullish */}(
+          {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
+          {problem.memoryLimit} MB)
+        </p>
+      </Link>
+      <div className="ml-auto flex items-center gap-2">
         <SubmitCode problem={problem} />
+        <SubmissionStatusButton submission={latestSubmission} />
       </div>
     </section>
   )

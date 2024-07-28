@@ -35,6 +35,7 @@ import {
 import { queryProblem, querySubmission } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { Language, LanguageName } from '../../enums'
+import { SubmitCode } from '../../modules/problem/submit-code'
 
 interface WriteSolutionPageProps {
   submission: SubmissionWithSourceCodeSchema | null
@@ -243,10 +244,12 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
               </Select>
             )}
           />
-
-          <Button type="submit" className="col-start-3">
-            ส่ง
-          </Button>
+          <div className="col-start-3 flex gap-2">
+            <Button type="submit" className="flex-1">
+              ส่ง
+            </Button>
+            <SubmitCode problem={props.problem} />
+          </div>
         </div>
       </form>
     </Form>
