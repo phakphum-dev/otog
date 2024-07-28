@@ -215,7 +215,7 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
     )
   }
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 sticky py-2 -my-2 top-[calc(var(--navbar))] bg-background z-10">
       <InputGroup>
         <InputLeftIcon>
           <MagnifyingGlassIcon />

@@ -27,6 +27,7 @@
     --success-foreground: colorToHsl(theme(colors.gray.50));
 
     --radius: 0.75rem;
+    --navbar: 64px;
   }
 
   .dark {

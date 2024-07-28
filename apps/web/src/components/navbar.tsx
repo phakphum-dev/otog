@@ -30,8 +30,8 @@ export const Navbar = () => {
   const { user } = useUserContext()
   return (
     <>
-      <div className="h-14 w-full" />
-      <nav className="fixed inset-x-0 top-0 z-20 h-14 border-b border-border bg-background shadow-sm">
+      <div className="h-[--navbar] w-full" />
+      <nav className="fixed inset-x-0 top-0 z-20 h-[--navbar] border-b border-border bg-background shadow-sm">
         <div className="container flex h-full justify-between items-center">
           <div className="flex gap-2 items-center">
             <Link asChild className="p-1 rounded-full">
