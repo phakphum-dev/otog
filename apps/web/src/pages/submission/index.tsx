@@ -37,7 +37,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
   return (
     <main className="container flex-1 flex flex-col gap-4">
       <Head>
-        <title>One Tambon One Grader</title>
+        <title>Submission | One Tambon One Grader</title>
       </Head>
       <h1 className="font-heading text-2xl mt-8 font-semibold">ผลตรวจ</h1>
       <LatestSubmissionSecion latestSubmission={props.latestSubmission} />

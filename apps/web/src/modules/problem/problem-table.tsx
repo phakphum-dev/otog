@@ -91,6 +91,7 @@ export const ProblemTable = () => {
   })
   return (
     <>
+      <h1 className="sr-only">โจทย์</h1>
       <OtogButtons table={table} problems={problems} isLoading={isLoading} />
       <div className="flex flex-col gap-4">
         <TableFilter table={table} />

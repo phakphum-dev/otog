@@ -55,6 +55,7 @@ export default function LoginPage() {
           className="mx-auto my-8 max-w-[300px] rounded-2xl border border-border p-5 shadow-md"
         >
           <div className="flex flex-col gap-4">
+            <h1 className="sr-only">เข้าสู่ระบบ</h1>
             <Image
               src={Logo}
               className="mx-auto w-[100px] my-4"
