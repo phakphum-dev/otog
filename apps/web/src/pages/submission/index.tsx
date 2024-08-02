@@ -94,12 +94,15 @@ const SubmissionSection = () => {
     [data]
   )
   return (
-    <SubmissionTable
-      data={submissions}
-      isLoading={isLoading}
-      isError={isError}
-      hasNextPage={hasNextPage}
-      fetchNextPage={fetchNextPage}
-    />
+    <section>
+      <h2 className="sr-only">ตารางผลตรวจ</h2>
+      <SubmissionTable
+        data={submissions}
+        isLoading={isLoading}
+        isError={isError}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+      />
+    </section>
   )
 }
