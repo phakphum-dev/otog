@@ -142,7 +142,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
 const SkipToMainContent = () => {
   return (
     <Button
-      className="opacity-0 fixed left-4 top-4 focus-visible:opacity-100 focus-visible:z-50"
+      className="opacity-0 absolute left-4 top-4 focus-visible:opacity-100 focus-visible:z-50"
       asChild
     >
       <a href="#content">ข้ามไปยังเนื้อหาหลัก</a>
