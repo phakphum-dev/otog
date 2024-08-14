@@ -106,13 +106,16 @@ int main() {
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
-    <main className="container max-w-4xl flex-1">
+    <main className="container max-w-4xl flex-1" id="content">
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
       <section className="flex flex-col flex-1 gap-4 mt-8 p-6 border rounded-2xl">
         <div>
-          <h1 className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2">
+          <h1
+            className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
+            aria-label={`โจทย์ข้อที่ ${problem.id}: ${problem.name}`}
+          >
             <PencilSquareIcon className="size-6" />
             {problem.name}
           </h1>

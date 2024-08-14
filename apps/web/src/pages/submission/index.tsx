@@ -35,7 +35,7 @@ export const getServerSideProps = withSession<SubmissionPageProps>(async () => {
 
 export default function SubmissionPage(props: SubmissionPageProps) {
   return (
-    <main className="container flex-1 flex flex-col gap-4">
+    <main id="content" className="container flex-1 flex flex-col gap-4">
       <Head>
         <title>Submission | One Tambon One Grader</title>
       </Head>

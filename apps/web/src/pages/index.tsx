@@ -15,17 +15,20 @@ export default function HomePage() {
   const { isAuthenticated } = useUserContext()
   if (isAuthenticated) {
     return (
-      <main className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md">
+      <div className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md">
         <Head>
           <title>Problem | OTOG</title>
         </Head>
         <AnnouncementCarousel />
         <ProblemTable />
-      </main>
+      </div>
     )
   }
   return (
-    <main className="container flex justify-center items-center flex-1">
+    <main
+      id="content"
+      className="container flex justify-center items-center flex-1"
+    >
       <Head>
         <title>One Tambon One Grader</title>
       </Head>

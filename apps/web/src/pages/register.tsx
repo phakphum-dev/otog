@@ -31,6 +31,7 @@ export default function RegisterPage() {
       </Head>
       <Form {...form}>
         <form
+          id="content"
           onSubmit={onSubmit}
           className="mx-auto my-8 max-w-[300px] rounded-2xl border border-border p-5 shadow-md"
         >

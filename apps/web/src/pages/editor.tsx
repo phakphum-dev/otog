@@ -24,7 +24,7 @@ export default function EditorPage() {
   const { resolvedTheme } = useTheme()
 
   return (
-    <div className="container flex-1 pt-8">
+    <main id="content" className="container flex-1 pt-8">
       <div className="max-w-4xl rounded-md border overflow-hidden">
         <ClangdEditor
           className="h-[800px]"
@@ -32,6 +32,6 @@ export default function EditorPage() {
           theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
         />
       </div>
-    </div>
+    </main>
   )
 }

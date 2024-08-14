@@ -41,7 +41,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
   const submission = props.submission
 
   return (
-    <main className="container max-w-3xl flex-1">
+    <main id="content" className="container max-w-3xl flex-1">
       <Head>
         <title>One Tambon One Grader</title>
       </Head>

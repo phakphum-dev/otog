@@ -142,16 +142,10 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
 const SkipToMainContent = () => {
   return (
     <Button
-      className="opacity-0 absolute left-4 top-4 focus-visible:opacity-100 focus-visible:z-50"
-      onClick={() => {
-        const nodes = document.getElementsByTagName('h1')
-        const h1 = nodes[0]
-        if (!h1) return
-        h1.setAttribute('tabindex', '-1')
-        h1.focus()
-      }}
+      className="opacity-0 fixed left-4 top-4 focus-visible:opacity-100 focus-visible:z-50"
+      asChild
     >
-      ข้ามไปยังเนื้อหาหลัก
+      <a href="#content">ข้ามไปยังเนื้อหาหลัก</a>
     </Button>
   )
 }
