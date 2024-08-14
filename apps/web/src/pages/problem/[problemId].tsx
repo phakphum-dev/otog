@@ -208,23 +208,29 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
         {!preferOldEditor && form.watch('language') === 'cpp' ? (
           <div className="overflow-hidden rounded-md border">
-            <ClangdEditor
-              className="h-[800px]"
-              defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-              theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-              onMount={(editor) => (editorRef.current = editor)}
-            />
+            <div role="application" aria-label="Clang Editor">
+              <ClangdEditor
+                className="h-[800px]"
+                defaultValue={
+                  props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE
+                }
+                theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+                onMount={(editor) => (editorRef.current = editor)}
+              />
+            </div>
             <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} />
           </div>
         ) : (
-          <MonacoEditor
-            className="overflow-hidden rounded-md border"
-            height="800px"
-            theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
-            defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-            language={form.watch('language')}
-            onMount={(editor) => (editorRef.current = editor)}
-          />
+          <div role="application" aria-label="Code Editor">
+            <MonacoEditor
+              className="overflow-hidden rounded-md border"
+              height="800px"
+              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
+              defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
+              language={form.watch('language')}
+              onMount={(editor) => (editorRef.current = editor)}
+            />
+          </div>
         )}
 
         <div className="grid grid-cols-3 mt-4">
