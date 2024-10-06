@@ -9,7 +9,6 @@ import {
   ContestProblemModel,
   ProblemModel,
   SubmissionModel,
-  SubmissionStatus,
   UserContestModel,
   UserModel,
 } from '@otog/database'

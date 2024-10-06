@@ -49,6 +49,7 @@ export const Navbar = () => {
               โจทย์
             </NavButton>
             <NavButton href="/submission">ผลตรวจ</NavButton>
+            <NavButton href="/contest">แข่งขัน</NavButton>
           </div>
           <div className="flex gap-2">
             <ThemeToggle />
@@ -87,12 +88,15 @@ const NavButton = (props: {
       asChild
       variant="ghost"
       className={clsx(
-        'data-[active=true]:text-foreground text-muted-foreground',
+        'aria-[current=true]:text-foreground text-muted-foreground',
         props.className
       )}
-      data-active={isActive}
     >
-      <NextLink href={props.href} scroll={pathname === props.href}>
+      <NextLink
+        aria-current={isActive}
+        href={props.href}
+        scroll={pathname === props.href}
+      >
         {props.children}
       </NextLink>
     </Button>

@@ -2,6 +2,7 @@ import { createQueryKeys } from '@lukemorales/query-key-factory'
 
 import {
   announcementRouter,
+  contestRouter,
   problemRouter,
   submissionRouter,
   userRouter,
@@ -78,5 +79,17 @@ export const keyAvatar = createQueryKeys('avatar', {
   getUrl: (params: { userId: number; size: 'default' | 'small' }) => ({
     queryKey: ['default', params],
     queryFn: () => getAvatarUrl({ userId: params.userId, size: params.size }),
+  }),
+})
+
+export const queryContest = createQueryClient(contestRouter)
+export const keyContest = createQueryKeys('contest', {
+  getCurrent: () => ({
+    queryKey: ['getCurrent'],
+    queryFn: () => queryContest.getCurrentContest.query(),
+  }),
+  getContests: () => ({
+    queryKey: ['getContests'],
+    queryFn: () => queryContest.getContests.query(),
   }),
 })
