@@ -334,6 +334,47 @@ const PrizeSchema = z.object({
   user: UserModel.pick({ id: true, showName: true }).nullable(),
 })
 
+export const UserContestScoreboard = UserContestModel.extend({
+  totalScore: z.number(),
+  totalTimeUsed: z.number(),
+  user: UserModel.pick({
+    id: true,
+    showName: true,
+    role: true,
+    rating: true,
+  }),
+  submissions: z.array(
+    SubmissionModel.pick({
+      id: true,
+      problemId: true,
+      score: true,
+      timeUsed: true,
+      status: true,
+      userId: true,
+    })
+  ),
+})
+export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
+
+export const ContestScoreboard = z.object({
+  contest: ContestModel.extend({
+    userContest: z.array(UserContestModel),
+    contestProblem: z.array(
+      ContestProblemModel.extend({ problem: ProblemModel })
+    ),
+  }),
+  userContest: z.array(UserContestScoreboard),
+})
+export type ContestScoreboard = z.infer<typeof ContestScoreboard>
+
+export const ContestPrize = z.object({
+  firstBlood: z.array(PrizeSchema),
+  fasterThanLight: z.array(PrizeSchema),
+  passedInOne: z.array(PrizeSchema),
+  oneManSolve: z.array(PrizeSchema),
+})
+export type ContestPrize = z.infer<typeof ContestPrize>
+
 export const contestRouter = contract.router(
   {
     getContests: {
@@ -366,30 +407,7 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId/scoreboard',
       responses: {
-        200: z.object({
-          contest: ContestModel.extend({
-            userContest: z.array(UserContestModel),
-            contestProblem: z.array(
-              ContestProblemModel.extend({ problem: ProblemModel })
-            ),
-          }),
-          userContest: z.array(
-            UserContestModel.extend({
-              submissions: z
-                .array(
-                  SubmissionModel.pick({
-                    id: true,
-                    problemId: true,
-                    score: true,
-                    timeUsed: true,
-                    status: true,
-                    userId: true,
-                  })
-                )
-                .optional(),
-            })
-          ),
-        }),
+        200: ContestScoreboard,
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
@@ -399,12 +417,7 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId/prize',
       responses: {
-        200: z.object({
-          firstBlood: z.array(PrizeSchema),
-          fasterThanLight: z.array(PrizeSchema),
-          passedInOne: z.array(PrizeSchema),
-          oneManSolve: z.array(PrizeSchema),
-        }),
+        200: ContestPrize,
       },
       summary: 'Get a contest prize',
     },

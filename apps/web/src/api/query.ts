@@ -92,4 +92,25 @@ export const keyContest = createQueryKeys('contest', {
     queryKey: ['getContests'],
     queryFn: () => queryContest.getContests.query(),
   }),
+  getContest: (params: { contestId: string }) => ({
+    queryKey: ['getContest', params],
+    queryFn: () =>
+      queryContest.getContest.query({
+        params: { contestId: params.contestId },
+      }),
+  }),
+  getContestScoreboard: (params: { contestId: string }) => ({
+    queryKey: ['getContestScoreboard', params],
+    queryFn: () =>
+      queryContest.getContestScoreboard.query({
+        params: { contestId: params.contestId },
+      }),
+  }),
+  getContestPrize: (params: { contestId: string }) => ({
+    queryKey: ['getContestPrize', params],
+    queryFn: () =>
+      queryContest.getContestPrize.query({
+        params: { contestId: params.contestId },
+      }),
+  }),
 })

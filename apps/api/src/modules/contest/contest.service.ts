@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Role } from 'src/core/constants'
 import { PrismaService } from 'src/core/database/prisma.service'
 
+import { UserContestScoreboard } from '@otog/contract'
 import { Prisma } from '@otog/database'
 
 @Injectable()
@@ -44,7 +45,23 @@ export class ContestService {
             problem: true,
           },
         },
-        userContest: true,
+        userContest: {
+          where: {
+            user: {
+              role: Role.User,
+            },
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                showName: true,
+                rating: true,
+                role: true,
+              },
+            },
+          },
+        },
       },
     })
     if (!contest) {
@@ -83,12 +100,42 @@ export class ContestService {
         userIdToSubmissions.set(submission.userId, [submission])
       }
     })
-
-    const userContestResult = contest.userContest.map((user) => ({
-      ...user,
-      submissions: userIdToSubmissions.get(user.userId),
-    }))
-    return { contest, userContest: userContestResult }
+    const userContestScoreboards: UserContestScoreboard[] =
+      contest.userContest.map((userContest) => {
+        const submissions = userIdToSubmissions.get(userContest.userId) ?? []
+        const totalScore = submissions
+          .map((s) => s.score ?? 0)
+          .reduce((acc, val) => acc + val, 0)
+        const totalTimeUsed =
+          submissions
+            .map((s) => s.timeUsed ?? 0)
+            .reduce((acc, val) => acc + val, 0) / 1000
+        return {
+          ...userContest,
+          submissions,
+          totalScore,
+          totalTimeUsed,
+        }
+      })
+    userContestScoreboards.sort((a, b) => {
+      if (b.totalScore === a.totalScore) {
+        return b.totalTimeUsed - a.totalTimeUsed
+      }
+      return b.totalScore - a.totalScore
+    })
+    userContestScoreboards.forEach((user, index) => {
+      if (index === 0) {
+        user.rank = 1
+        return
+      }
+      const prevUser = userContestScoreboards[index - 1]!
+      if (user.totalScore === prevUser.totalScore) {
+        user.rank = prevUser.rank
+        return
+      }
+      user.rank = index + 1
+    })
+    return { contest, userContest: userContestScoreboards }
   }
 
   // TODO: RAW

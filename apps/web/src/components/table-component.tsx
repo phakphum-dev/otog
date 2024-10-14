@@ -35,11 +35,18 @@ import {
 import { ClientOnly } from './client-only'
 
 declare module '@tanstack/table-core' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
-    headClassName?: string
-    cellClassName?: string
+    headClassName?:
+      | string
+      | ((props: { table: TanstackTable<TData> }) => string)
+    cellClassName?:
+      | string
+      | ((props: { table: TanstackTable<TData> }) => string)
     cellRowSpan?: (row: Cell<TData, TValue>) => number
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    expanded?: boolean
   }
 }
 
@@ -108,6 +115,7 @@ export function TableVirtuosoComponent<T>({
                 <TableHeadComponent
                   key={header.id}
                   header={header}
+                  table={table}
                   className={classNames?.head}
                 />
               ))}
@@ -117,7 +125,9 @@ export function TableVirtuosoComponent<T>({
         itemContent={(index, row) =>
           row
             .getVisibleCells()
-            .map((cell) => <TableCellComponent key={cell.id} cell={cell} />)
+            .map((cell) => (
+              <TableCellComponent key={cell.id} cell={cell} table={table} />
+            ))
         }
       />
     </ClientOnly>
@@ -142,6 +152,7 @@ export const TableComponent = <T,>({
                 {headerGroup.headers.map((header) => (
                   <TableHeadComponent
                     key={header.id}
+                    table={table}
                     header={header}
                     className={classNames?.head}
                   />
@@ -163,6 +174,7 @@ export const TableComponent = <T,>({
                     <TableCellComponent
                       key={cell.id}
                       cell={cell}
+                      table={table}
                       className={classNames?.cell}
                     />
                   ))}
@@ -212,20 +224,31 @@ const TableEmptyPlaceholder = ({
 const TableHeadComponent = ({
   header,
   className,
+  table,
 }: {
   header: Header<any, unknown>
   className?: string
+  table: TanstackTable<any>
 }) => {
   const canSort = header.column.getCanSort()
+  const headClassName = (() => {
+    switch (typeof header.column.columnDef.meta?.headClassName) {
+      case 'string':
+        return header.column.columnDef.meta.headClassName
+      case 'function':
+        return header.column.columnDef.meta.headClassName({ table })
+      default:
+        return undefined
+    }
+  })()
   const children = header.isPlaceholder
     ? null
     : flexRender(header.column.columnDef.header, header.getContext())
   if (canSort) {
     const sortDirection = header.column.getIsSorted()
+
     return (
-      <TableHead
-        className={clsx(className, header.column.columnDef.meta?.headClassName)}
-      >
+      <TableHead className={clsx(className, headClassName)}>
         <Select
           value={sortDirection || ''}
           onValueChange={(sortDirection) => {
@@ -281,32 +304,37 @@ const TableHeadComponent = ({
     )
   }
   return (
-    <TableHead
-      className={clsx(className, header.column.columnDef.meta?.headClassName)}
-    >
-      {children}
-    </TableHead>
+    <TableHead className={clsx(className, headClassName)}>{children}</TableHead>
   )
 }
 
 const TableCellComponent = ({
   cell,
   className,
+  table,
 }: {
   cell: Cell<any, unknown>
   className?: string
+  table: TanstackTable<any>
 }) => {
   const columnDef = cell.column.columnDef
 
   const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
   if (rowSpan !== undefined && rowSpan <= 0) return
 
-  // const interactive =
-  //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
-
+  const cellClassName = (() => {
+    switch (typeof cell.column.columnDef.meta?.cellClassName) {
+      case 'string':
+        return cell.column.columnDef.meta.cellClassName
+      case 'function':
+        return cell.column.columnDef.meta.cellClassName({ table })
+      default:
+        return undefined
+    }
+  })()
   return (
     <TableCell
-      className={clsx(className, cell.column.columnDef.meta?.cellClassName)}
+      className={clsx(className, cellClassName)}
       rowSpan={rowSpan}
       // onClick={
       //   interactive ? undefined : (e) => onRowClick?.(row, e)
