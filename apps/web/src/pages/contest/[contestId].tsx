@@ -56,7 +56,7 @@ export const getServerSideProps = withSession<ContestHistoryProps>(
 )
 export default function ContestHistory({
   contestScoreboard,
-  // contestPrize,
+  contestPrize,
 }: ContestHistoryProps) {
   const columnHelper = createColumnHelper<UserContestScoreboard>()
   const columns = useMemo(
@@ -136,7 +136,7 @@ export default function ContestHistory({
                 : fontSize[row.original.rank!]
             )}
           >
-            {getValue()}
+            {getValue().toFixed(3)}
           </span>
         ),
       }),
@@ -193,36 +193,42 @@ export default function ContestHistory({
       <Head>
         <title>Contest History {contestScoreboard.contest.id} | OTOG</title>
       </Head>
-      <div className="flex justify-between items-center mt-8 ">
-        <h1 className="font-heading text-2xl font-semibold">
-          {contestScoreboard.contest.name}
-        </h1>
-        <div>
-          <Toggle
-            className="rounded-r-none"
-            pressed={!expanded}
-            onPressedChange={() => setExpanded(false)}
-          >
-            <Bars3BottomLeftIcon />
-          </Toggle>
-          <Toggle
-            className="rounded-l-none"
-            pressed={expanded}
-            onPressedChange={() => setExpanded(true)}
-          >
-            <Bars3BottomRightIcon />
-          </Toggle>
+      <section>
+        <div className="flex justify-between items-center mt-8 mb-4">
+          <h1 className="font-heading text-2xl font-semibold">
+            {contestScoreboard.contest.name}
+          </h1>
+          <div>
+            <Toggle
+              className="rounded-r-none"
+              pressed={!expanded}
+              onPressedChange={() => setExpanded(false)}
+            >
+              <Bars3BottomLeftIcon />
+            </Toggle>
+            <Toggle
+              className="rounded-l-none"
+              pressed={expanded}
+              onPressedChange={() => setExpanded(true)}
+            >
+              <Bars3BottomRightIcon />
+            </Toggle>
+          </div>
         </div>
-      </div>
-      <TableComponent
-        table={table}
-        classNames={{
-          container: 'border-transparent',
-          bodyRow: 'border-transparent',
-          headRow: 'border-transparent',
-          head: clsx(expanded ? 'text-right' : 'text-center'),
-          cell: clsx(expanded ? 'text-right' : 'text-center'),
-        }}
+        <TableComponent
+          table={table}
+          classNames={{
+            container: 'border-transparent',
+            bodyRow: 'border-transparent',
+            headRow: 'border-transparent',
+            head: clsx(expanded ? 'text-right' : 'text-center'),
+            cell: clsx(expanded ? 'text-right' : 'text-center'),
+          }}
+        />
+      </section>
+      <Prize
+        contestScoreboard={contestScoreboard}
+        contestPrize={contestPrize}
       />
     </main>
   )
@@ -234,4 +240,109 @@ const fontSize: Record<number, string> = {
   3: 'text-2xl',
   4: 'text-xl',
   5: 'text-lg',
+}
+
+export function Prize(props: ContestHistoryProps) {
+  const data = useMemo(
+    () =>
+      Object.entries(props.contestPrize).map(([prizeName, users]) => ({
+        prizeName: prizeName as keyof ContestPrize,
+        users,
+      })),
+    [props.contestPrize]
+  )
+
+  const columnHelper = createColumnHelper<{
+    prizeName: keyof ContestPrize
+    users: ContestPrize[keyof ContestPrize]
+  }>()
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('prizeName', {
+        header: 'รางวัล',
+        cell: ({ getValue }) => {
+          const prize = prizeDescription[getValue()]
+          return (
+            <div className="flex flex-col gap-2 items-center text-center text-pretty">
+              <span className="text-3xl">{prize.emoji}</span>
+              <span className="font-semibold">{prize.name}</span>
+              <p className="text-muted-foreground">{prize.description}</p>
+            </div>
+          )
+        },
+
+        meta: {
+          headClassName: 'text-center',
+        },
+        enableSorting: false,
+      }),
+      ...props.contestScoreboard.contest.contestProblem
+        .map((contestProblem) => contestProblem.problem)
+        .map((problem) =>
+          columnHelper.display({
+            id: `problem-${problem.id}`,
+            header: problem.name!,
+
+            cell: ({ row }) => {
+              const users = row.original.users.filter(
+                (user) => user.problem!.id === problem.id
+              )
+              return (
+                <ul className="list-disc">
+                  {users.length === 0 && '-'}
+                  {users.map(({ user }) => (
+                    <li key={user!.id}>
+                      <Link variant="hidden" asChild>
+                        <NextLink href={`/user/${user!.id}`}>
+                          {user!.showName}
+                        </NextLink>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )
+            },
+          })
+        ),
+    ],
+    [props.contestScoreboard]
+  )
+  const table = useReactTable({
+    data: data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  return (
+    <section>
+      <h2 className="font-heading text-2xl font-semibold mt-8 mb-4">รางวัล</h2>
+      <TableComponent table={table} />
+    </section>
+  )
+}
+
+export const prizeDescription: Record<
+  keyof ContestPrize,
+  { name: string; description: string; emoji: string }
+> = {
+  firstBlood: {
+    name: 'First Blood',
+    description: 'The first user that passed the task.',
+    emoji: '💀',
+  },
+  fasterThanLight: {
+    name: 'Faster Than Light',
+    description: 'The user that solved the task with fastest algorithm.',
+    emoji: '⚡️',
+  },
+  passedInOne: {
+    name: 'Passed In One',
+    description: 'The user that passed the task in one submission.',
+    emoji: '🎯',
+  },
+  oneManSolve: {
+    name: 'One Man Solve',
+    description: 'The only one user that passed the task.',
+    emoji: '🏅',
+  },
 }
