@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "dev": "turbo dev",
     "web:dev": "pnpm --filter @otog/web dev",
     "api:dev": "pnpm --filter @otog/api dev",
     "codegen": "turbo codegen",
@@ -13,7 +14,7 @@
   "devDependencies": {
     "@otog/config": "workspace:*",
     "prettier": "^3.1.1",
-    "turbo": "latest"
+    "turbo": "^2.1.3"
   },
   "packageManager": "pnpm@8.9.0",
   "engines": {
