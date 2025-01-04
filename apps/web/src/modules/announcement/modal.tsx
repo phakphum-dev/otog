@@ -18,7 +18,7 @@ import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
   const [open, setOpen] = useState(false)
-  const getAnnouncements = useQuery(keyAnnouncement.all())
+  const getAnnouncements = useQuery(keyAnnouncement.getAnnouncements())
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
 
@@ -31,7 +31,7 @@ export const AnnouncementModal = () => {
         query: { contestId: contestId?.toString() },
       })
       queryClient.invalidateQueries({
-        queryKey: keyAnnouncement.all._def,
+        queryKey: keyAnnouncement.getAnnouncements._def,
       })
     } catch (e) {
       // onErrorToast(e)

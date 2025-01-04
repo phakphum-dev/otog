@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 
-import { AppRouter } from '@ts-rest/core'
-import { initQueryClient } from '@ts-rest/react-query'
+import { AppRouter, ClientArgs } from '@ts-rest/core'
+import { ReactQueryClientArgs, initQueryClient } from '@ts-rest/react-query'
 import { Session } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import wretch, { FetchLike } from 'wretch'
@@ -150,32 +150,38 @@ export const query = initQueryClient(router, {
       })
   },
 })
-export function createQueryClient<T extends AppRouter>(router: T) {
-  return initQueryClient(router, {
-    baseUrl: '',
-    api: async ({ path, method, headers, body, contentType, rawBody }) => {
-      const fetcher =
-        contentType === 'multipart/form-data'
-          ? client.formData(rawBody as any)
-          : client.body(body)
-      return fetcher
-        .headers(headers)
-        .fetch(method, path)
-        .res()
-        .then(async (response) => {
-          return {
-            status: response.status,
-            body: await response.json(),
-            headers: response.headers,
-          }
-        })
-        .catch((error) => {
-          return {
-            status: error.status,
-            body: error.json,
-            headers: error.headers,
-          }
-        })
-    },
-  })
+
+export const clientArgs: ReactQueryClientArgs = {
+  baseUrl: '',
+  api: async ({ path, method, headers, body, contentType, rawBody }) => {
+    const fetcher =
+      contentType === 'multipart/form-data'
+        ? client.formData(rawBody as any)
+        : client.body(body)
+    return fetcher
+      .headers(headers)
+      .fetch(method, path)
+      .res()
+      .then(async (response) => {
+        return {
+          status: response.status,
+          body: await response.json(),
+          headers: response.headers,
+        }
+      })
+      .catch((error) => {
+        return {
+          status: error.status,
+          body: error.json,
+          headers: error.headers,
+        }
+      })
+  },
+}
+
+export function createQueryClient<
+  T extends AppRouter,
+  TClientArgs extends ClientArgs,
+>(router: T, clientArgs: TClientArgs) {
+  return initQueryClient(router, clientArgs)
 }

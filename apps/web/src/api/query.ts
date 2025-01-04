@@ -8,31 +8,18 @@ import {
   userRouter,
 } from '@otog/contract'
 
-import { createQueryClient } from '.'
+import { clientArgs, createQueryClient } from '.'
 import { getAvatarUrl } from '../firebase/get-avatar-url'
+import { createQueryAndKey } from './lib'
 
-export const queryAnnouncement = createQueryClient(announcementRouter)
-export const keyAnnouncement = createQueryKeys('announcement', {
-  all: (contestId?: number) => ({
-    queryKey: [contestId],
-    queryFn: () =>
-      queryAnnouncement.getAnnouncements.query({
-        query: { contestId: contestId?.toString() },
-      }),
-  }),
-  shown: (contestId?: number) => ({
-    queryKey: [contestId],
-    queryFn: () =>
-      queryAnnouncement.getAnnouncements.query({
-        query: {
-          show: true,
-          contestId: contestId?.toString(),
-        },
-      }),
-  }),
-})
+const [queryAnnouncement, keyAnnouncement] = createQueryAndKey(
+  'announcement',
+  announcementRouter,
+  clientArgs
+)
+export { queryAnnouncement, keyAnnouncement }
 
-export const queryProblem = createQueryClient(problemRouter)
+export const queryProblem = createQueryClient(problemRouter, clientArgs)
 export const keyProblem = createQueryKeys('problem', {
   list: () => ({
     queryKey: ['list'],
@@ -47,7 +34,7 @@ export const keyProblem = createQueryKeys('problem', {
   }),
 })
 
-export const querySubmission = createQueryClient(submissionRouter)
+export const querySubmission = createQueryClient(submissionRouter, clientArgs)
 export const keySubmission = createQueryKeys('submission', {
   list: () => ({
     queryKey: ['list'],
@@ -72,7 +59,7 @@ export const keySubmission = createQueryKeys('submission', {
   }),
 })
 
-export const queryUser = createQueryClient(userRouter)
+export const queryUser = createQueryClient(userRouter, clientArgs)
 export const keyUser = createQueryKeys('user', {})
 
 export const keyAvatar = createQueryKeys('avatar', {
@@ -82,7 +69,7 @@ export const keyAvatar = createQueryKeys('avatar', {
   }),
 })
 
-export const queryContest = createQueryClient(contestRouter)
+export const queryContest = createQueryClient(contestRouter, clientArgs)
 export const keyContest = createQueryKeys('contest', {
   getCurrent: () => ({
     queryKey: ['getCurrent'],

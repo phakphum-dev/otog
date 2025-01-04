@@ -21,7 +21,9 @@ export const AnnouncementCarousel = ({
 }: AnnouncementCarouselProps) => {
   const { isAdmin, isAuthenticated } = useUserContext()
 
-  const getAnnouncements = useQuery(keyAnnouncement.shown(contestId))
+  const getAnnouncements = useQuery(
+    keyAnnouncement.getAnnouncements({ query: { show: true } })
+  )
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
   const count = announcements.length
