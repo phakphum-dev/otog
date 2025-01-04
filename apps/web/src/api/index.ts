@@ -151,7 +151,7 @@ export const query = initQueryClient(router, {
   },
 })
 
-export const clientArgs: ReactQueryClientArgs = {
+export const clientArgs: ClientArgs = {
   baseUrl: '',
   api: async ({ path, method, headers, body, contentType, rawBody }) => {
     const fetcher =

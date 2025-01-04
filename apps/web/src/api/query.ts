@@ -14,8 +14,7 @@ import { createQueryAndKey } from './lib'
 
 const [queryAnnouncement, keyAnnouncement] = createQueryAndKey(
   'announcement',
-  announcementRouter,
-  clientArgs
+  announcementRouter
 )
 export { queryAnnouncement, keyAnnouncement }
 

@@ -1,19 +1,25 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory'
-import { QueryFunction, QueryKey } from '@tanstack/react-query'
+import {
+  QueryFunction,
+  QueryFunctionContext,
+  QueryKey,
+} from '@tanstack/react-query'
 import {
   AppRoute,
-  AppRouteFunction,
+  AppRouteMutation,
   AppRouteQuery,
   AppRouter,
   ClientArgs,
+  ClientInferRequest,
   PartialClientInferRequest,
   Without,
-  getRouteQuery,
+  fetchApi,
+  getCompleteUrl,
   isAppRoute,
 } from '@ts-rest/core'
 import { DataResponse } from '@ts-rest/react-query'
 
-import { createQueryClient } from '.'
+import { createQueryClient, clientArgs as defaultClientArgs } from '.'
 
 // from luke
 type AnyMutableOrReadonlyArray = any[] | readonly any[]
@@ -220,9 +226,54 @@ export type QueryKeyArgs<
 export function getQueryKey<
   TAppRoute extends AppRoute,
   TClientArgs extends ClientArgs,
->(route: TAppRoute, args?: QueryKeyArgs<TAppRoute, TClientArgs>) {
+>(route: TAppRoute, args: QueryKeyArgs<TAppRoute, TClientArgs>) {
   const { params = {}, query = {} } = (args || {}) as unknown as any
   return ['ts-rest', route.method, route.path, { params, query }] as QueryKey
+}
+
+export const getQueryFn = <
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+>(
+  route: TAppRoute,
+  clientArgs: TClientArgs,
+  args?: ClientInferRequest<AppRouteMutation, ClientArgs>
+): QueryFunction<DataResponse<TAppRoute>> => {
+  return async (queryFnContext?: QueryFunctionContext) => {
+    const { query, params, body, headers, extraHeaders, ...extraInputArgs } =
+      args || {}
+
+    const path = getCompleteUrl(
+      query,
+      clientArgs.baseUrl,
+      params,
+      route,
+      !!clientArgs.jsonQuery
+    )
+
+    const result = await fetchApi({
+      path,
+      clientArgs,
+      route,
+      body,
+      query,
+      headers: {
+        ...extraHeaders,
+        ...headers,
+      },
+      extraInputArgs,
+      fetchOptions: {
+        signal: queryFnContext?.signal,
+      },
+    })
+
+    // If the response is not a 2XX, throw an error to be handled by react-query
+    if (!String(result.status).startsWith('2')) {
+      throw result
+    }
+
+    return result as DataResponse<TAppRoute>
+  }
 }
 
 type QueryRouteDynamicKey<
@@ -270,7 +321,7 @@ export const createQueryAndKey = <
 >(
   name: TName,
   router: TAppRouter,
-  clientArgs: TClientArgs
+  clientArgs = defaultClientArgs
 ) => {
   const query = createQueryClient(router, clientArgs)
   const schema: QueryFactorySchema = Object.fromEntries(
@@ -284,12 +335,9 @@ export const createQueryAndKey = <
         }
         return [
           key,
-          (args?: QueryKeyArgs<typeof subRouter, TClientArgs>) => ({
+          (args: QueryKeyArgs<typeof subRouter, TClientArgs>) => ({
             queryKey: getQueryKey(subRouter, args) as KeyTuple,
-            queryFn: getRouteQuery<typeof subRouter>(
-              subRouter,
-              clientArgs
-            ) as AppRouteFunction<typeof subRouter, TClientArgs>,
+            queryFn: getQueryFn(subRouter, clientArgs, args as any),
           }),
         ] satisfies [string, DynamicKey]
       })
