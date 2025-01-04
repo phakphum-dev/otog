@@ -15,24 +15,6 @@ import { DataResponse } from '@ts-rest/react-query'
 
 import { createQueryClient } from '.'
 
-type PickQueryKeyArgs<TArgs> = (TArgs extends { params?: infer TParams }
-  ? { params?: TParams }
-  : {}) &
-  (TArgs extends { query?: infer TQuery } ? { query?: TQuery } : {})
-
-export type QueryKeyArgs<
-  TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
-> = PickQueryKeyArgs<PartialClientInferRequest<TAppRoute, TClientArgs>>
-
-export function getQueryKey<
-  TAppRoute extends AppRoute,
-  TClientArgs extends ClientArgs,
->(route: TAppRoute, args?: QueryKeyArgs<TAppRoute, TClientArgs>) {
-  const { params = {}, query = {} } = (args || {}) as unknown as any
-  return ['ts-rest', route.method, route.path, { params, query }] as QueryKey
-}
-
 // from luke
 type AnyMutableOrReadonlyArray = any[] | readonly any[]
 type Tuple = [ValidValue | undefined, ...Array<ValidValue | undefined>]
@@ -225,6 +207,24 @@ type StaticFactoryOutput<
             : never
 
 // custom
+type PickQueryKeyArgs<TArgs> = (TArgs extends { params?: infer TParams }
+  ? { params?: TParams }
+  : {}) &
+  (TArgs extends { query?: infer TQuery } ? { query?: TQuery } : {})
+
+export type QueryKeyArgs<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+> = PickQueryKeyArgs<PartialClientInferRequest<TAppRoute, TClientArgs>>
+
+export function getQueryKey<
+  TAppRoute extends AppRoute,
+  TClientArgs extends ClientArgs,
+>(route: TAppRoute, args?: QueryKeyArgs<TAppRoute, TClientArgs>) {
+  const { params = {}, query = {} } = (args || {}) as unknown as any
+  return ['ts-rest', route.method, route.path, { params, query }] as QueryKey
+}
+
 type QueryRouteDynamicKey<
   TAppRouteQuery extends AppRouteQuery,
   TClientArgs extends ClientArgs,
