@@ -4,9 +4,6 @@
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",
-  "scripts": {
-    "dev": "node index.js"
-  },
   "dependencies": {
     "glob": "^10.3.10",
     "yaml": "^2.3.2"
