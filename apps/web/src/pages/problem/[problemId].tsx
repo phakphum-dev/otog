@@ -2,14 +2,12 @@ import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import MonacoEditor from '@monaco-editor/react'
 import { File } from '@web-std/file'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
-import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -26,10 +24,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from '@otog/ui'
 
 import { problemQuery, submissionQuery } from '../../api/query'
@@ -140,18 +134,18 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   )
 }
 
-const ClangdEditor = dynamic(
-  () =>
-    import('../../components/clangd-editor').then((mod) => mod.ClangdEditor),
-  {
-    ssr: false,
-    loading: () => (
-      <p className="flex items-center justify-center w-full h-[800px]">
-        Loading...
-      </p>
-    ),
-  }
-)
+// const ClangdEditor = dynamic(
+//   () =>
+//     import('../../components/clangd-editor').then((mod) => mod.ClangdEditor),
+//   {
+//     ssr: false,
+//     loading: () => (
+//       <p className="flex items-center justify-center w-full h-[800px]">
+//         Loading...
+//       </p>
+//     ),
+//   }
+// )
 
 const CodeEditorFormSchema = z.object({
   // sourceCode: z.string(),
@@ -201,14 +195,14 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
     )
   }, console.error)
 
-  const [preferOldEditor, setPreferOldEditor] = useState(false)
+  const [preferOldEditor] = useState(true)
 
   return (
     <Form {...form}>
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
         {!preferOldEditor && form.watch('language') === 'cpp' ? (
           <div className="overflow-hidden rounded-md border">
-            <div role="application" aria-label="Clang Editor">
+            {/* <div role="application" aria-label="Clang Editor">
               <ClangdEditor
                 className="h-[800px]"
                 defaultValue={
@@ -218,7 +212,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
                 onMount={(editor) => (editorRef.current = editor)}
               />
             </div>
-            <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} />
+            <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} /> */}
           </div>
         ) : (
           <div role="application" aria-label="Code Editor">
@@ -265,47 +259,47 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
   )
 }
 
-const ClangdEditorFooter = ({
-  setPreferOldEditor,
-}: {
-  setPreferOldEditor: (preferOldEditor: boolean) => void
-}) => {
-  return (
-    <div className="flex justify-between items-center px-4 py-1">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" className="rounded-full size-6">
-              <InformationCircleIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="whitespace-pre-line flex flex-col items-start">
-            <span>
-              <Link
-                href="https://github.com/Guyutongxue/clangd-in-browser"
-                isExternal
-              >
-                Clangd Editor
-              </Link>{' '}
-              powered by wasm
-            </span>
-            <span>- Error ที่แสดงอาจจะไม่ตรงกับผลลัพธ์หลังการส่ง</span>
-            <span>
-              - <code>{'#include <bits/stdc++.h>'}</code> สามารถใช้งานได้
-            </span>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <div className="flex items-center text-xs gap-2">
-        <p>Editor โหลดช้า ?</p>
-        <Button
-          onClick={() => setPreferOldEditor(true)}
-          variant="link"
-          className="text-xs p-0 h-auto"
-        >
-          สลับไปใช้ Version เดิม
-        </Button>
-      </div>
-    </div>
-  )
-}
+// const ClangdEditorFooter = ({
+//   setPreferOldEditor,
+// }: {
+//   setPreferOldEditor: (preferOldEditor: boolean) => void
+// }) => {
+//   return (
+//     <div className="flex justify-between items-center px-4 py-1">
+//       <TooltipProvider>
+//         <Tooltip>
+//           <TooltipTrigger asChild>
+//             <Button size="icon" variant="ghost" className="rounded-full size-6">
+//               <InformationCircleIcon />
+//             </Button>
+//           </TooltipTrigger>
+//           <TooltipContent className="whitespace-pre-line flex flex-col items-start">
+//             <span>
+//               <Link
+//                 href="https://github.com/Guyutongxue/clangd-in-browser"
+//                 isExternal
+//               >
+//                 Clangd Editor
+//               </Link>{' '}
+//               powered by wasm
+//             </span>
+//             <span>- Error ที่แสดงอาจจะไม่ตรงกับผลลัพธ์หลังการส่ง</span>
+//             <span>
+//               - <code>{'#include <bits/stdc++.h>'}</code> สามารถใช้งานได้
+//             </span>
+//           </TooltipContent>
+//         </Tooltip>
+//       </TooltipProvider>
+//       <div className="flex items-center text-xs gap-2">
+//         <p>Editor โหลดช้า ?</p>
+//         <Button
+//           onClick={() => setPreferOldEditor(true)}
+//           variant="link"
+//           className="text-xs p-0 h-auto"
+//         >
+//           สลับไปใช้ Version เดิม
+//         </Button>
+//       </div>
+//     </div>
+//   )
+// }

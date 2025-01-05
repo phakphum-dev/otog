@@ -60,7 +60,7 @@ const ContestDisplay = (props: ContestProps) => {
   }
 }
 
-const PreContest = (props: ContestProps) => {
+const PreContest = (_props: ContestProps) => {
   return null
   // const { contest, time } = props
   // const { data: serverTime } = useServerTime()

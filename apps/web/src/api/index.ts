@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 
 import { AppRouter, ClientArgs } from '@ts-rest/core'
-import { ReactQueryClientArgs, initQueryClient } from '@ts-rest/react-query'
+import { initQueryClient } from '@ts-rest/react-query'
 import { Session } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import wretch, { FetchLike } from 'wretch'
@@ -9,7 +9,6 @@ import FormDataAddon from 'wretch/addons/formData'
 import { createStore } from 'zustand'
 
 import { LoginResponse } from '@otog/contract'
-import { router } from '@otog/contract'
 
 import { environment, isServer } from '../env'
 
@@ -124,32 +123,6 @@ export const client = api
     }
     return req.fetch().json()
   })
-
-const query = initQueryClient(router, {
-  baseUrl: '',
-  baseHeaders: { 'Content-Type': 'application/json' },
-  api: ({ path, method, headers, body }) => {
-    return client
-      .headers(headers)
-      .auth(`Bearer ${getAccessToken()}`)
-      .fetch(method, path, body)
-      .res()
-      .then(async (response) => {
-        return {
-          status: response.status,
-          body: await response.json(),
-          headers: response.headers,
-        }
-      })
-      .catch((error) => {
-        return {
-          status: error.status,
-          body: error.json,
-          headers: error.headers,
-        }
-      })
-  },
-})
 
 export const clientArgs: ClientArgs = {
   baseUrl: '',
