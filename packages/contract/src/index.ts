@@ -641,13 +641,13 @@ export const appRouter = contract.router({
   },
 })
 
-// export const router = contract.router({
-//   app: appRouter,
-//   auth: authRouter,
-//   user: userRouter,
-//   chat: chatRouter,
-//   problem: problemRouter,
-//   contest: contestRouter,
-//   submission: submissionRouter,
-//   announcement: announcementRouter,
-// })
+export const router = contract.router({
+  app: appRouter,
+  auth: authRouter,
+  user: userRouter,
+  chat: chatRouter,
+  problem: problemRouter,
+  contest: contestRouter,
+  submission: submissionRouter,
+  announcement: announcementRouter,
+})
