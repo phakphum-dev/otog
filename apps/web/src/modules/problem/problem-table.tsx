@@ -69,7 +69,7 @@ import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 import { SubmitCode } from './submit-code'
 
 export const ProblemTable = () => {
-  const { data, isLoading, isError } = useQuery(keyProblem.list())
+  const { data, isLoading, isError } = useQuery(keyProblem.getProblemTable())
   const problems = useMemo(
     () => (data?.status === 200 ? data.body : []),
     [data]
@@ -556,7 +556,9 @@ const PassedUserDialog = ({
   setOpen: (open: boolean) => void
 }) => {
   const getPassedUsers = useQuery({
-    ...keyProblem.passedUsers({ problemId: problem.id }),
+    ...keyProblem.getPassedUsers({
+      params: { problemId: problem.id.toString() },
+    }),
     enabled: open,
   })
 
@@ -626,7 +628,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onSuccess: () => {
               toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
               queryClient.setQueryData(
-                keyProblem.list().queryKey,
+                keyProblem.getProblemTable().queryKey,
                 produce(
                   (draftResult: { body: Array<ProblemTableRowSchema> }) => {
                     const draftProblem = draftResult.body.find(
@@ -636,7 +638,9 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
                   }
                 )
               )
-              queryClient.invalidateQueries({ queryKey: keyProblem.list._def })
+              queryClient.invalidateQueries({
+                queryKey: keyProblem.getProblemTable._def,
+              })
             },
             onError: () => {
               toast.error(`ไม่สามารถ${showLabel}โจทย์ได้`, { id: toastId })

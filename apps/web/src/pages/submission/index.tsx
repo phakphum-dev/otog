@@ -77,7 +77,7 @@ const LatestSubmissionSecion = ({
 const SubmissionSection = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: keySubmission.list._def,
+      queryKey: keySubmission.getSubmissions._def,
       // TODO: https://github.com/lukemorales/query-key-factory/issues/89
       queryFn: ({ pageParam }) =>
         querySubmission.getSubmissions.query({

@@ -172,8 +172,8 @@ const columns = [
 
 function useSubmissionPolling(originalSubmission: SubmissionSchema) {
   const result = useQuery({
-    ...keySubmission.getOne({
-      submissionId: originalSubmission.id,
+    ...keySubmission.getSubmission({
+      params: { submissionId: originalSubmission.id.toString() },
     }),
     enabled:
       originalSubmission.status === SubmissionStatus.waiting ||

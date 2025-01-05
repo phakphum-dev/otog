@@ -71,7 +71,9 @@ export const SubmitCode = (props: {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
           setOpen(false)
           router.push('/submission')
-          queryClient.invalidateQueries({ queryKey: keySubmission.list._def })
+          queryClient.invalidateQueries({
+            queryKey: keySubmission.getSubmissions._def,
+          })
         },
       }
     )

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import Head from 'next/head'
 import NextLink from 'next/link'
 
@@ -33,7 +34,9 @@ export default function ContestPage({ currentContest }: ContestPageProps) {
       <Head>
         <title>Contest | OTOG</title>
       </Head>
-      {currentContest ? null : (
+      {currentContest ? (
+        <ContestDisplay contest={currentContest} />
+      ) : (
         <div className="flex flex-1 items-center justify-center flex-col gap-4">
           <h1 className="font-heading text-4xl font-semibold">
             ยังไม่มีการแข่งขัน
@@ -45,4 +48,38 @@ export default function ContestPage({ currentContest }: ContestPageProps) {
       )}
     </main>
   )
+}
+
+interface ContestProps {
+  contest: Contest
+}
+
+const ContestDisplay = (props: ContestProps) => {
+  if (dayjs(props.contest.timeStart).isBefore(Date.now())) {
+    return <PreContest contest={props.contest} />
+  }
+}
+
+const PreContest = (props: ContestProps) => {
+  return null
+  // const { contest, time } = props
+  // const { data: serverTime } = useServerTime()
+  // const remaining = useTimer(serverTime || time, contest.timeStart)
+  // useEffect(() => {
+  //   if (remaining <= 0) {
+  //     mutate('time')
+  //   }
+  // }, [remaining])
+  // return (
+  //   <div className="flex flex-1 items-center justify-center">
+  //     <div className="flex flex-col items-center gap-4">
+  //       <h1 className="text-center font-heading text-4xl font-bold">
+  //         การแข่งขัน {contest.name} กำลังจะเริ่ม
+  //       </h1>
+  //       <h2 className="text-center text-2xl font-bold">
+  //         ในอีก {toThTimeFormat(remaining)}...
+  //       </h2>
+  //     </div>
+  //   </div>
+  // )
 }
