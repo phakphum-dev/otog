@@ -38,7 +38,7 @@ export const SubmissionDialog = ({
 }) => {
   const getSubmission = useQuery({
     ...submissionKey.getSubmissionWithSourceCode({
-      params: { submissionId: submissionId!.toString() },
+      params: { submissionId: submissionId?.toString()! },
     }),
     enabled: !!submissionId && open,
   })
