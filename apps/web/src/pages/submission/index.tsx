@@ -6,7 +6,7 @@ import Head from 'next/head'
 import { SubmissionSchema } from '@otog/contract'
 import { Link } from '@otog/ui'
 
-import { keySubmission, querySubmission } from '../../api/query'
+import { submissionKey, submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { SubmissionStatusButton } from '../../components/submission-status'
 import { SubmissionTable } from '../../components/submission-table'
@@ -18,7 +18,7 @@ interface SubmissionPageProps {
 
 export const getServerSideProps = withSession<SubmissionPageProps>(async () => {
   const getLatestSubmissionByUserId =
-    await querySubmission.getLatestSubmissionByUserId.query()
+    await submissionQuery.getLatestSubmissionByUserId.query()
   if (getLatestSubmissionByUserId.status !== 200) {
     return {
       props: {
@@ -77,10 +77,10 @@ const LatestSubmissionSecion = ({
 const SubmissionSection = () => {
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: keySubmission.getSubmissions._def,
+      queryKey: submissionKey.getSubmissions._def,
       // TODO: https://github.com/lukemorales/query-key-factory/issues/89
       queryFn: ({ pageParam }) =>
-        querySubmission.getSubmissions.query({
+        submissionQuery.getSubmissions.query({
           query: { offset: pageParam },
         }),
       initialPageParam: undefined as number | undefined,

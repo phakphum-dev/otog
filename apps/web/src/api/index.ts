@@ -125,7 +125,7 @@ export const client = api
     return req.fetch().json()
   })
 
-export const query = initQueryClient(router, {
+const query = initQueryClient(router, {
   baseUrl: '',
   baseHeaders: { 'Content-Type': 'application/json' },
   api: ({ path, method, headers, body }) => {

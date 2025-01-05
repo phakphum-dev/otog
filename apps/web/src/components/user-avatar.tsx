@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 
 import { Avatar, AvatarFallback, AvatarImage, clsx } from '@otog/ui'
 
-import { keyAvatar } from '../api/query'
+import { avatarKey } from '../api/query'
 import { AvatarSize } from '../firebase/get-avatar-url'
 import { ClientOnly } from './client-only'
 
@@ -24,7 +24,7 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
 
     // TODO: remove query from frontend
     const getAvatarUrl = useQuery({
-      ...keyAvatar.getUrl({ userId: user.id, size: props.size ?? 'small' }),
+      ...avatarKey.getUrl({ userId: user.id, size: props.size ?? 'small' }),
       enabled: false,
     })
 

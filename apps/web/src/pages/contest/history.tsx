@@ -12,7 +12,7 @@ import NextLink from 'next/link'
 import { Contest } from '@otog/database'
 import { Link } from '@otog/ui'
 
-import { keyContest } from '../../api/query'
+import { contestKey } from '../../api/query'
 import { TableComponent } from '../../components/table-component'
 
 export default function ContestHistoryPage() {
@@ -33,7 +33,7 @@ export default function ContestHistoryPage() {
 }
 
 const ContestTable = () => {
-  const getContests = useQuery(keyContest.getContests())
+  const getContests = useQuery(contestKey.getContests())
   const data = useMemo(
     () => (getContests.data?.status === 200 ? getContests.data.body : []),
     [getContests.data]

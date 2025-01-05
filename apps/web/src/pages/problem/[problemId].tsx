@@ -32,7 +32,7 @@ import {
   TooltipTrigger,
 } from '@otog/ui'
 
-import { queryProblem, querySubmission } from '../../api/query'
+import { problemQuery, submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { Language, LanguageName } from '../../enums'
 import { SubmitCode } from '../../modules/problem/submit-code'
@@ -49,7 +49,7 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
     if (!Number.isInteger(problemId)) {
       return { notFound: true }
     }
-    const problemResult = await queryProblem.getProblem.query({
+    const problemResult = await problemQuery.getProblem.query({
       params: { problemId: problemId.toString() },
     })
     if (problemResult.status === 404) {
@@ -60,7 +60,7 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
     }
     if (Number.isInteger(submissionId)) {
       const submissionResult =
-        await querySubmission.getSubmissionWithSourceCode.query({
+        await submissionQuery.getSubmissionWithSourceCode.query({
           params: { submissionId: submissionId.toString() },
         })
       if (submissionResult.status === 404) {
@@ -77,7 +77,7 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
       }
     }
     const submissionResult =
-      await querySubmission.getLatestSubmissionByProblemId.query({
+      await submissionQuery.getLatestSubmissionByProblemId.query({
         params: { problemId: problemId.toString() },
       })
     if (submissionResult.status === 404) {
@@ -170,7 +170,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
 
   const editorRef = useRef<editor.IStandaloneCodeEditor>()
   const router = useRouter()
-  const uploadFile = querySubmission.uploadFile.useMutation({})
+  const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
     if (!editorRef.current) {
       toast.error(`ไม่พบ VS Code ใน Browser`)

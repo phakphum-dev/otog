@@ -12,13 +12,13 @@ import {
 } from '@otog/ui'
 
 import { useAnnouncementContext } from '.'
-import { keyAnnouncement, queryAnnouncement } from '../../api/query'
+import { announcementKey, announcementQuery } from '../../api/query'
 import { AnnouncementEditable } from './editor'
 import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
   const [open, setOpen] = useState(false)
-  const getAnnouncements = useQuery(keyAnnouncement.getAnnouncements())
+  const getAnnouncements = useQuery(announcementKey.getAnnouncements())
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
 
@@ -26,12 +26,12 @@ export const AnnouncementModal = () => {
   const { contestId } = useAnnouncementContext()
   const onCreate = async () => {
     try {
-      await queryAnnouncement.createAnnouncement.mutation({
+      await announcementQuery.createAnnouncement.mutation({
         body: { value: JSON.stringify(createEmptyAnnouncement()) },
         query: { contestId: contestId?.toString() },
       })
       queryClient.invalidateQueries({
-        queryKey: keyAnnouncement.getAnnouncements._def,
+        queryKey: announcementKey.getAnnouncements._def,
       })
     } catch (e) {
       // onErrorToast(e)

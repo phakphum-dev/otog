@@ -14,7 +14,7 @@ import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
 import { Link, Spinner, TableCell, TableFooter, TableRow } from '@otog/ui'
 
-import { keySubmission } from '../api/query'
+import { submissionKey } from '../api/query'
 import { InlineComponent } from './inline-component'
 import { SubmissionStatusButton } from './submission-status'
 import { TableComponent } from './table-component'
@@ -172,7 +172,7 @@ const columns = [
 
 function useSubmissionPolling(originalSubmission: SubmissionSchema) {
   const result = useQuery({
-    ...keySubmission.getSubmission({
+    ...submissionKey.getSubmission({
       params: { submissionId: originalSubmission.id.toString() },
     }),
     enabled:

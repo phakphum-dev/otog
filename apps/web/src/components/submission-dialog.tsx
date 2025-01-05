@@ -21,7 +21,7 @@ import {
   Spinner,
 } from '@otog/ui'
 
-import { keySubmission } from '../api/query'
+import { submissionKey } from '../api/query'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
 import { CodeHighlight } from './code-highlight'
@@ -37,7 +37,7 @@ export const SubmissionDialog = ({
   setOpen: (open: boolean) => void
 }) => {
   const getSubmission = useQuery({
-    ...keySubmission.getSubmissionWithSourceCode({
+    ...submissionKey.getSubmissionWithSourceCode({
       params: { submissionId: submissionId!.toString() },
     }),
     enabled: !!submissionId && open,

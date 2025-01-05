@@ -57,7 +57,7 @@ import {
   cva,
 } from '@otog/ui'
 
-import { keyProblem, queryProblem } from '../../api/query'
+import { problemKey, problemQuery } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
@@ -69,7 +69,7 @@ import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 import { SubmitCode } from './submit-code'
 
 export const ProblemTable = () => {
-  const { data, isLoading, isError } = useQuery(keyProblem.getProblemTable())
+  const { data, isLoading, isError } = useQuery(problemKey.getProblemTable())
   const problems = useMemo(
     () => (data?.status === 200 ? data.body : []),
     [data]
@@ -556,7 +556,7 @@ const PassedUserDialog = ({
   setOpen: (open: boolean) => void
 }) => {
   const getPassedUsers = useQuery({
-    ...keyProblem.getPassedUsers({
+    ...problemKey.getPassedUsers({
       params: { problemId: problem.id.toString() },
     }),
     enabled: open,
@@ -608,7 +608,7 @@ const PassedUserDialog = ({
 const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
   const { user } = useUserContext()
   const problem = row.original
-  const toggleShowProblem = queryProblem.toggleShowProblem.useMutation()
+  const toggleShowProblem = problemQuery.toggleShowProblem.useMutation()
   const queryClient = useQueryClient()
   if (user?.role !== UserRole.admin) {
     return null
@@ -628,7 +628,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onSuccess: () => {
               toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
               queryClient.setQueryData(
-                keyProblem.getProblemTable().queryKey,
+                problemKey.getProblemTable().queryKey,
                 produce(
                   (draftResult: { body: Array<ProblemTableRowSchema> }) => {
                     const draftProblem = draftResult.body.find(
@@ -639,7 +639,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
                 )
               )
               queryClient.invalidateQueries({
-                queryKey: keyProblem.getProblemTable._def,
+                queryKey: problemKey.getProblemTable._def,
               })
             },
             onError: () => {

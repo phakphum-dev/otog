@@ -9,13 +9,13 @@ import { RegisterBody } from '@otog/contract'
 import { Button, Form, FormField, FormItem, FormLabel, Input } from '@otog/ui'
 
 import Logo from '../../public/logo512.png'
-import { query } from '../api'
+import { authQuery } from '../api/query'
 
 export default function RegisterPage() {
   const form = useForm<RegisterBody>()
   const router = useRouter()
 
-  const register = query.auth.register.useMutation()
+  const register = authQuery.register.useMutation()
   const onSubmit = form.handleSubmit(async (values) => {
     await toast.promise(register.mutateAsync({ body: values }), {
       loading: 'กำลังลงทะเบียน...',

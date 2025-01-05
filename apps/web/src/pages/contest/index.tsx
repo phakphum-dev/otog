@@ -5,7 +5,7 @@ import NextLink from 'next/link'
 import { Contest } from '@otog/database'
 import { Button } from '@otog/ui'
 
-import { queryContest } from '../../api/query'
+import { contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 
 interface ContestPageProps {
@@ -13,7 +13,7 @@ interface ContestPageProps {
 }
 
 export const getServerSideProps = withSession<ContestPageProps>(async () => {
-  const getCurrentContest = await queryContest.getCurrentContest.query()
+  const getCurrentContest = await contestQuery.getCurrentContest.query()
   if (getCurrentContest.status !== 200) {
     return {
       props: {

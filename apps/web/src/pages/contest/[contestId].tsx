@@ -20,7 +20,7 @@ import {
 } from '@otog/contract'
 import { Link, Toggle, clsx } from '@otog/ui'
 
-import { queryContest } from '../../api/query'
+import { contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { TableComponent } from '../../components/table-component'
 
@@ -36,10 +36,10 @@ export const getServerSideProps = withSession<ContestHistoryProps>(
       return { notFound: true }
     }
     const [getContestScoreboard, getContestPrize] = await Promise.all([
-      queryContest.getContestScoreboard.query({
+      contestQuery.getContestScoreboard.query({
         params: { contestId: contestId },
       }),
-      queryContest.getContestPrize.query({
+      contestQuery.getContestPrize.query({
         params: { contestId: contestId },
       }),
     ])

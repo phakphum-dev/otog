@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@otog/ui'
 
-import { keySubmission, querySubmission } from '../../api/query'
+import { submissionKey, submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { Language, LanguageName } from '../../enums'
 
@@ -53,7 +53,7 @@ export const SubmitCode = (props: {
   })
 
   const router = useRouter()
-  const uploadFile = querySubmission.uploadFile.useMutation({})
+  const uploadFile = submissionQuery.uploadFile.useMutation({})
   const queryClient = useQueryClient()
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
@@ -72,7 +72,7 @@ export const SubmitCode = (props: {
           setOpen(false)
           router.push('/submission')
           queryClient.invalidateQueries({
-            queryKey: keySubmission.getSubmissions._def,
+            queryKey: submissionKey.getSubmissions._def,
           })
         },
       }
