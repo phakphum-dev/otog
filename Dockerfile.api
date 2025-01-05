@@ -47,6 +47,9 @@ RUN turbo run build --filter=@otog/api
 FROM alpine AS runner
 WORKDIR /app
 
+# fix prisma finding ssl https://github.com/nodejs/docker-node/issues/2175
+RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
+
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
