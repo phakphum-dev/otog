@@ -18,8 +18,9 @@ datasource db {
 model Announcement {
   id        Int      @id @default(autoincrement())
   value     Json?
-  show      Boolean? @default(false)
+  show      Boolean  @default(false)
   contestId Int?
+  contest   Contest? @relation(fields: [contestId], references: [id])
 
   @@map("announcement")
 }
@@ -28,8 +29,8 @@ model Chat {
   id           Int      @id @default(autoincrement())
   message      String   @db.VarChar(255)
   userId       Int
-  creationDate DateTime @db.Timestamptz(6)
-  updateDate   DateTime @db.Timestamptz(6)
+  creationDate DateTime @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
   user         User     @relation(fields: [userId], references: [id], onDelete: NoAction)
 
   @@map("chat")
@@ -37,14 +38,15 @@ model Chat {
 
 model Contest {
   id             Int                @id @default(autoincrement())
-  name           String?            @db.VarChar(255)
+  name           String             @db.VarChar(255)
   mode           ContestMode
   gradingMode    ContestGradingMode
-  timeStart      DateTime?          @db.Timestamptz(6)
-  timeEnd        DateTime?          @db.Timestamptz(6)
+  timeStart      DateTime           @db.Timestamptz(6)
+  timeEnd        DateTime           @db.Timestamptz(6)
   announce       String?            @db.VarChar(255)
   contestProblem ContestProblem[]
   userContest    UserContest[]
+  announcements  Announcement[]
 
   @@map("contest")
 }
@@ -61,11 +63,11 @@ model ContestProblem {
 
 model Problem {
   id             Int              @id @default(autoincrement())
-  name           String?          @db.VarChar(255)
+  name           String           @db.VarChar(255)
   sname          String?          @db.VarChar(255)
-  score          Int?
-  timeLimit      Int?
-  memoryLimit    Int?
+  score          Int
+  timeLimit      Int
+  memoryLimit    Int
   show           Boolean
   recentShowTime DateTime?        @db.Timestamptz(6)
   case           String?          @db.VarChar(255)
@@ -83,29 +85,29 @@ model RefreshToken {
   jwtId        String?   @db.VarChar(255)
   used         Boolean?  @default(false)
   expiryDate   DateTime? @db.Timestamptz(6)
-  creationDate DateTime  @db.Timestamptz(6)
-  updateDate   DateTime  @db.Timestamptz(6)
+  creationDate DateTime  @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   @@map("refreshToken")
 }
 
 model Submission {
   id           Int              @id @default(autoincrement())
-  userId       Int?
-  problemId    Int?
-  result       String?          @default("WAITING") @db.VarChar(255)
+  userId       Int
+  problemId    Int
+  result       String           @default("WAITING") @db.VarChar(255)
   score        Int?
   timeUsed     Int?
   status       SubmissionStatus
   errmsg       String?
   contestId    Int?
   sourceCode   String?
-  language     String?          @db.VarChar(255)
-  creationDate DateTime         @db.Timestamptz(6)
-  updateDate   DateTime         @db.Timestamptz(6)
-  public       Boolean?         @default(false)
-  problem      Problem?         @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  user         User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language     String           @db.VarChar(255)
+  creationDate DateTime         @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  public       Boolean          @default(false)
+  problem      Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("submission")
 }
@@ -118,8 +120,8 @@ model User {
   password     String        @db.VarChar(255)
   role         UserRole
   rating       Int?
-  creationDate DateTime      @db.Timestamptz(6)
-  updateDate   DateTime      @db.Timestamptz(6)
+  creationDate DateTime      @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
   chat         Chat[]
   submission   Submission[]
   userContest  UserContest[]
