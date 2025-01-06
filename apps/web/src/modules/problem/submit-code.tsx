@@ -111,7 +111,7 @@ export const SubmitCode = (props: {
               name="language"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>อัปโหลด</FormLabel>
+                  <FormLabel>ภาษา</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger {...field}>

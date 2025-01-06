@@ -252,6 +252,7 @@ export class ContestService {
         },
       },
       orderBy: { id: 'desc' },
+      include: { contestProblem: { include: { problem: true } } },
     })
   }
 

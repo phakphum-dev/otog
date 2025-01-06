@@ -56,8 +56,13 @@ const LatestSubmissionSecion = ({
   }
   const problem = latestSubmission.problem!
   return (
-    <section className="p-4 rounded-lg border flex gap-6 items-center">
-      <h2 className="font-semibold">ส่งข้อล่าสุด</h2>
+    <section
+      className="p-4 rounded-lg border flex gap-6 items-center"
+      aria-labelledby="latest-submission"
+    >
+      <h2 id="latest-submission" className="font-semibold">
+        ส่งข้อล่าสุด
+      </h2>
       <Link isExternal href={`/api/problem/${problem.id}`} className="text-sm">
         <span>{problem.name}</span>
         <p>
@@ -94,8 +99,10 @@ const SubmissionSection = () => {
     [data]
   )
   return (
-    <section>
-      <h2 className="sr-only">ตารางผลตรวจ</h2>
+    <section aria-labelledby="submission">
+      <h2 id="submission" className="sr-only">
+        ตารางผลตรวจ
+      </h2>
       <SubmissionTable
         data={submissions}
         isLoading={isLoading}

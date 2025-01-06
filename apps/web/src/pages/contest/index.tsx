@@ -5,19 +5,20 @@ import dayjs from 'dayjs'
 import Head from 'next/head'
 import NextLink from 'next/link'
 
-import { Contest } from '@otog/database'
+import { CurrentContest } from '@otog/contract'
 import { Button } from '@otog/ui'
 
 import { appKey, appQuery, contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { environment } from '../../env'
 import { AnnouncementCarousel } from '../../modules/announcement'
+import { TaskCard } from '../../modules/contest/task-card'
 import { initialDataSuccess } from '../../utils/initial-data-success'
 import { toThaiDuration, toTimerFormat } from '../../utils/time'
 import { useTimer } from '../../utils/use-timer'
 
 interface ContestPageProps {
-  currentContest: Contest | null
+  currentContest: CurrentContest | null
   serverTime: string
 }
 
@@ -53,7 +54,7 @@ export default function ContestPage(props: ContestPageProps) {
 }
 
 interface ContestProps {
-  currentContest: Contest
+  currentContest: CurrentContest
   serverTime: string
 }
 
@@ -155,6 +156,13 @@ const MidContest = (props: ContestProps) => {
           <Timer {...props} />
         </p>
       </div>
+      <ul className="flex flex-col gap-6">
+        {props.currentContest.contestProblem.map(({ problem }) => (
+          <li key={problem.id}>
+            <TaskCard problem={problem} contestId={props.currentContest.id} />
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }

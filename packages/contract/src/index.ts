@@ -375,6 +375,13 @@ export const ContestPrize = z.object({
 })
 export type ContestPrize = z.infer<typeof ContestPrize>
 
+export const CurrentContest = ContestModel.extend({
+  contestProblem: ContestProblemModel.extend({
+    problem: ProblemModel,
+  }).array(),
+})
+export type CurrentContest = z.infer<typeof CurrentContest>
+
 export const contestRouter = contract.router(
   {
     getContests: {
@@ -389,9 +396,7 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/now',
       responses: {
-        200: z.object({
-          currentContest: ContestModel.nullable(),
-        }),
+        200: z.object({ currentContest: CurrentContest.nullable() }),
       },
       summary: 'Get the current contest',
     },

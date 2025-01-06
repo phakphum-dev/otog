@@ -87,7 +87,7 @@ export class SubmissionController {
     )
   }
 
-  @TsRestHandler(c.uploadFile)
+  @TsRestHandler(c.uploadFile, { jsonQuery: true })
   @OfflineAccess(AccessState.Authenticated)
   @Roles(Role.User, Role.Admin)
   @UseInterceptors(FileInterceptor('sourceCode'))

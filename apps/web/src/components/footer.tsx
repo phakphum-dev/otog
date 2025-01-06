@@ -20,11 +20,11 @@ export const Footer = () => (
       )}
       <span>
         {environment.OFFLINE_MODE ? (
-          '© 2021 Phakphum Dev Team'
+          '© 2025 Phakphum Dev Team'
         ) : (
           <Link asChild variant="hidden">
             <a href={environment.CONTACT_LINK} target="_blank" rel="noreferrer">
-              © 2021 Phakphum Dev Team
+              © 2025 Phakphum Dev Team
             </a>
           </Link>
         )}

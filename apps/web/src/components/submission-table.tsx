@@ -170,7 +170,7 @@ const columns = [
   }),
 ]
 
-function useSubmissionPolling(originalSubmission: SubmissionSchema) {
+export function useSubmissionPolling(originalSubmission: SubmissionSchema) {
   const result = useQuery({
     ...submissionKey.getSubmission({
       params: { submissionId: originalSubmission.id.toString() },
