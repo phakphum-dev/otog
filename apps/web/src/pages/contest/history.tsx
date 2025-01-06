@@ -14,6 +14,7 @@ import { Link } from '@otog/ui'
 
 import { contestKey } from '../../api/query'
 import { TableComponent } from '../../components/table-component'
+import { toThaiDuration } from '../../utils/time'
 
 export default function ContestHistoryPage() {
   return (
@@ -78,22 +79,8 @@ const columns = [
   columnHelper.display({
     header: 'ระยะเวลา',
     cell: ({ row }) => {
-      function getHMS(ms: number) {
-        const s = ~~(ms / 1000)
-        const m = ~~(s / 60)
-        const h = ~~(m / 60)
-        return [h, m % 60, s % 60]
-      }
-
-      function toDuration(ms: number) {
-        const [h, m, s] = getHMS(ms)
-        return [h && `${h} ชั่วโมง`, m && `${m} นาที`, s && `${s} วินาที`]
-          .filter((str) => str)
-          .join(' ')
-      }
-
       return (
-        toDuration(
+        toThaiDuration(
           new Date(row.original.timeEnd).getTime() -
             new Date(row.original.timeStart).getTime()
         ) || '-'

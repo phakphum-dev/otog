@@ -35,11 +35,11 @@ export const getServerSideProps = withSession<SubmissionPageProps>(async () => {
 
 export default function SubmissionPage(props: SubmissionPageProps) {
   return (
-    <main id="content" className="container flex-1 flex flex-col gap-4">
+    <main id="content" className="container flex-1 flex flex-col gap-4 py-8">
       <Head>
         <title>Submission | One Tambon One Grader</title>
       </Head>
-      <h1 className="font-heading text-2xl mt-8 font-semibold">ผลตรวจ</h1>
+      <h1 className="font-heading text-2xl font-semibold">ผลตรวจ</h1>
       <LatestSubmissionSecion latestSubmission={props.latestSubmission} />
       <SubmissionSection />
     </main>

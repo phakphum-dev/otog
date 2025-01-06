@@ -14,7 +14,7 @@
     ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
   "search.exclude": {
-    "**/wasm": true,
-    "**/public": true
+    "**/clangd-editor/**": true,
+    "**/public/**": true
   }
 }

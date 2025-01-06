@@ -22,7 +22,9 @@ export const AnnouncementCarousel = ({
   const { isAdmin, isAuthenticated } = useUserContext()
 
   const getAnnouncements = useQuery(
-    announcementKey.getAnnouncements({ query: { show: true } })
+    announcementKey.getAnnouncements({
+      query: { show: true, contestId: contestId?.toString() },
+    })
   )
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
@@ -46,16 +48,18 @@ export const AnnouncementCarousel = ({
     <AnnouncementContext.Provider
       value={{ contestId, currentIndex, onNext, count }}
     >
-      <div className="group relative mt-8 flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
-        {announcements.map((announcement, index) => (
-          <AnnouncementCard
-            key={announcement.id}
-            announcement={announcement}
-            index={index}
-          />
-        ))}
-        {isAdmin && <AnnouncementModal />}
-      </div>
+      {(announcements.length > 0 || isAdmin) && (
+        <div className="group relative flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
+          {announcements.map((announcement, index) => (
+            <AnnouncementCard
+              key={announcement.id}
+              announcement={announcement}
+              index={index}
+            />
+          ))}
+          {isAdmin && <AnnouncementModal />}
+        </div>
+      )}
     </AnnouncementContext.Provider>
   )
 }

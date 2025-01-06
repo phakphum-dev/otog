@@ -21,7 +21,7 @@ export function toTimerFormat(ms: number) {
   return getHMS(ms).map(twoDigit).join(' : ')
 }
 
-export function toThTimeFormat(ms: number) {
+export function toThaiDuration(ms: number) {
   const [h, m, s] = getHMS(ms)
   return [h && `${h} ชั่วโมง`, m && `${m} นาที`, s && `${s} วินาที`]
     .filter((str) => str)

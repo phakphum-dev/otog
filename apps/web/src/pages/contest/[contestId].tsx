@@ -117,7 +117,7 @@ export default function ContestHistory({
             className={clsx(
               'transition-all',
               table.options.meta?.expanded
-                ? 'text-base'
+                ? 'text-base tabular-nums'
                 : ['text-center', fontSize[row.original.rank!]]
             )}
           >
@@ -132,7 +132,7 @@ export default function ContestHistory({
             className={clsx(
               'transition-all',
               table.options.meta?.expanded
-                ? 'text-base'
+                ? 'text-base tabular-nums'
                 : fontSize[row.original.rank!]
             )}
           >

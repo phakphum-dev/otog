@@ -3,7 +3,7 @@ import { Link } from '@otog/ui'
 import { environment } from '../env'
 
 export const Footer = () => (
-  <footer className="container mt-8 pb-4 justify-self-end">
+  <footer className="container pb-4 justify-self-end">
     <hr className="mb-2" />
     <div className="flex flex-row justify-between text-sm flex-wrap">
       {environment.OFFLINE_MODE ? (

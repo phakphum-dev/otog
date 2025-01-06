@@ -15,7 +15,7 @@ export default function HomePage() {
   const { isAuthenticated } = useUserContext()
   if (isAuthenticated) {
     return (
-      <div className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md">
+      <div className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md py-8">
         <Head>
           <title>Problem | OTOG</title>
         </Head>
