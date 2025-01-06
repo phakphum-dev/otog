@@ -18,12 +18,17 @@ import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
   const [open, setOpen] = useState(false)
-  const getAnnouncements = useQuery(announcementKey.getAnnouncements())
+
+  const { contestId } = useAnnouncementContext()
+  const getAnnouncements = useQuery(
+    announcementKey.getAnnouncements({
+      query: { contestId: contestId?.toString() },
+    })
+  )
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
 
   const queryClient = useQueryClient()
-  const { contestId } = useAnnouncementContext()
   const onCreate = async () => {
     try {
       await announcementQuery.createAnnouncement.mutation({

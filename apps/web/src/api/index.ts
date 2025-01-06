@@ -126,6 +126,7 @@ export const client = api
 
 export const clientArgs: ClientArgs = {
   baseUrl: '',
+  jsonQuery: true,
   api: async ({ path, method, headers, body, contentType, rawBody }) => {
     const fetcher =
       contentType === 'multipart/form-data'
