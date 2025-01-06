@@ -16,6 +16,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { File } from '@web-std/file'
 import dayjs from 'dayjs'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
