@@ -73,33 +73,33 @@ export const Element = ({
   switch (element.type) {
     case 'heading-one':
       return (
-        <h3 className="font-heading text-2xl md:text-4xl" {...attributes}>
+        <p className="font-heading text-2xl md:text-4xl" {...attributes}>
           {children}
-        </h3>
+        </p>
       )
     case 'heading-two':
       return (
-        <h3 className="font-heading text-xl md:text-3xl" {...attributes}>
+        <p className="font-heading text-xl md:text-3xl" {...attributes}>
           {children}
-        </h3>
+        </p>
       )
     case 'heading-three':
       return (
-        <h3 className="font-heading text-lg md:text-2xl" {...attributes}>
+        <p className="font-heading text-lg md:text-2xl" {...attributes}>
           {children}
-        </h3>
+        </p>
       )
     case 'heading-four':
       return (
-        <h3 className="font-heading text-base md:text-xl" {...attributes}>
+        <p className="font-heading text-base md:text-xl" {...attributes}>
           {children}
-        </h3>
+        </p>
       )
     case 'block-quote':
       return (
-        <h3 className="border-l-2 border-gray-300 pl-2.5" {...attributes}>
+        <p className="border-l-2 border-gray-300 pl-2.5" {...attributes}>
           {children}
-        </h3>
+        </p>
       )
     case 'bulleted-list':
       return (

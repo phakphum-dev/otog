@@ -224,6 +224,7 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
           <MagnifyingGlassIcon />
         </InputLeftIcon>
         <DebouncedInput
+          type="search"
           placeholder="ค้นหา..."
           onDebounce={(value) => nameColumn.setFilterValue(value)}
         />
@@ -318,8 +319,8 @@ const OtogButton = forwardRef<HTMLButtonElement, OtogButtonProps>(
       >
         {isLoading ? null : (
           <>
-            <h6>{label}</h6>
-            <h3 className="text-3xl font-bold md:text-4xl">{number}</h3>
+            <p>{label}</p>
+            <p className="text-3xl font-bold md:text-4xl">{number}</p>
           </>
         )}
       </Button>

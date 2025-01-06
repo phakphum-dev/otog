@@ -102,14 +102,17 @@ const ContestDisplay = (props: ContestPageProps) => {
 
 const NoContest = () => {
   return (
-    <div className="flex flex-1 items-center justify-center flex-col gap-4">
+    <main
+      className="flex flex-1 items-center justify-center flex-col gap-4"
+      id="content"
+    >
       <h1 className="font-heading text-4xl font-semibold">
         ยังไม่มีการแข่งขัน
       </h1>
       <Button asChild>
         <NextLink href="/contest/history">ประวัติการแข่งขัน</NextLink>
       </Button>
-    </div>
+    </main>
   )
 }
 
