@@ -70,7 +70,6 @@ export const TaskCard = (props: TaskCardProps) => {
     latestSubmissionQuery.data?.status === 200
       ? latestSubmissionQuery.data.body.submission
       : undefined
-  console.log(submission)
 
   return (
     <Collapsible open={isOpen}>
@@ -346,11 +345,10 @@ int main() {
     return 0;
 }`
 
-const TaskSubmissionTable = ({
-  submission,
-}: {
+interface TaskSubmissionTableProps {
   submission: SubmissionSchema
-}) => {
+}
+const TaskSubmissionTable = ({ submission }: TaskSubmissionTableProps) => {
   const data = useMemo(() => [submission], [submission])
   const table = useReactTable({
     data,

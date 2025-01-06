@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import Head from 'next/head'
 import NextLink from 'next/link'
@@ -8,7 +8,7 @@ import NextLink from 'next/link'
 import { CurrentContest } from '@otog/contract'
 import { Button } from '@otog/ui'
 
-import { appKey, appQuery, contestQuery } from '../../api/query'
+import { appKey, appQuery, contestKey, contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
 import { environment } from '../../env'
 import { AnnouncementCarousel } from '../../modules/announcement'
@@ -40,13 +40,21 @@ export const getServerSideProps = withSession<ContestPageProps>(async () => {
 })
 
 export default function ContestPage(props: ContestPageProps) {
+  const currentContestQuery = useQuery({
+    ...contestKey.getCurrentContest(),
+    initialData: initialDataSuccess({ currentContest: props.currentContest }),
+  })
+  const currentContest =
+    currentContestQuery.data.status === 200
+      ? currentContestQuery.data.body.currentContest
+      : null
   return (
     <>
       <Head>
         <title>Contest | OTOG</title>
       </Head>
       <ContestDisplay
-        currentContest={props.currentContest}
+        currentContest={currentContest}
         serverTime={props.serverTime}
       />
     </>
@@ -129,13 +137,16 @@ const CountDown = (props: ContestProps) => {
     ...appKey.time(),
     initialData: initialDataSuccess(props.serverTime),
   })
-  const remaining = useTimer(
-    serverTimeQuery.data.body,
-    props.currentContest.timeStart.toString() // TODO
-  )
+  const remaining = useTimer({
+    start: serverTimeQuery.data.body,
+    end: props.currentContest.timeStart.toString(), // TODO
+  })
+  const queryClient = useQueryClient()
   useEffect(() => {
     if (remaining <= 0) {
-      serverTimeQuery.refetch()
+      queryClient.invalidateQueries({
+        queryKey: contestKey.getCurrentContest._def,
+      })
     }
   }, [remaining])
   return <>{toThaiDuration(remaining)}</>
@@ -172,13 +183,16 @@ const Timer = (props: ContestProps) => {
     ...appKey.time(),
     initialData: initialDataSuccess(props.serverTime),
   })
-  const remaining = useTimer(
-    serverTimeQuery.data.body,
-    props.currentContest.timeEnd.toString() // TODO
-  )
+  const remaining = useTimer({
+    start: serverTimeQuery.data.body,
+    end: props.currentContest.timeEnd.toString(), // TODO
+  })
+  const queryClient = useQueryClient()
   useEffect(() => {
     if (remaining <= 0) {
-      serverTimeQuery.refetch()
+      queryClient.invalidateQueries({
+        queryKey: contestKey.getCurrentContest._def,
+      })
     }
   }, [remaining])
   return <>{toTimerFormat(remaining)}</>

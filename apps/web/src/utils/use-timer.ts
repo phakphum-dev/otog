@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { ONE_SECOND, getRemaining } from './time'
 
-export function useTimer(start: string, end: string) {
+export function useTimer({ start, end }: { start: string; end: string }) {
   const [remaining, setRemaining] = useState(() => getRemaining(start, end))
 
   useEffect(() => {
@@ -11,16 +11,15 @@ export function useTimer(start: string, end: string) {
     }
   }, [start, end])
 
-  const shouldInterval = remaining > 0
+  const enabled = remaining > 0
   useEffect(() => {
-    if (shouldInterval) {
-      const interval = setInterval(() => {
-        setRemaining((current) => current - ONE_SECOND)
-      }, ONE_SECOND)
-      return () => {
-        clearInterval(interval)
-      }
+    if (!enabled) return
+    const interval = setInterval(() => {
+      setRemaining((current) => current - ONE_SECOND)
+    }, ONE_SECOND)
+    return () => {
+      clearInterval(interval)
     }
-  }, [shouldInterval])
+  }, [enabled])
   return remaining
 }
