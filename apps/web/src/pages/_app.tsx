@@ -19,6 +19,7 @@ import {
   QueryClient as TsRestQueryClient,
   QueryClientProvider as TsRestQueryClientProvider,
 } from '@ts-rest/react-query/tanstack'
+import { ClickToComponent } from 'click-to-react-component'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import buddhistEra from 'dayjs/plugin/buddhistEra'
@@ -130,6 +131,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                     className: '!text-foreground !bg-background',
                   }}
                 />
+                <ClickToComponent />
               </ThemeProvider>
             </UserContextProvider>
           </QueryClientProvider>
