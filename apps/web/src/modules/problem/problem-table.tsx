@@ -90,8 +90,10 @@ export const ProblemTable = () => {
     getSortedRowModel: getSortedRowModel(),
   })
   return (
-    <main id="content" className="flex flex-col gap-4">
-      <h1 className="sr-only">โจทย์</h1>
+    <section className="flex flex-col gap-4" aria-labelledby="problem">
+      <h1 className="sr-only" id="problem">
+        โจทย์
+      </h1>
       <OtogButtons table={table} problems={problems} isLoading={isLoading} />
       <div className="flex flex-col gap-4">
         <TableFilter table={table} />
@@ -101,7 +103,7 @@ export const ProblemTable = () => {
           isError={isError}
         />
       </div>
-    </main>
+    </section>
   )
 }
 

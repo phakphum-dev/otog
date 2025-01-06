@@ -49,7 +49,13 @@ export const AnnouncementCarousel = ({
       value={{ contestId, currentIndex, onNext, count }}
     >
       {(announcements.length > 0 || isAdmin) && (
-        <div className="group relative flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
+        <section
+          aria-labelledby="announcement"
+          className="group relative flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm"
+        >
+          <h2 id="announcement" className="sr-only">
+            ประกาศ
+          </h2>
           {announcements.map((announcement, index) => (
             <AnnouncementCard
               key={announcement.id}
@@ -58,7 +64,7 @@ export const AnnouncementCarousel = ({
             />
           ))}
           {isAdmin && <AnnouncementModal />}
-        </div>
+        </section>
       )}
     </AnnouncementContext.Provider>
   )
