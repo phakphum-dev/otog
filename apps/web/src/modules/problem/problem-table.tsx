@@ -392,9 +392,7 @@ const columns = [
             )}
           </span>
           <span className="text-sm">
-            {/* TODO: fix nullish */}(
-            {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-            {problem.memoryLimit} MB)
+            ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
           </span>
         </Link>
       )

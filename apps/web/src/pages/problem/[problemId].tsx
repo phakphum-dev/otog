@@ -110,9 +110,7 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
           </h1>
           <div className="flex justify-between gap-1">
             <p className="text-sm text-muted-foreground">
-              {/* TODO: fix nullish */}(
-              {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-              {problem.memoryLimit} MB)
+              ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
             </p>
             <Link
               className="text-sm"

@@ -66,9 +66,7 @@ const LatestSubmissionSecion = ({
       <Link isExternal href={`/api/problem/${problem.id}`} className="text-sm">
         <span>{problem.name}</span>
         <p>
-          {/* TODO: fix nullish */}(
-          {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-          {problem.memoryLimit} MB)
+          ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
         </p>
       </Link>
       <div className="ml-auto flex items-center gap-2">
