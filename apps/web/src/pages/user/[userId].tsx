@@ -6,6 +6,7 @@ import { UserProfile } from '@otog/contract'
 
 import { submissionKey, submissionQuery, userQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
+import { AvatarUpload } from '../../components/avatar-upload'
 import { SubmissionTable } from '../../components/submission-table'
 import { UserAvatar } from '../../components/user-avatar'
 import { useUserContext } from '../../context/user-context'
@@ -46,19 +47,16 @@ export default function ProfilePage(props: ProfilePageProps) {
           {props.userProfile.showName}
         </h1>
         <div className="flex flex-col gap-8 md:flex-row">
-          {user?.id === props.userProfile.id ? (
+          <div className="relative group size-80 rounded-md overflow-hidden">
             <UserAvatar
               user={props.userProfile}
               className="size-80 rounded-md"
               size="default"
             />
-          ) : (
-            <UserAvatar
-              user={props.userProfile}
-              className="size-80 rounded-md"
-              size="default"
-            />
-          )}
+            {user?.id === props.userProfile.id && (
+              <AvatarUpload userId={props.userProfile.id} />
+            )}
+          </div>
           {/* <Graph userContest={userData!.attendedContest} /> */}
         </div>
       </section>
