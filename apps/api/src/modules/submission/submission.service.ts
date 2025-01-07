@@ -94,7 +94,7 @@ export class SubmissionService {
   async create(args: {
     userId: number
     problemId: number
-    language: string | null
+    language: string
     file: Express.Multer.File
     contestId: number | null
   }) {

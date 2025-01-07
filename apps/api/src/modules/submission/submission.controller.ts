@@ -2,7 +2,6 @@ import {
   Controller,
   Param,
   ParseIntPipe,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,

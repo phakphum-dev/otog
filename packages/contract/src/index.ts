@@ -187,7 +187,7 @@ export const submissionRouter = contract.router(
       query: z.object({ contestId: z.string().nullish() }),
       body: contract.type<{
         sourceCode: FileSchema
-        language: string | null
+        language: string
       }>(),
       summary: 'Submit code file',
     },
