@@ -400,7 +400,7 @@ const columns = [
       )
     },
     meta: {
-      cellClassName: 'w-full',
+      cellClassName: 'lg:w-full min-w-[350px]',
     },
   }),
   columnHelper.accessor('passedCount', {
