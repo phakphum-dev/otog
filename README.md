@@ -56,6 +56,13 @@ pnpm dev
 
 Open http://localhost:3000 with your browser to see the result.
 
+## TODO
+
+- [ ] Forgot Password
+- [ ] Editorial Article
+- [ ] Upload Library
+- [ ] Multiple Testcase Detail
+
 ## Bug Report
 
 If you have any issue, feel free to open a new one in the issue tab
