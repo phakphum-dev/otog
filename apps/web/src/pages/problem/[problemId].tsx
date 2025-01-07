@@ -100,11 +100,11 @@ int main() {
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
-    <main className="container max-w-4xl flex-1" id="content">
+    <main className="container max-w-4xl flex-1 py-8" id="content">
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
-      <section className="flex flex-col flex-1 gap-4 mt-8 p-6 border rounded-2xl">
+      <section className="flex flex-col flex-1 gap-4 p-6 border rounded-2xl">
         <div>
           <h1
             className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"

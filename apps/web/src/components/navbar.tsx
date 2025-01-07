@@ -16,6 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
   Link,
   clsx,
@@ -117,6 +118,9 @@ const Menu = ({ user }: MenuProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
+        <DropdownMenuLabel className="max-w-60 truncate">
+          {user.showName}
+        </DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <NextLink href={`/user/${user.id}`}>
             <UserIcon />

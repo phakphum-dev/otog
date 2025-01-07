@@ -54,6 +54,7 @@ export const getServerSideProps = withSession<ContestHistoryProps>(
     }
   }
 )
+
 export default function ContestHistory({
   contestScoreboard,
   contestPrize,
@@ -66,7 +67,7 @@ export default function ContestHistory({
         cell: ({ getValue, row }) => (
           <span
             className={clsx(
-              'transition-all',
+              'transition-[font-size]',
               table.options.meta?.expanded
                 ? 'text-base'
                 : fontSize[row.original.rank!]
@@ -89,7 +90,7 @@ export default function ContestHistory({
             <Link
               variant="hidden"
               className={clsx(
-                'transition-all',
+                'transition-[font-size]',
                 table.options.meta?.expanded
                   ? 'text-base'
                   : fontSize[row.original.rank!]
@@ -115,7 +116,7 @@ export default function ContestHistory({
         cell: ({ getValue, row }) => (
           <span
             className={clsx(
-              'transition-all',
+              'transition-[font-size]',
               table.options.meta?.expanded
                 ? 'text-base tabular-nums'
                 : ['text-center', fontSize[row.original.rank!]]
@@ -130,7 +131,7 @@ export default function ContestHistory({
         cell: ({ getValue, row, table }) => (
           <span
             className={clsx(
-              'transition-all',
+              'transition-[font-size]',
               table.options.meta?.expanded
                 ? 'text-base tabular-nums'
                 : fontSize[row.original.rank!]

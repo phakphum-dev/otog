@@ -265,6 +265,22 @@ export const submissionRouter = contract.router(
   { pathPrefix: '/submission' }
 )
 
+export const UserProfile = UserWithourPasswordSchema.extend({
+  userContest: z.array(
+    UserContestModel.pick({
+      ratingAfterUpdate: true,
+      rank: true,
+    }).extend({
+      contest: ContestModel.pick({
+        id: true,
+        name: true,
+        timeStart: true,
+      }),
+    })
+  ),
+})
+export type UserProfile = z.infer<typeof UserProfile>
+
 export const userRouter = contract.router(
   {
     getUsers: {
@@ -287,20 +303,7 @@ export const userRouter = contract.router(
       method: 'GET',
       path: '/:userId/profile',
       responses: {
-        200: UserWithourPasswordSchema.extend({
-          userContest: z.array(
-            UserContestModel.pick({
-              ratingAfterUpdate: true,
-              rank: true,
-            }).extend({
-              contest: ContestModel.pick({
-                id: true,
-                name: true,
-                timeStart: true,
-              }),
-            })
-          ),
-        }).nullable(),
+        200: UserProfile,
         404: z.object({ message: z.string() }),
       },
       summary: 'Get a user by id',
