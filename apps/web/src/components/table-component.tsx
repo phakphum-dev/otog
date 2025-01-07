@@ -15,13 +15,15 @@ import {
   Table as TanstackTable,
 } from '@tanstack/table-core'
 
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectPrimitive,
-  Spinner,
+} from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import {
   Table,
   TableBody,
   TableCell,
@@ -29,8 +31,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  clsx,
-} from '@otog/ui'
+} from '@otog/ui/table'
+import { clsx } from '@otog/ui/utils'
 
 import { ClientOnly } from './client-only'
 

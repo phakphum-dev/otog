@@ -11,20 +11,22 @@ import { z } from 'zod'
 
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
 import { Problem } from '@otog/database'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Link,
+} from '@otog/ui/form'
+import { Link } from '@otog/ui/link'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@otog/ui'
+} from '@otog/ui/select'
 
 import { problemQuery, submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'

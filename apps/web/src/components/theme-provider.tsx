@@ -4,7 +4,7 @@ import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes/dist/types'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import { ClientOnly } from './client-only'
 

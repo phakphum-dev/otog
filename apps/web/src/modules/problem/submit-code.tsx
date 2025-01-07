@@ -10,26 +10,30 @@ import { useRouter } from 'next/router'
 import { z } from 'zod'
 
 import { Problem } from '@otog/database'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+} from '@otog/ui/dialog'
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+} from '@otog/ui/form'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@otog/ui'
+} from '@otog/ui/select'
 
 import { submissionKey, submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'

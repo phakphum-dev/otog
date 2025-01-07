@@ -2,7 +2,7 @@ import { CodeBracketIcon } from '@heroicons/react/24/solid'
 import Head from 'next/head'
 
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
-import { Link } from '@otog/ui'
+import { Link } from '@otog/ui/link'
 
 import { submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'

@@ -12,14 +12,10 @@ import dayjs from 'dayjs'
 import NextLink from 'next/link'
 
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Link,
-  Spinner,
-} from '@otog/ui'
+import { Button } from '@otog/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
+import { Link } from '@otog/ui/link'
+import { Spinner } from '@otog/ui/spinner'
 
 import { submissionKey } from '../api/query'
 import { Language, LanguageName } from '../enums'

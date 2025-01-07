@@ -1,7 +1,7 @@
 import { useTheme } from 'next-themes'
 import { Highlight, Language, themes } from 'prism-react-renderer'
 
-import { cn } from '@otog/ui'
+import { cn } from '@otog/ui/utils'
 
 import { ClientOnly } from './client-only'
 

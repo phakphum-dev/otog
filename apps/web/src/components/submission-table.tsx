@@ -12,7 +12,9 @@ import NextLink from 'next/link'
 
 import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
-import { Link, Spinner, TableCell, TableFooter, TableRow } from '@otog/ui'
+import { Link } from '@otog/ui/link'
+import { Spinner } from '@otog/ui/spinner'
+import { TableCell, TableFooter, TableRow } from '@otog/ui/table'
 
 import { submissionKey } from '../api/query'
 import { InlineComponent } from './inline-component'

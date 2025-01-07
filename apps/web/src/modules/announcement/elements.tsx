@@ -10,7 +10,8 @@ import {
   useSlate,
 } from 'slate-react'
 
-import { Button, Link } from '@otog/ui'
+import { Button } from '@otog/ui/button'
+import { Link } from '@otog/ui/link'
 
 type CustomText = {
   text: string

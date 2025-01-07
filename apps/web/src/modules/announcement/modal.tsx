@@ -3,13 +3,13 @@ import { useState } from 'react'
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from '@otog/ui'
+} from '@otog/ui/dialog'
 
 import { useAnnouncementContext } from '.'
 import { announcementKey, announcementQuery } from '../../api/query'

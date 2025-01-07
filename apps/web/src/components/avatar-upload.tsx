@@ -7,14 +7,14 @@ import { FileUpload, useFileUpload } from '@ark-ui/react/file-upload'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from '@otog/ui'
+} from '@otog/ui/dialog'
 
 import { avatarKey } from '../api/query'
 import { useUserContext } from '../context/user-context'

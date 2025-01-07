@@ -28,8 +28,8 @@ import { withHistory } from 'slate-history'
 import { Editable, Slate, withReact } from 'slate-react'
 
 import { AnnouncementSchema } from '@otog/contract'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -37,7 +37,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from '@otog/ui'
+} from '@otog/ui/dialog'
 
 import { announcementKey, announcementQuery } from '../../api/query'
 import { HEIGHT } from './constants'

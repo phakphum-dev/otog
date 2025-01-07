@@ -10,7 +10,7 @@ import Head from 'next/head'
 import NextLink from 'next/link'
 
 import { Contest } from '@otog/database'
-import { Link } from '@otog/ui'
+import { Link } from '@otog/ui/link'
 
 import { contestKey } from '../../api/query'
 import { TableComponent } from '../../components/table-component'

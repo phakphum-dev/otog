@@ -6,7 +6,9 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 
 import { RegisterBody } from '@otog/contract'
-import { Button, Form, FormField, FormItem, FormLabel, Input } from '@otog/ui'
+import { Button } from '@otog/ui/button'
+import { Form, FormField, FormItem, FormLabel } from '@otog/ui/form'
+import { Input } from '@otog/ui/input'
 
 import Logo from '../../public/logo512.png'
 import { authQuery } from '../api/query'

@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import Head from 'next/head'
 
 import { SubmissionSchema } from '@otog/contract'
-import { Link } from '@otog/ui'
+import { Link } from '@otog/ui/link'
 
 import { submissionKey, submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'

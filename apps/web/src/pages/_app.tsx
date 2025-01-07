@@ -30,7 +30,7 @@ import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 import '@otog/ui/styles.css'
 
 import { Footer } from '../components/footer'

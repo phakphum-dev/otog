@@ -6,7 +6,7 @@ import Head from 'next/head'
 import NextLink from 'next/link'
 
 import { CurrentContest } from '@otog/contract'
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import { appKey, appQuery, contestKey, contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'

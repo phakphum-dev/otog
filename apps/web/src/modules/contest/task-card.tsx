@@ -21,26 +21,30 @@ import { z } from 'zod'
 
 import { SubmissionSchema } from '@otog/contract'
 import { Problem, SubmissionStatus } from '@otog/database'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+} from '@otog/ui/collapsible'
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Link,
+} from '@otog/ui/form'
+import { Link } from '@otog/ui/link'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Spinner,
-  clsx,
-} from '@otog/ui'
+} from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import { clsx } from '@otog/ui/utils'
 
 import { submissionKey, submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'

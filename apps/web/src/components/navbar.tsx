@@ -10,17 +10,17 @@ import Image from 'next/image'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
+import { Button } from '@otog/ui/button'
 // import { SearchMenu } from './SearchMenu'
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  Link,
-  clsx,
-} from '@otog/ui'
+} from '@otog/ui/dropdown-menu'
+import { Link } from '@otog/ui/link'
+import { clsx } from '@otog/ui/utils'
 
 import Logo from '../../public/logo512.png'
 import { useUserContext } from '../context/user-context'

@@ -1,4 +1,4 @@
-import { Link } from '@otog/ui'
+import { Link } from '@otog/ui/link'
 
 import { environment } from '../env'
 

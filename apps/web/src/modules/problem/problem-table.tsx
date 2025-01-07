@@ -32,30 +32,25 @@ import NextLink from 'next/link'
 
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
+import { AvatarGroup, AvatarMore } from '@otog/ui/avatar'
+import { Button, ButtonProps } from '@otog/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
 import {
-  AvatarGroup,
-  AvatarMore,
-  Button,
-  ButtonProps,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  InputGroup,
-  InputLeftIcon,
-  Link,
+} from '@otog/ui/dropdown-menu'
+import { InputGroup, InputLeftIcon } from '@otog/ui/input'
+import { Link } from '@otog/ui/link'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectPrimitive,
-  Spinner,
-  VariantProps,
-  clsx,
-  cva,
-} from '@otog/ui'
+} from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import { VariantProps, clsx, cva } from '@otog/ui/utils'
 
 import { problemKey, problemQuery } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'

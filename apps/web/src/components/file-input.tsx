@@ -2,7 +2,9 @@ import { forwardRef, useId } from 'react'
 
 import { FileUpload, useFileUpload } from '@ark-ui/react/file-upload'
 
-import { Button, cn, inputStyles } from '@otog/ui'
+import { Button } from '@otog/ui/button'
+import { inputStyles } from '@otog/ui/input'
+import { cn } from '@otog/ui/utils'
 
 export interface FileInputProps {
   onChange: (file: File | undefined) => void

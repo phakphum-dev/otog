@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import BoringAvatar from 'boring-avatars'
 import { useTheme } from 'next-themes'
 
-import { Avatar, AvatarFallback, AvatarImage, cn } from '@otog/ui'
+import { Avatar, AvatarFallback, AvatarImage } from '@otog/ui/avatar'
+import { cn } from '@otog/ui/utils'
 
 import { avatarKey } from '../api/query'
 import { AvatarSize } from '../firebase/get-avatar-url'

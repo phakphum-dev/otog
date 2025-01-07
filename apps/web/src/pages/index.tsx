@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import NextLink from 'next/link'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import ComputerImage from '../../public/computer.svg'
 import { withSession } from '../api/with-session'

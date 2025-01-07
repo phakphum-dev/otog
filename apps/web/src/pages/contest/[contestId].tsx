@@ -18,7 +18,9 @@ import {
   ContestScoreboard,
   UserContestScoreboard,
 } from '@otog/contract'
-import { Link, Toggle, clsx } from '@otog/ui'
+import { Link } from '@otog/ui/link'
+import { Toggle } from '@otog/ui/toggle'
+import { clsx } from '@otog/ui/utils'
 
 import { contestQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'

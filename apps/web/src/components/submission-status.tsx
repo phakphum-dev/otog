@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { Submission, SubmissionStatus } from '@otog/database'
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import { SubmissionDialog } from './submission-dialog'
 
