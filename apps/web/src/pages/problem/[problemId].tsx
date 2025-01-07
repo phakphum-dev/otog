@@ -4,10 +4,7 @@ import { toast } from 'react-hot-toast'
 
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
-import MonacoEditor from '@monaco-editor/react'
 import { File } from '@web-std/file'
-import { editor } from 'monaco-editor'
-import { useTheme } from 'next-themes'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -18,6 +15,9 @@ import {
   Button,
   Form,
   FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
   Link,
   Select,
   SelectContent,
@@ -28,6 +28,7 @@ import {
 
 import { problemQuery, submissionQuery } from '../../api/query'
 import { withSession } from '../../api/with-session'
+import { MonacoEditor } from '../../components/monaco-editor'
 import { Language, LanguageName } from '../../enums'
 import { SubmitCode } from '../../modules/problem/submit-code'
 
@@ -89,14 +90,6 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
   }
 )
 
-const DEFAULT_SOURCE_CODE = `#include <iostream>
-
-using namespace std;
-
-int main() {
-    return 0;
-}`
-
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
@@ -148,31 +141,23 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
 // )
 
 const CodeEditorFormSchema = z.object({
-  // sourceCode: z.string(),
+  sourceCode: z.string(),
   language: z.nativeEnum(Language),
 })
 type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
 
 function CodeEditorForm(props: WriteSolutionPageProps) {
-  const { resolvedTheme } = useTheme()
-
   const formRef = useRef<HTMLFormElement>(null)
   const form = useForm<CodeEditorFormSchema>({
     defaultValues: { language: 'cpp' },
     resolver: zodResolver(CodeEditorFormSchema),
   })
 
-  const editorRef = useRef<editor.IStandaloneCodeEditor>()
   const router = useRouter()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
-    if (!editorRef.current) {
-      toast.error(`ไม่พบ VS Code ใน Browser`)
-      return
-    }
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
-    const value = editorRef.current.getValue()
-    const blob = new Blob([value])
+    const blob = new Blob([values.sourceCode])
     const file = new File([blob], `${props.problem.id}.${values.language}`)
     await uploadFile.mutateAsync(
       {
@@ -215,16 +200,22 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} /> */}
           </div>
         ) : (
-          <div role="application" aria-label="Code Editor">
-            <MonacoEditor
-              className="overflow-hidden rounded-md border"
-              height="800px"
-              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
-              defaultValue={props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-              language={form.watch('language')}
-              onMount={(editor) => (editorRef.current = editor)}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="sourceCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="sr-only">โค้ด</FormLabel>
+                <MonacoEditor
+                  height="800px"
+                  language={form.watch('language')}
+                  defaultValue={props.submission?.sourceCode}
+                  onChange={field.onChange}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
 
         <div className="grid grid-cols-3 mt-4">
@@ -233,18 +224,22 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             name="language"
             defaultValue={Language.cpp}
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(LanguageName).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormItem>
+                <FormLabel className="sr-only">ภาษา</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(LanguageName).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
           />
           <div className="col-start-3 flex gap-2">

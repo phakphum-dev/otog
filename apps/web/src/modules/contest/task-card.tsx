@@ -9,7 +9,6 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import MonacoEditor from '@monaco-editor/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -18,8 +17,6 @@ import {
 } from '@tanstack/react-table'
 import { File } from '@web-std/file'
 import dayjs from 'dayjs'
-import { editor } from 'monaco-editor'
-import { useTheme } from 'next-themes'
 import { z } from 'zod'
 
 import { SubmissionSchema } from '@otog/contract'
@@ -48,6 +45,7 @@ import {
 import { submissionKey, submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { InlineComponent } from '../../components/inline-component'
+import { MonacoEditor } from '../../components/monaco-editor'
 import { SubmissionStatusButton } from '../../components/submission-status'
 import { useSubmissionPolling } from '../../components/submission-table'
 import { TableComponent } from '../../components/table-component'
@@ -229,7 +227,7 @@ export const ContestFileForm = (props: TaskCardProps) => {
 }
 
 const CodeEditorFormSchema = z.object({
-  // sourceCode: z.string(),
+  sourceCode: z.string(),
   language: z.nativeEnum(Language),
 })
 type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
@@ -251,19 +249,11 @@ export const ContestEditorForm = (props: TaskCardProps) => {
       ? latestSubmissionQuery.data.body.submission
       : undefined
 
-  const { resolvedTheme } = useTheme()
-  const editorRef = useRef<editor.IStandaloneCodeEditor>()
-
   const queryClient = useQueryClient()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
-    if (!editorRef.current) {
-      toast.error(`ไม่พบ VS Code ใน Browser`)
-      return
-    }
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
-    const value = editorRef.current.getValue()
-    const blob = new Blob([value])
+    const blob = new Blob([values.sourceCode])
     const file = new File([blob], `${props.problem.id}.${values.language}`)
     await uploadFile.mutateAsync(
       {
@@ -293,16 +283,21 @@ export const ContestEditorForm = (props: TaskCardProps) => {
   return (
     <Form {...form}>
       <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4">
-        <div role="application" aria-label="Code Editor">
-          <MonacoEditor
-            className="overflow-hidden rounded-md border"
-            height="600px"
-            theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
-            defaultValue={submission?.sourceCode ?? DEFAULT_SOURCE_CODE}
-            language={form.watch('language')}
-            onMount={(editor) => (editorRef.current = editor)}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="sourceCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="sr-only">โค้ด</FormLabel>
+              <MonacoEditor
+                language={form.watch('language')}
+                defaultValue={submission?.sourceCode}
+                onChange={field.onChange}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex gap-2 sm:gap-4">
           <FormField
             control={form.control}
@@ -337,14 +332,6 @@ export const ContestEditorForm = (props: TaskCardProps) => {
     </Form>
   )
 }
-
-const DEFAULT_SOURCE_CODE = `#include <iostream>
-
-using namespace std;
-
-int main() {
-    return 0;
-}`
 
 interface TaskSubmissionTableProps {
   submission: SubmissionSchema
