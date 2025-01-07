@@ -192,12 +192,12 @@ export default function ContestHistory({
     }
   }, [expanded])
   return (
-    <main id="#content" className="container flex flex-1 flex-col gap-4">
+    <main id="#content" className="container flex flex-1 flex-col gap-6 py-8">
       <Head>
         <title>Contest History {contestScoreboard.contest.id} | OTOG</title>
       </Head>
       <section>
-        <div className="flex justify-between items-center mt-8 mb-4">
+        <div className="flex justify-between items-center mb-4">
           <h1 className="font-heading text-2xl font-semibold">
             {contestScoreboard.contest.name}
           </h1>
@@ -318,7 +318,7 @@ export function Prize(props: ContestHistoryProps) {
 
   return (
     <section>
-      <h2 className="font-heading text-2xl font-semibold mt-8 mb-4">รางวัล</h2>
+      <h2 className="font-heading text-2xl font-semibold mb-4">รางวัล</h2>
       <TableComponent table={table} />
     </section>
   )
