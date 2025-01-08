@@ -108,7 +108,7 @@ export function Chat() {
           </PopoverTrigger>
         </OnlineUsersTooltip>
         <PopoverContent
-          className="fixed -bottom-16 -right-6 rounded-b-none h-[420px] w-[320px] flex flex-col p-0"
+          className="fixed -bottom-16 -right-6 rounded-b-none h-[420px] w-[320px] flex flex-col p-0 border-none"
           sideOffset={0}
           side="top"
           onInteractOutside={(ev) => ev.preventDefault()}
@@ -141,7 +141,7 @@ export function Chat() {
           </OnlineUsersTooltip>
 
           <section
-            className="flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden border border-y-0 px-2"
+            className="flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden border-x px-2"
             aria-label="ข้อความ"
             role="feed"
           >
@@ -176,7 +176,7 @@ export function Chat() {
             )}
           </section>
           <Form {...form}>
-            <form className="flex gap-1 p-2" onSubmit={onSubmit}>
+            <form className="flex gap-1 p-2 border-x" onSubmit={onSubmit}>
               <FormField
                 control={form.control}
                 name="message"
