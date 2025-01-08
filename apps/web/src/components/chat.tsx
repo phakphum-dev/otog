@@ -24,7 +24,13 @@ import { z } from 'zod'
 
 import { ChatMessage } from '@otog/contract'
 import { Button } from '@otog/ui/button'
-import { Dialog, DialogContent, DialogTrigger } from '@otog/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogPrimitive,
+  DialogTitle,
+  DialogTrigger,
+} from '@otog/ui/dialog'
 import {
   Form,
   FormControl,
@@ -116,17 +122,14 @@ export function Chat() {
           <OnlineUsersTooltip align="start">
             <Button className="justify-between rounded-b-none p-0" asChild>
               <div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="link"
-                      className="text-inherit underline-offset-4 hover:underline p-4"
-                    >
-                      OTOG Chat
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent></DialogContent>
-                </Dialog>
+                <OnlineUsersDialog>
+                  <Button
+                    variant="link"
+                    className="text-inherit underline-offset-4 hover:underline p-4"
+                  >
+                    OTOG Chat
+                  </Button>
+                </OnlineUsersDialog>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -251,6 +254,49 @@ const OnlineUsersTooltip = forwardRef<
         )}
       </TooltipContent>
     </Tooltip>
+  )
+})
+
+const OnlineUsersDialog = forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger> & {}
+>(function OnlineUsersTooltip({ children }, ref) {
+  const onlineUsersQuery = useQuery(userKey.getOnlineUsers())
+  const onlineUsers =
+    onlineUsersQuery.data?.status === 200 ? onlineUsersQuery.data.body : []
+  if (onlineUsers.length === 0) {
+    return children
+  }
+  return (
+    <Dialog>
+      <DialogTrigger asChild ref={ref}>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="flex flex-col justify-start max-w-sm">
+        <DialogTitle>ผู้ที่ออนไลน์</DialogTitle>
+        {onlineUsers.slice(0, MAX_LENGTH).map((user) => (
+          <ul key={user.id} className="flex flex-col justify-start">
+            <li className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-400" />
+              <Link
+                asChild
+                variant="hidden"
+                className="line-clamp-3 max-w-[275px]"
+              >
+                <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
+              </Link>
+            </li>
+          </ul>
+        ))}
+        {onlineUsers.length > MAX_LENGTH && (
+          <>
+            <div className="flex gap-2">
+              <div>...ทั้งหมด {onlineUsers.length} คน</div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 })
 
