@@ -56,6 +56,7 @@
     "slate": "^0.102.0",
     "slate-history": "^0.100.0",
     "slate-react": "^0.102.0",
+    "socket.io-client": "^4.8.1",
     "ts-pattern": "^5.1.1",
     "vscode": "npm:@codingame/monaco-vscode-api@~5.1.1",
     "vscode-languageclient": "~9.0.1",

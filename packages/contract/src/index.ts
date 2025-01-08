@@ -89,12 +89,25 @@ const PaginationQuerySchema = z.object({
   limit: z.coerce.number().optional(),
 })
 
+export const ChatMessage = ChatModel.pick({
+  id: true,
+  creationDate: true,
+  message: true,
+}).extend({
+  user: UserModel.pick({
+    id: true,
+    showName: true,
+    rating: true,
+  }),
+})
+export type ChatMessage = z.infer<typeof ChatMessage>
+
 export const chatRouter = contract.router({
   getChats: {
     method: 'GET',
     path: '/chat',
     responses: {
-      200: z.array(ChatModel),
+      200: z.array(ChatMessage),
     },
     query: PaginationQuerySchema,
     summary: 'Get paginated chats',

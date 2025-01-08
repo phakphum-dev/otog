@@ -1,16 +1,5 @@
-// import { Toaster } from 'react-hot-toast'
-// import { loader } from '@monaco-editor/react'
-// import { Chat } from '@src/chat'
-// import { Footer } from '@src/components/layout/Footer'
-// import { NavBar } from '@src/components/layout/NavBar'
-// import { OFFLINE_MODE } from '@src/config'
 // import { ConfirmModalProvider } from '@src/context/ConfirmContext'
-// import { SWRProvider } from '@src/context/SWRContext'
-// import { SocketProvider } from '@src/context/SocketContext'
-// import { UserProvider } from '@src/context/UserContext'
 // import { useAnalytics } from '@src/hooks/useAnalytics'
-// import { ErrorToastOptions, useErrorToaster } from '@src/hooks/useErrorToast'
-// import 'focus-visible/dist/focus-visible'
 import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
@@ -25,17 +14,19 @@ import 'dayjs/locale/th'
 import buddhistEra from 'dayjs/plugin/buddhistEra'
 import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
-// import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 
 import { Button } from '@otog/ui/button'
 import '@otog/ui/styles.css'
+import { TooltipProvider } from '@otog/ui/tooltip'
 
+import { Chat } from '../components/chat'
 import { Footer } from '../components/footer'
 import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
+import { SocketProvider } from '../context/socket-context'
 import { UserContextProvider } from '../context/user-context'
 import { inter, notosans, sarabun } from '../fonts'
 import '../styles/nprogress.css'
@@ -102,37 +93,37 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           --font-notosans: ${notosans.style.fontFamily};
         }
       `}</style>
-      {/* 
-          <SocketProvider>
-          <ConfirmModalProvider>
-         */}
 
       <SessionProvider session={session}>
         <TsRestQueryClientProvider client={tsRestQueryClient}>
           <QueryClientProvider client={queryClient}>
             <UserContextProvider session={session}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <div className="min-h-screen flex flex-col">
-                  <SkipToMainContent />
-                  <ProgressBar />
-                  <Navbar />
-                  <Component {...props} />
-                  <Footer />
-                  {/* {!OFFLINE_MODE && <Chat /> */}
-                </div>
-                <Toaster
-                  position="bottom-center"
-                  toastOptions={{
-                    className: '!text-foreground !bg-background',
-                  }}
-                />
-                <ClickToComponent />
-              </ThemeProvider>
+              <SocketProvider>
+                <TooltipProvider delayDuration={0}>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <div className="min-h-screen flex flex-col">
+                      <SkipToMainContent />
+                      <ProgressBar />
+                      <Navbar />
+                      <Component {...props} />
+                      <Chat />
+                      <Footer />
+                    </div>
+                    <Toaster
+                      position="bottom-center"
+                      toastOptions={{
+                        className: '!text-foreground !bg-background',
+                      }}
+                    />
+                    <ClickToComponent />
+                  </ThemeProvider>
+                </TooltipProvider>
+              </SocketProvider>
             </UserContextProvider>
           </QueryClientProvider>
         </TsRestQueryClientProvider>
