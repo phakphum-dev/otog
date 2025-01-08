@@ -34,6 +34,7 @@ pnpm i
 
 ```bash
 cp .env.template .env
+cp ./apps/api/.env.template ./apps/api/.env
 ```
 
 3. Spin up the database using docker compose
