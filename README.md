@@ -59,10 +59,11 @@ Open http://localhost:3000 with your browser to see the result.
 
 ## TODO
 
-- [ ] Forgot Password
-- [ ] Editorial Article
 - [ ] Upload Library
-- [ ] Multiple Testcase Detail
+- [ ] Rating and Rank
+- [ ] Forgot Password
+- [ ] Subtask Testcase
+- [ ] Editorial Article
 
 ## Bug Report
 
