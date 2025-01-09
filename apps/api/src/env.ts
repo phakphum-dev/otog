@@ -12,6 +12,7 @@ export const environment = parseEnv(process.env, {
   S3_SECRET_ACCESS_KEY: z.string().default(''),
   S3_ENDPOINT: z.string().default(''),
   S3_REGION: z.string().default(''),
+  S3_BUCKET: z.string().default(''),
 
   DATABASE_URL: z.string(),
 })

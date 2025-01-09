@@ -1,7 +1,15 @@
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import * as fsExtra from 'fs-extra'
-// import { S3 } from 'nestjs-s3'
 import fs from 'node:fs'
 import * as path from 'path'
+import { environment } from 'src/env'
 import { Readable } from 'stream'
 
 interface SaveFileOptions {
@@ -9,26 +17,32 @@ interface SaveFileOptions {
 }
 
 abstract class FileManager {
+  abstract listFiles(dirPath: string): Promise<string[]>
+
   abstract createDirIfNotExist(dirPath: string): Promise<void>
 
   abstract removeDirIfExist(dirPath: string): Promise<void>
 
-  abstract saveFile(
-    destDirPath: string,
+  abstract putFile(
+    path: string,
     buffer: any,
     options?: SaveFileOptions
   ): Promise<void>
 
-  abstract getFileReadSteam(filePath: string): Promise<Readable>
+  abstract getFileReadStream(filePath: string): Promise<Readable>
 
   abstract isExists(filePath: string): Promise<boolean>
 }
 
-class FileFileManager extends FileManager {
+class LocalFileManager extends FileManager {
   private rootDir = process.cwd()
 
   private _getFullPath(p: string) {
     return path.join(this.rootDir, p)
+  }
+
+  async listFiles(dirPath: string): Promise<string[]> {
+    return fsExtra.readdir(this._getFullPath(dirPath))
   }
 
   async createDirIfNotExist(dirPath: string) {
@@ -47,11 +61,11 @@ class FileFileManager extends FileManager {
     }
   }
 
-  async saveFile(destDirPath: string, buffer: any) {
+  async putFile(destDirPath: string, buffer: any) {
     await fsExtra.writeFile(destDirPath, buffer)
   }
 
-  async getFileReadSteam(filePath: string) {
+  async getFileReadStream(filePath: string) {
     const fullPath = this._getFullPath(filePath)
     return fs.createReadStream(fullPath)
   }
@@ -62,73 +76,79 @@ class FileFileManager extends FileManager {
   }
 }
 
-// class S3FileManager extends FileManager {
-//   private s3: S3
-//   private bucket: string
+class S3FileManager extends FileManager {
+  private readonly s3: S3Client
+  private bucket: string
 
-//   constructor(s3: S3, bucket: string) {
-//     super()
-//     this.s3 = s3
-//     this.bucket = bucket
-//   }
+  constructor(bucket: string) {
+    super()
+    this.s3 = new S3Client({
+      region: environment.S3_REGION,
+      endpoint: environment.S3_ENDPOINT,
+      credentials: {
+        accessKeyId: environment.S3_ACCESS_KEY_ID,
+        secretAccessKey: environment.S3_SECRET_ACCESS_KEY,
+      },
+      forcePathStyle: true,
+    })
+    this.bucket = bucket
+  }
 
-//   _safePath(p: string) {
-//     return p.replace(/\\+/g, '/')
-//   }
+  _safePath(p: string) {
+    return p.replace(/\\+/g, '/')
+  }
 
-//   async createDirIfNotExist(_dirPath: string): Promise<void> {
-//     return
-//   }
+  async listFiles(dirPath: string): Promise<string[]> {
+    const command = new ListObjectsCommand({
+      Bucket: this.bucket,
+      Prefix: this._safePath(dirPath),
+    })
+    const response = await this.s3.send(command)
+    return response.Contents?.map((c) => c.Key ?? '') || []
+  }
 
-//   async removeDirIfExist(dirPath: string): Promise<void> {
-//     await this.s3
-//       .deleteObject({
-//         Bucket: this.bucket,
-//         Key: this._safePath(dirPath),
-//       })
-//       .promise()
-//   }
+  async createDirIfNotExist(): Promise<void> {}
 
-//   async saveFile(destDirPath: string, buffer: any, options?: SaveFileOptions) {
-//     const { ContentType } = options || {}
-//     await this.s3
-//       .putObject({
-//         Bucket: this.bucket,
-//         Key: this._safePath(destDirPath),
-//         Body: buffer,
-//         ContentType,
-//       })
-//       .promise()
-//   }
+  async removeDirIfExist(dirPath: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: this._safePath(dirPath),
+    })
+    await this.s3.send(command)
+  }
 
-//   async getFileReadSteam(filePath: string) {
-//     const stream = this.s3
-//       .getObject({
-//         Bucket: this.bucket,
-//         Key: this._safePath(filePath),
-//       })
-//       .createReadStream()
+  async putFile(destDirPath: string, buffer: any, options?: SaveFileOptions) {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: this._safePath(destDirPath),
+      Body: buffer,
+      ContentType: options?.ContentType,
+    })
+    await this.s3.send(command)
+  }
 
-//     return stream
-//   }
+  async getFileReadStream(filePath: string): Promise<Readable> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: this._safePath(filePath),
+    })
+    const object = await this.s3.send(command)
+    const webStream = object.Body!.transformToWebStream()
+    return Readable.fromWeb(webStream as any)
+  }
 
-//   async isExists(filePath: string) {
-//     try {
-//       await this.s3
-//         .headObject({
-//           Bucket: this.bucket,
-//           Key: this._safePath(filePath),
-//         })
-//         .promise()
-//       return true
-//     } catch (e) {
-//       return false
-//     }
-//   }
-// }
-
-export {
-  FileFileManager,
-  // S3FileManager,
-  FileManager,
+  async isExists(filePath: string): Promise<boolean> {
+    const command = new HeadObjectCommand({
+      Bucket: this.bucket,
+      Key: this._safePath(filePath),
+    })
+    try {
+      await this.s3.send(command)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
 }
+
+export { LocalFileManager, S3FileManager, FileManager }

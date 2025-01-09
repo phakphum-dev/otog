@@ -1,9 +1,12 @@
 import * as fs from 'fs-extra'
 import * as mime from 'mime-types'
 import * as path from 'path'
-import { DOC_DIR, TESTCASE_DIR } from 'src/core/constants'
 import { FileManager } from 'src/core/fileManager'
 import * as unzipper from 'unzipper'
+
+export const DOC_DIR = 'docs'
+export const TESTCASE_DIR = 'source'
+export const UPLOAD_DIR = 'volumes/upload'
 
 export async function updateProblemDoc(
   problemName: string,
@@ -21,7 +24,7 @@ export async function updateProblemDoc(
   const buffer = await fs.readFile(pdfFullPath)
 
   // save pdf file
-  await fileManager.saveFile(uploadDocPath, buffer, {
+  await fileManager.putFile(uploadDocPath, buffer, {
     ContentType: 'application/pdf',
   })
 
@@ -60,7 +63,7 @@ export async function updateProblemTestCase(
         const contentType = ['.in', '.sol'].includes(ext)
           ? 'text/plain'
           : mime.lookup(ext)
-        await fileManager.saveFile(dest, buffer, {
+        await fileManager.putFile(dest, buffer, {
           ContentType: contentType || undefined,
         })
       }
@@ -88,5 +91,5 @@ export async function getProblemDocStream(
 ) {
   const docDir = path.join(DOC_DIR, `${problemName}.pdf`)
   if (!(await fileManager.isExists(docDir))) return null
-  return await fileManager.getFileReadSteam(docDir)
+  return await fileManager.getFileReadStream(docDir)
 }

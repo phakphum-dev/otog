@@ -19,11 +19,12 @@ import {
 } from '@ts-rest/nest'
 import type { Request, Response } from 'express'
 import * as path from 'path'
-import { AccessState, Role, UPLOAD_DIR } from 'src/core/constants'
+import { AccessState, Role } from 'src/core/constants'
 import { OfflineAccess } from 'src/core/decorators/offline-mode.decorator'
 import { Roles } from 'src/core/decorators/roles.decorator'
 import { User } from 'src/core/decorators/user.decorator'
 import { RolesGuard } from 'src/core/guards/roles.guard'
+import { UPLOAD_DIR } from 'src/utils/file.util'
 import { z } from 'zod'
 
 import { problemRouter } from '@otog/contract'

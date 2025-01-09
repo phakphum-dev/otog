@@ -3,13 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-// import { InjectS3 } from 'nestjs-s3'
-// import type { S3 } from 'nestjs-s3'
 import { PrismaService } from 'src/core/database/prisma.service'
 import {
-  FileFileManager,
-  FileManager, // S3FileManager,
+  FileManager,
+  LocalFileManager,
+  S3FileManager,
 } from 'src/core/fileManager'
+import { environment } from 'src/env'
 import {
   getProblemDocStream,
   removeProblemSource,
@@ -39,14 +39,11 @@ export const WITHOUT_EXAMPLE = {
 export class ProblemService {
   private fileManager: FileManager
 
-  constructor(
-    // @InjectS3() private readonly s3: S3,
-    private readonly prisma: PrismaService
-  ) {
-    this.fileManager = new FileFileManager()
-    // this.fileManager = environment.USE_S3
-    //   ? new S3FileManager(this.s3, 'otog-bucket')
-    //   : new FileFileManager()
+  constructor(private readonly prisma: PrismaService) {
+    this.fileManager = new LocalFileManager()
+    this.fileManager = environment.USE_S3
+      ? new S3FileManager(environment.S3_BUCKET)
+      : new LocalFileManager()
   }
 
   async create(
