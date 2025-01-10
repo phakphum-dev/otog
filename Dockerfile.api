@@ -13,7 +13,7 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 # Set working directory
-WORKDIR /app
+WORKDIR /usr/src/app
 COPY . .
 RUN turbo prune --scope=@otog/api --docker
 
@@ -21,17 +21,17 @@ RUN turbo prune --scope=@otog/api --docker
 FROM base AS installer
 RUN apk add --no-cache libc6-compat
 RUN apk update
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /usr/src/app/out/json/ .
+COPY --from=builder /usr/src/app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /usr/src/app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm install
 
 # Build the project
-COPY --from=builder /app/out/full/ .
+COPY --from=builder /usr/src/app/out/full/ .
 COPY turbo.json turbo.json
 
 # Uncomment and use build args to enable remote caching
@@ -45,7 +45,7 @@ RUN turbo run build --filter=@otog/api
 
 # use alpine as the thinest image
 FROM alpine AS runner
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # fix prisma finding ssl https://github.com/nodejs/docker-node/issues/2175
 RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
@@ -53,12 +53,12 @@ RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
-RUN chown nodejs /app
+RUN chown nodejs /usr/src/app
 USER nodejs
 
 ENV NODE_ENV production
 
-COPY --chown=nodejs:nodejs --from=installer /app .
+COPY --chown=nodejs:nodejs --from=installer /usr/src/app .
 
 EXPOSE 8000
 
