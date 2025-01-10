@@ -15,9 +15,9 @@ services:
     networks:
       - api-gateway
     volumes:
-      - ./apps/api/volumes/upload:/app/volumes/upload:rw
-      - ./apps/api/docs:/app/docs:rw
-      - ./apps/api/source:/app/source:rw
+      - ./apps/api/volumes/upload:/usr/src/app/volumes/upload:rw
+      - ./apps/api/docs:/usr/src/app/volumes/docs:rw
+      - ./apps/api/source:/usr/src/app/volumes/upload:rw
 
 networks:
   api-gateway:
