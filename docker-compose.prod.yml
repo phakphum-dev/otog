@@ -16,9 +16,9 @@ services:
       - api-gateway
       - otog-network
     volumes:
-      - ./apps/api/volumes/upload:/usr/src/app/volumes/upload:rw
-      - ./apps/api/docs:/usr/src/app/docs:rw
-      - ./apps/api/source:/usr/src/app/source:rw
+      - ./apps/api/volumes/upload:/app/volumes/upload:rw
+      - ./apps/api/docs:/app/docs:rw
+      - ./apps/api/source:/app/source:rw
 
 networks:
   otog-network:
