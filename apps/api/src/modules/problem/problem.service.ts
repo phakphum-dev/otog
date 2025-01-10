@@ -224,7 +224,7 @@ export class ProblemService {
       recentShowTime: problem.recentShowTime,
       case: problem.case,
       rating: problem.rating,
-      latestSubmission: problem.submission[0] ?? null,
+      latestSubmission: problem.submission?.[0] ?? null,
       passedCount: problemIdToPassedCount.get(problem.id) ?? 0,
       samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
     }))

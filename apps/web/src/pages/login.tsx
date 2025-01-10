@@ -19,6 +19,18 @@ import { withSession } from '../api/with-session'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 
+export const getServerSideProps = withSession(async (session) => {
+  if (session) {
+    return {
+      redirect: {
+        destination: environment.OFFLINE_MODE ? '/contest' : '/problem',
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+})
+
 export default function LoginPage() {
   const router = useRouter()
   const form = useForm<LoginBody>()
@@ -41,7 +53,7 @@ export default function LoginPage() {
       }
       toast.success('ลงชื่อเข้าใช้สำเร็จ !', { id: toastId })
       clearCache()
-      router.replace(environment.OFFLINE_MODE ? '/contest' : '/')
+      router.replace(environment.OFFLINE_MODE ? '/contest' : '/problem')
     } catch (e: unknown) {
       toast.error('ลงชื่อใช้งานไม่สำเร็จ', { id: toastId })
     }
@@ -120,15 +132,3 @@ export default function LoginPage() {
     </main>
   )
 }
-
-export const getServerSideProps = withSession(async (session) => {
-  if (session) {
-    return {
-      redirect: {
-        destination: environment.OFFLINE_MODE ? '/contest' : '/',
-        permanent: false,
-      },
-    }
-  }
-  return { props: {} }
-})

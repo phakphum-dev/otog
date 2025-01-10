@@ -6,27 +6,29 @@ import { Button } from '@otog/ui/button'
 
 import ComputerImage from '../../public/computer.svg'
 import { withSession } from '../api/with-session'
-import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
-import { AnnouncementCarousel } from '../modules/announcement'
-import { ProblemTable } from '../modules/problem/problem-table'
+
+export const getServerSideProps = withSession(async (session) => {
+  if (environment.OFFLINE_MODE) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/login',
+      },
+    }
+  }
+  if (session) {
+    return {
+      redirect: {
+        destination: '/problem',
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+})
 
 export default function HomePage() {
-  const { isAuthenticated } = useUserContext()
-  if (isAuthenticated) {
-    return (
-      <main
-        className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md py-8"
-        id="content"
-      >
-        <Head>
-          <title>Problem | OTOG</title>
-        </Head>
-        <AnnouncementCarousel />
-        <ProblemTable />
-      </main>
-    )
-  }
   return (
     <main
       id="content"
@@ -57,15 +59,3 @@ export default function HomePage() {
     </main>
   )
 }
-
-export const getServerSideProps = withSession(async () => {
-  if (environment.OFFLINE_MODE) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/login',
-      },
-    }
-  }
-  return { props: {} }
-})

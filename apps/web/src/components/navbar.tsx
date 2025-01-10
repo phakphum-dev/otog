@@ -68,7 +68,7 @@ export const Navbar = () => {
             </Link>
             <ul className="flex gap-2 items-center max-lg:hidden">
               <li>
-                <NavButton href="/" exact className="ml-6">
+                <NavButton href="/problem" className="ml-6">
                   โจทย์
                 </NavButton>
               </li>

@@ -49,23 +49,23 @@ export class ProblemController {
   ) {}
 
   @TsRestHandler(c.getProblemTable)
-  getProblemTable(@User() user: UserDTO) {
+  getProblemTable(@User() user: UserDTO | undefined) {
     return tsRestHandler(c.getProblemTable, async () => {
+      if (!user) {
+        const problems = await this.problemService.findMany({
+          show: true,
+        })
+        return { status: 200, body: problems }
+      }
       if (user.role === Role.Admin) {
         const problems = await this.problemService.findMany({
           userId: user.id,
         })
         return { status: 200, body: problems }
       }
-      if (user) {
-        const problems = await this.problemService.findMany({
-          show: true,
-          userId: user.id,
-        })
-        return { status: 200, body: problems }
-      }
       const problems = await this.problemService.findMany({
         show: true,
+        userId: user.id,
       })
       return { status: 200, body: problems }
     })
