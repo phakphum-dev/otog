@@ -64,6 +64,7 @@ type ChatForm = z.infer<typeof ChatForm>
 export function Chat() {
   if (environment.OFFLINE_MODE) return null
   const [open, setOpen] = useState(false)
+  const { isAuthenticated } = useUserContext()
 
   const {
     emitChat,
@@ -95,6 +96,8 @@ export function Chat() {
     emitChat?.(values.message)
     form.reset()
   })
+
+  if (!isAuthenticated) return null
   return (
     <aside className="fixed bottom-4 right-4 z-30" aria-label="แชท">
       {hasUnread && (
