@@ -104,7 +104,7 @@ export const Navbar = () => {
                 </SheetHeader>
                 <ul className="flex flex-col gap-2">
                   <li>
-                    <NavButton className="block" href="/" exact>
+                    <NavButton className="block" href="/problem">
                       โจทย์
                     </NavButton>
                   </li>

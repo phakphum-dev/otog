@@ -36,17 +36,19 @@ export class SubmissionController {
   ) {}
 
   @TsRestHandler(c.getSubmissions)
-  getSubmissions(@User() user: UserDTO) {
+  getSubmissions(@User() user: UserDTO | undefined) {
     return tsRestHandler(
       c.getSubmissions,
       async ({ query: { limit, offset } }) => {
-        const submissions =
-          user.role === Role.Admin
-            ? await this.submissionService.findAll(offset, limit)
-            : await this.submissionService.findAllWithOutContestAndAdmin(
-                offset,
-                limit
-              )
+        if (!user || user.role !== Role.Admin) {
+          const submissions =
+            await this.submissionService.findAllWithOutContestAndAdmin(
+              offset,
+              limit
+            )
+          return { status: 200, body: submissions }
+        }
+        const submissions = await this.submissionService.findAll(offset, limit)
         return { status: 200, body: submissions }
       }
     )
