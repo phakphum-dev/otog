@@ -19,7 +19,7 @@ services:
     volumes:
       - ./apps/api/volumes/upload:/usr/src/app/volumes/upload:rw
       - ./apps/api/docs:/usr/src/app/volumes/docs:rw
-      - ./apps/api/source:/usr/src/app/volumes/upload:rw
+      - ./apps/api/source:/usr/src/app/volumes/source:rw
     env_file:
       - ./apps/api/.env
     ports:
