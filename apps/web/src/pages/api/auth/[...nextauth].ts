@@ -48,6 +48,24 @@ export function getAuthOptions(serverContext: ServerContext) {
     return json
   }
 
+  async function refreshAccessToken(accessToken: string) {
+    const RID = serverContext.req.cookies['RID']
+    if (!RID) {
+      throw new TypeError('No RID')
+    }
+    // console.info('accessToken expired', { accessToken, RID })
+    return await api
+      .auth(`Bearer ${accessToken}`)
+      .headers({
+        cookie: cookie.serialize('RID', RID, {
+          httpOnly: true,
+          secure: secure,
+        }),
+      })
+      .get('/auth/refresh/token')
+      .res(forwardSetCookie)
+  }
+
   const authOptions: NextAuthOptions = {
     secret: environment.NEXTAUTH_SECRET,
     pages: {
@@ -93,25 +111,16 @@ export function getAuthOptions(serverContext: ServerContext) {
             throw new TypeError('No exp')
           }
           if (exp * 1000 < Date.now()) {
-            const RID = serverContext.req.cookies['RID']
-            if (!RID) {
-              throw new TypeError('No RID')
+            try {
+              const result = await refreshAccessToken(accessToken)
+              return { ...token, ...result }
+            } catch (error) {
+              console.error(error)
+              return {
+                ...token,
+                error: 'RefreshAccessTokenError',
+              }
             }
-            // console.info('accessToken expired', { accessToken, RID })
-            const result = await api
-              .auth(`Bearer ${accessToken}`)
-              .headers({
-                cookie: cookie.serialize('RID', RID, {
-                  httpOnly: true,
-                  secure: secure,
-                }),
-              })
-              .get('/auth/refresh/token')
-              .forbidden((e) => {
-                throw e
-              })
-              .res(forwardSetCookie)
-            return { ...token, ...result }
           }
         }
         if (account?.provider === 'otog') {

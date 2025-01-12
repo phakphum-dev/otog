@@ -199,7 +199,7 @@ importers:
         version: 3.4.2(react-hook-form@7.54.2)
       '@lukemorales/query-key-factory':
         specifier: ^1.3.4
-        version: 1.3.4(@tanstack/query-core@5.62.16)(@tanstack/react-query@5.62.14)
+        version: 1.3.4(@tanstack/query-core@5.64.0)(@tanstack/react-query@5.62.14)
       '@monaco-editor/react':
         specifier: ^4.6.0
         version: 4.6.0(@codingame/monaco-vscode-editor-api@5.1.2)(react-dom@18.3.1)(react@18.3.1)
@@ -233,6 +233,9 @@ importers:
       click-to-react-component:
         specifier: ^1.1.2
         version: 1.1.2(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
+      cookie:
+        specifier: ^0.6.0
+        version: 0.6.0
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -270,8 +273,8 @@ importers:
         specifier: ^14.1.1
         version: 14.2.3(react-dom@18.3.1)(react@18.3.1)
       next-auth:
-        specifier: ^4.24.6
-        version: 4.24.7(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
+        specifier: ^4.24.11
+        version: 4.24.11(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
@@ -3063,14 +3066,14 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@lukemorales/query-key-factory@1.3.4(@tanstack/query-core@5.62.16)(@tanstack/react-query@5.62.14):
+  /@lukemorales/query-key-factory@1.3.4(@tanstack/query-core@5.64.0)(@tanstack/react-query@5.62.14):
     resolution: {integrity: sha512-A3frRDdkmaNNQi6mxIshsDk4chRXWoXa05US8fBo4kci/H+lVmujS6QrwQLLGIkNIRFGjMqp2uKjC4XsLdydRw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@tanstack/query-core': '>= 4.0.0'
       '@tanstack/react-query': '>= 4.0.0'
     dependencies:
-      '@tanstack/query-core': 5.62.16
+      '@tanstack/query-core': 5.64.0
       '@tanstack/react-query': 5.62.14(react@18.3.1)
     dev: false
 
@@ -5318,8 +5321,8 @@ packages:
     resolution: {integrity: sha512-6igFeBgymHkCxVgaEk+yiLwkMf9haui/EQLmI3o9CatOyDThEoFKe8toLWvWliZC/Jf+h7NwHi/zjfyLArr1ow==}
     dev: false
 
-  /@tanstack/query-core@5.62.16:
-    resolution: {integrity: sha512-9Sgft7Qavcd+sN0V25xVyo0nfmcZXBuODy3FVG7BMWTg1HMLm8wwG5tNlLlmSic1u7l1v786oavn+STiFaPH2g==}
+  /@tanstack/query-core@5.64.0:
+    resolution: {integrity: sha512-/MPJt/AaaMzdWJZTafgMyYhEX/lGjQrNz8+NDQSk8fNoU5PHqh05FhQaBrEQafW2PeBHsRbefEf//qKMiSAbQQ==}
     dev: false
 
   /@tanstack/react-query@5.62.14(react@18.3.1):
@@ -5546,7 +5549,7 @@ packages:
   /@types/eslint-scope@3.7.7:
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
     dependencies:
-      '@types/eslint': 8.56.12
+      '@types/eslint': 9.6.1
       '@types/estree': 1.0.6
     dev: true
 
@@ -5561,6 +5564,13 @@ packages:
     resolution: {integrity: sha512-03ruubjWyOHlmljCVoxSuNDdmfZDzsrrz0P2LeJsOXr+ZwFQ+0yQIwNCwt/GYhV7Z31fgtXJTAEs+FYlEL851g==}
     dependencies:
       '@types/estree': 1.0.5
+      '@types/json-schema': 7.0.15
+    dev: true
+
+  /@types/eslint@9.6.1:
+    resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
+    dependencies:
+      '@types/estree': 1.0.6
       '@types/json-schema': 7.0.15
     dev: true
 
@@ -7380,15 +7390,15 @@ packages:
       update-browserslist-db: 1.0.16(browserslist@4.23.0)
     dev: true
 
-  /browserslist@4.24.3:
-    resolution: {integrity: sha512-1CPmv8iobE2fyRMV97dAcMVegvvWKxmq94hkLiAkUGwKVTyDLw33K+ZxiFrREKmmps4rIw6grcCFCnTMSZ/YiA==}
+  /browserslist@4.24.4:
+    resolution: {integrity: sha512-KDi1Ny1gSePi1vm0q4oxSF8b4DR44GF4BbmS2YdhPLOEqd8pDviZOGH/GsmRwoWJ2+5Lr085X7naowMwKHDG1A==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001690
-      electron-to-chromium: 1.5.79
+      caniuse-lite: 1.0.30001692
+      electron-to-chromium: 1.5.80
       node-releases: 2.0.19
-      update-browserslist-db: 1.1.1(browserslist@4.24.3)
+      update-browserslist-db: 1.1.2(browserslist@4.24.4)
     dev: true
 
   /buffer-equal-constant-time@1.0.1:
@@ -7476,8 +7486,8 @@ packages:
   /caniuse-lite@1.0.30001625:
     resolution: {integrity: sha512-4KE9N2gcRH+HQhpeiRZXd+1niLB/XNLAhSy4z7fI8EzcbcPoAqjNInxVHTiTwWfTIV4w096XG8OtCOCQQKPv3w==}
 
-  /caniuse-lite@1.0.30001690:
-    resolution: {integrity: sha512-5ExiE3qQN6oF8Clf8ifIDcMRCRE/dMGcETG/XGMD8/XiXm6HXQgQTh1yZYLXXpSOsEUlJm1Xr7kGULZTuGtP/w==}
+  /caniuse-lite@1.0.30001692:
+    resolution: {integrity: sha512-A95VKan0kdtrsnMubMKxEKUKImOPSuCpYgxSQBo036P5YYgVIcOYJEgt/txJWqObiRQeISNCfef9nvlQ0vbV7A==}
     dev: true
 
   /chainsaw@0.1.0:
@@ -7757,11 +7767,6 @@ packages:
 
   /cookie@0.4.2:
     resolution: {integrity: sha512-aSWTXFzaKWkvHO1Ny/s+ePFpvKsPnjc551iI41v3ny/ow6tBG5Vd+FuqGNhh1LxOmVzOlGUriIlOaokOvhaStA==}
-    engines: {node: '>= 0.6'}
-    dev: false
-
-  /cookie@0.5.0:
-    resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
     dev: false
 
@@ -8086,8 +8091,8 @@ packages:
     resolution: {integrity: sha512-d0EFmtLPjctczO3LogReyM2pbBiiZbnsKnGF+cdZhsYzHm/A0GV7W94kqzLD8SN4O3f3iHlgLUChqghgyznvCQ==}
     dev: true
 
-  /electron-to-chromium@1.5.79:
-    resolution: {integrity: sha512-nYOxJNxQ9Om4EC88BE4pPoNI8xwSFf8pU/BAeOl4Hh/b/i6V4biTAzwV7pXi3ARKeoYO5JZKMIXTryXSVer5RA==}
+  /electron-to-chromium@1.5.80:
+    resolution: {integrity: sha512-LTrKpW0AqIuHwmlVNV+cjFYTnXtM9K37OGhpe0ZI10ScPSxqVSryZHIY3WnCS5NSYbBODRTZyhRMS2h5FAEqAw==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -10476,20 +10481,23 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
-  /next-auth@4.24.7(next@14.2.3)(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-iChjE8ov/1K/z98gdKbn2Jw+2vLgJtVV39X+rCP5SGnVQuco7QOr19FRNGMIrD8d3LYhHWV9j9sKLzq1aDWWQQ==}
+  /next-auth@4.24.11(next@14.2.3)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-pCFXzIDQX7xmHFs4KVH4luCjaCbuPRtZ9oBUjUhOk84mZ9WVPf94n87TxYI4rSRf9HmfHEF8Yep3JrYDVOo3Cw==}
     peerDependencies:
-      next: ^12.2.5 || ^13 || ^14
+      '@auth/core': 0.34.2
+      next: ^12.2.5 || ^13 || ^14 || ^15
       nodemailer: ^6.6.5
-      react: ^17.0.2 || ^18
-      react-dom: ^17.0.2 || ^18
+      react: ^17.0.2 || ^18 || ^19
+      react-dom: ^17.0.2 || ^18 || ^19
     peerDependenciesMeta:
+      '@auth/core':
+        optional: true
       nodemailer:
         optional: true
     dependencies:
       '@babel/runtime': 7.24.6
       '@panva/hkdf': 1.1.1
-      cookie: 0.5.0
+      cookie: 0.7.2
       jose: 4.15.5
       next: 14.2.3(react-dom@18.3.1)(react@18.3.1)
       oauth: 0.9.15
@@ -13052,13 +13060,13 @@ packages:
       picocolors: 1.0.1
     dev: true
 
-  /update-browserslist-db@1.1.1(browserslist@4.24.3):
-    resolution: {integrity: sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==}
+  /update-browserslist-db@1.1.2(browserslist@4.24.4):
+    resolution: {integrity: sha512-PPypAm5qvlD7XMZC3BujecnaOxwhrtoFR+Dqkk5Aa/6DssiH0ibKoketaj9w8LP7Bont1rYeoV5plxD7RTEPRg==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
-      browserslist: 4.24.3
+      browserslist: 4.24.4
       escalade: 3.2.0
       picocolors: 1.1.1
     dev: true
@@ -13327,7 +13335,7 @@ packages:
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.14.0
-      browserslist: 4.24.3
+      browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
       es-module-lexer: 1.6.0
