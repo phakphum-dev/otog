@@ -76,7 +76,7 @@ export function getAuthOptions(serverContext: ServerContext) {
     ],
     callbacks: {
       async session({ session, token }) {
-        console.log('session', session, token)
+        // console.log('session', session, token)
         return { ...session, ...token }
       },
       async jwt({ token, user, account, trigger, session }) {
