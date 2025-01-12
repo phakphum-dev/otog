@@ -1,4 +1,3 @@
-import { createQueryKeys } from '@lukemorales/query-key-factory'
 import {
   QueryFunction,
   QueryFunctionContext,
@@ -15,16 +14,13 @@ import {
   Without,
   fetchApi,
   getCompleteUrl,
-  isAppRoute,
 } from '@ts-rest/core'
 import { DataResponse } from '@ts-rest/react-query'
-
-import { createQueryClient, clientArgs as defaultClientArgs } from '.'
 
 // from luke
 type AnyMutableOrReadonlyArray = any[] | readonly any[]
 type Tuple = [ValidValue | undefined, ...Array<ValidValue | undefined>]
-type KeyTuple = Tuple | Readonly<Tuple>
+export type KeyTuple = Tuple | Readonly<Tuple>
 type ValidValue = string | number | boolean | object | bigint
 type DefinitionKey<Key extends AnyMutableOrReadonlyArray> = {
   _def: readonly [...Key]
@@ -59,7 +55,7 @@ type FactoryProperty =
   | KeySchemaWithContextualQueries
   | $QueryFactorySchema
   | QueryFactoryWithContextualQueriesSchema
-type DynamicKey = (
+export type DynamicKey = (
   ...args: any[]
 ) =>
   | DynamicQueryFactoryWithContextualQueriesSchema
@@ -67,7 +63,7 @@ type DynamicKey = (
   | DynamicKeySchemaWithContextualQueries
   | QueryKeyRecord
   | KeyTuple
-type QueryFactorySchema = Record<string, FactoryProperty | DynamicKey>
+export type QueryFactorySchema = Record<string, FactoryProperty | DynamicKey>
 type ExtractNullableKey$1<Key extends KeyTuple | null | undefined> =
   Key extends [...infer Value] | readonly [...infer Value]
     ? Value
@@ -291,7 +287,7 @@ type RouteQueryFactorySchema<
   ? QueryRouteDynamicKey<TAppRoute, TClientArgs>
   : never
 
-type RouteFactorySchema<
+export type RouteFactorySchema<
   TAppRouter extends AppRouter,
   TClientArgs extends ClientArgs,
 > = Without<
@@ -303,7 +299,7 @@ type RouteFactorySchema<
   never
 >
 
-type RouteFactoryOutput<
+export type RouteFactoryOutput<
   Key extends string,
   Schema extends Record<string, (...args: any[]) => DynamicQueryFactorySchema>,
 > = DefinitionKey<[Key]> & {
@@ -312,40 +308,4 @@ type RouteFactoryOutput<
     : Schema[P] extends FactoryProperty
       ? StaticFactoryOutput<[Key, P], Schema[P]>
       : never
-}
-
-export const createQueryAndKey = <
-  TName extends string,
-  TAppRouter extends AppRouter,
-  TClientArgs extends ClientArgs,
->(
-  name: TName,
-  router: TAppRouter,
-  clientArgs = defaultClientArgs
-) => {
-  const query = createQueryClient(router, clientArgs)
-  const schema: QueryFactorySchema = Object.fromEntries(
-    Object.entries(router)
-      .map(([key, subRouter]) => {
-        if (!isAppRoute(subRouter)) {
-          return null
-        }
-        if (subRouter.method !== 'GET') {
-          return null
-        }
-        return [
-          key,
-          (args: QueryKeyArgs<typeof subRouter, TClientArgs>) => ({
-            queryKey: getQueryKey(subRouter, args) as KeyTuple,
-            queryFn: getQueryFn(subRouter, clientArgs, args as any),
-          }),
-        ] satisfies [string, DynamicKey]
-      })
-      .filter((entry) => entry !== null)
-  )
-  const key = createQueryKeys(name, schema) as RouteFactoryOutput<
-    TName,
-    RouteFactorySchema<TAppRouter, TClientArgs>
-  >
-  return [query, key] as const
 }

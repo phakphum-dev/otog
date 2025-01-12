@@ -22,8 +22,7 @@ import { Link } from '@otog/ui/link'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
-import { contestQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { withQuery } from '../../api/server'
 import { TableComponent } from '../../components/table-component'
 
 interface ContestHistoryProps {
@@ -31,17 +30,17 @@ interface ContestHistoryProps {
   contestPrize: ContestPrize
 }
 
-export const getServerSideProps = withSession<ContestHistoryProps>(
-  async (_, context) => {
+export const getServerSideProps = withQuery<ContestHistoryProps>(
+  async ({ context, query }) => {
     const contestId = context.query.contestId as string
     if (Number.isNaN(parseInt(contestId))) {
       return { notFound: true }
     }
     const [getContestScoreboard, getContestPrize] = await Promise.all([
-      contestQuery.getContestScoreboard.query({
+      query.contest.getContestScoreboard.query({
         params: { contestId: contestId },
       }),
-      contestQuery.getContestPrize.query({
+      query.contest.getContestPrize.query({
         params: { contestId: contestId },
       }),
     ])

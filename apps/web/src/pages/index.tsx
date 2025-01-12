@@ -5,10 +5,10 @@ import NextLink from 'next/link'
 import { Button } from '@otog/ui/button'
 
 import ComputerImage from '../../public/computer.svg'
-import { withSession } from '../api/with-session'
+import { withSession } from '../api/server'
 import { environment } from '../env'
 
-export const getServerSideProps = withSession(async (session) => {
+export const getServerSideProps = withSession(async ({ session }) => {
   if (environment.OFFLINE_MODE) {
     return {
       redirect: {

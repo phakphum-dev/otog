@@ -13,6 +13,8 @@ import { Input } from '@otog/ui/input'
 import Logo from '../../public/logo512.png'
 import { authQuery } from '../api/query'
 
+export { getServerSideProps } from '../api/server'
+
 export default function RegisterPage() {
   const form = useForm<RegisterBody>()
   const router = useRouter()

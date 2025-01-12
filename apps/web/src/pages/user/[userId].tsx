@@ -4,8 +4,8 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { UserProfile } from '@otog/contract'
 
-import { submissionKey, submissionQuery, userQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { submissionKey, submissionQuery } from '../../api/query'
+import { withQuery } from '../../api/server'
 import { AvatarUpload } from '../../components/avatar-upload'
 import { SubmissionTable } from '../../components/submission-table'
 import { UserAvatar } from '../../components/user-avatar'
@@ -15,13 +15,13 @@ interface ProfilePageProps {
   userProfile: UserProfile
 }
 
-export const getServerSideProps = withSession<ProfilePageProps>(
-  async (_session, context) => {
+export const getServerSideProps = withQuery<ProfilePageProps>(
+  async ({ context, query }) => {
     const userId = Number.parseInt(context.query?.userId as string)
     if (!Number.isInteger(userId)) {
       return { notFound: true }
     }
-    const userProfile = await userQuery.getUserProfile.query({
+    const userProfile = await query.user.getUserProfile.query({
       params: { userId: userId.toString() },
     })
     if (userProfile.status === 404) {

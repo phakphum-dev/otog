@@ -17,3 +17,5 @@ export default function HomePage() {
     </main>
   )
 }
+
+export { getServerSideProps } from '../../api/server'

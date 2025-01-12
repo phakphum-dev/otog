@@ -16,6 +16,8 @@ import { contestKey } from '../../api/query'
 import { TableComponent } from '../../components/table-component'
 import { toThaiDuration } from '../../utils/time'
 
+export { getServerSideProps } from '../../api/server'
+
 export default function ContestHistoryPage() {
   return (
     <main

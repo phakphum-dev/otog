@@ -4,23 +4,22 @@ import Head from 'next/head'
 import { SubmissionWithSourceCodeSchema } from '@otog/contract'
 import { Link } from '@otog/ui/link'
 
-import { submissionQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { withQuery } from '../../api/server'
 import { SubmissionDetail } from '../../components/submission-dialog'
 
 interface SubmissionPageProps {
   submission: SubmissionWithSourceCodeSchema
 }
 
-export const getServerSideProps = withSession<SubmissionPageProps>(
-  async (_session, context) => {
+export const getServerSideProps = withQuery<SubmissionPageProps>(
+  async ({ context, query }) => {
     const submissionId = Number.parseInt(context.query?.submissionId as string)
     if (!Number.isInteger(submissionId)) {
       return { notFound: true }
     }
 
     const submissionResult =
-      await submissionQuery.getSubmissionWithSourceCode.query({
+      await query.submission.getSubmissionWithSourceCode.query({
         params: { submissionId: submissionId.toString() },
       })
     if (submissionResult.status === 404) {

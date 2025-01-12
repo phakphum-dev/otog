@@ -7,7 +7,7 @@ import { SubmissionSchema } from '@otog/contract'
 import { Link } from '@otog/ui/link'
 
 import { submissionKey, submissionQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { withQuery } from '../../api/server'
 import { SubmissionStatusButton } from '../../components/submission-status'
 import { SubmissionTable } from '../../components/submission-table'
 import { SubmitCode } from '../../modules/problem/submit-code'
@@ -16,22 +16,24 @@ interface SubmissionPageProps {
   latestSubmission: SubmissionSchema | null
 }
 
-export const getServerSideProps = withSession<SubmissionPageProps>(async () => {
-  const getLatestSubmissionByUserId =
-    await submissionQuery.getLatestSubmissionByUserId.query()
-  if (getLatestSubmissionByUserId.status !== 200) {
+export const getServerSideProps = withQuery<SubmissionPageProps>(
+  async ({ query }) => {
+    const getLatestSubmissionByUserId =
+      await query.submission.getLatestSubmissionByUserId.query()
+    if (getLatestSubmissionByUserId.status !== 200) {
+      return {
+        props: {
+          latestSubmission: null,
+        },
+      }
+    }
     return {
       props: {
-        latestSubmission: null,
+        latestSubmission: getLatestSubmissionByUserId.body.submission,
       },
     }
   }
-  return {
-    props: {
-      latestSubmission: getLatestSubmissionByUserId.body.submission,
-    },
-  }
-})
+)
 
 export default function SubmissionPage(props: SubmissionPageProps) {
   return (

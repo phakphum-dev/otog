@@ -28,8 +28,8 @@ import {
   SelectValue,
 } from '@otog/ui/select'
 
-import { problemQuery, submissionQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { submissionQuery } from '../../api/query'
+import { withQuery } from '../../api/server'
 import { MonacoEditor } from '../../components/monaco-editor'
 import { Language, LanguageName } from '../../enums'
 import { SubmitCode } from '../../modules/problem/submit-code'
@@ -39,14 +39,14 @@ interface WriteSolutionPageProps {
   problem: Problem
 }
 
-export const getServerSideProps = withSession<WriteSolutionPageProps>(
-  async (_session, context) => {
+export const getServerSideProps = withQuery<WriteSolutionPageProps>(
+  async ({ context, query }) => {
     const problemId = Number.parseInt(context.query.problemId as string)
     const submissionId = Number.parseInt(context.params?.submissionId as string)
     if (!Number.isInteger(problemId)) {
       return { notFound: true }
     }
-    const problemResult = await problemQuery.getProblem.query({
+    const problemResult = await query.problem.getProblem.query({
       params: { problemId: problemId.toString() },
     })
     if (problemResult.status === 404) {
@@ -57,7 +57,7 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
     }
     if (Number.isInteger(submissionId)) {
       const submissionResult =
-        await submissionQuery.getSubmissionWithSourceCode.query({
+        await query.submission.getSubmissionWithSourceCode.query({
           params: { submissionId: submissionId.toString() },
         })
       if (submissionResult.status === 404) {
@@ -74,7 +74,7 @@ export const getServerSideProps = withSession<WriteSolutionPageProps>(
       }
     }
     const submissionResult =
-      await submissionQuery.getLatestSubmissionByProblemId.query({
+      await query.submission.getLatestSubmissionByProblemId.query({
         params: { problemId: problemId.toString() },
       })
     if (submissionResult.status === 404) {

@@ -15,11 +15,11 @@ import { Form, FormField, FormItem, FormLabel } from '@otog/ui/form'
 import { Input } from '@otog/ui/input'
 
 import Logo from '../../public/logo512.png'
-import { withSession } from '../api/with-session'
+import { withSession } from '../api/server'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
 
-export const getServerSideProps = withSession(async (session) => {
+export const getServerSideProps = withSession(async ({ session }) => {
   if (session) {
     return {
       redirect: {

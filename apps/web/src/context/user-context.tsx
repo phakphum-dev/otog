@@ -5,7 +5,7 @@ import { Session, User } from 'next-auth'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 
-import { removeAccessToken, useHydrateSession } from '../api'
+import { removeAccessToken, useSyncAccessToken } from '../api/auth'
 
 export interface UserContextValue {
   logout: () => void
@@ -22,11 +22,9 @@ export interface UserProviderProps {
 const UserContext = createContext<UserContextValue>({} as UserContextValue)
 export const useUserContext = () => useContext(UserContext)
 export const UserContextProvider = (props: UserProviderProps) => {
-  useHydrateSession(props.session)
-
+  useSyncAccessToken()
   const { data: session } = useSession()
   const user = session?.user ?? null
-
   const isAuthenticated = !!user
   const isAdmin = user?.role === 'admin'
 

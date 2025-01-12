@@ -8,8 +8,8 @@ import NextLink from 'next/link'
 import { CurrentContest } from '@otog/contract'
 import { Button } from '@otog/ui/button'
 
-import { appKey, appQuery, contestKey, contestQuery } from '../../api/query'
-import { withSession } from '../../api/with-session'
+import { appKey, contestKey } from '../../api/query'
+import { withQuery } from '../../api/server'
 import { environment } from '../../env'
 import { AnnouncementCarousel } from '../../modules/announcement'
 import { TaskCard } from '../../modules/contest/task-card'
@@ -22,22 +22,24 @@ interface ContestPageProps {
   serverTime: string
 }
 
-export const getServerSideProps = withSession<ContestPageProps>(async () => {
-  const getCurrentContest = await contestQuery.getCurrentContest.query()
-  const getTime = await appQuery.time.query()
-  if (getCurrentContest.status !== 200) {
-    throw getCurrentContest
+export const getServerSideProps = withQuery<ContestPageProps>(
+  async ({ query }) => {
+    const getCurrentContest = await query.contest.getCurrentContest.query()
+    const getTime = await query.app.time.query()
+    if (getCurrentContest.status !== 200) {
+      throw getCurrentContest
+    }
+    if (getTime.status !== 200) {
+      throw getTime
+    }
+    return {
+      props: {
+        currentContest: getCurrentContest.body.currentContest,
+        serverTime: getTime.body,
+      },
+    }
   }
-  if (getTime.status !== 200) {
-    throw getTime
-  }
-  return {
-    props: {
-      currentContest: getCurrentContest.body.currentContest,
-      serverTime: getTime.body,
-    },
-  }
-})
+)
 
 export default function ContestPage(props: ContestPageProps) {
   const currentContestQuery = useQuery({
