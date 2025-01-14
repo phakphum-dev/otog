@@ -24,6 +24,7 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
     const { user, className, size = 'small' } = props
     const getAvatarUrl = useQuery({
       ...avatarKey.getUrl({ userId: user.id, size }),
+      enabled: false, // TODO: enabled should be true, implement picture in session instead
     })
 
     const { resolvedTheme } = useTheme()

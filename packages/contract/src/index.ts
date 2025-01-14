@@ -136,6 +136,7 @@ const SubmissionSchema = SubmissionModel.pick({
   language: true,
   creationDate: true,
   public: true,
+  userId: true,
 })
   .extend({
     problem: ProblemModel.pick({
@@ -493,6 +494,7 @@ const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
 const LatestSubmissionModel = SubmissionModel.pick({
   id: true,
   status: true,
+  userId: true,
 })
 export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
   passedCount: z.number(),

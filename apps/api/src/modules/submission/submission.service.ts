@@ -19,6 +19,7 @@ export const WITHOUT_SOURCECODE = {
   language: true,
   creationDate: true,
   public: true,
+  userId: true,
   problem: {
     select: { id: true, name: true, timeLimit: true, memoryLimit: true },
   },
