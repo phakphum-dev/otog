@@ -23,7 +23,7 @@
     "@nestjs/websockets": "^10.3.3",
     "@otog/contract": "workspace:*",
     "@otog/database": "workspace:*",
-    "@softnetics/dev-server": "^0.0.1",
+    "@softnetics/dev-server": "^0.0.2",
     "@ts-rest/nest": "^3.45.2",
     "@ts-rest/open-api": "^3.45.2",
     "@types/passport-jwt": "^3.0.3",

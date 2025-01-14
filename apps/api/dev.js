@@ -5,6 +5,6 @@ build({
   watch: ['./src'],
   onSuccess: tsupDevServer({
     command:
-      'exec node --env-file=.env.dev --env-file=.env --enable-source-maps dist/index.js',
+      'node --env-file=.env.dev --env-file=.env --enable-source-maps dist/index.js',
   }),
 })
