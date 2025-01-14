@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "dev": "tsup --watch --onSuccess 'NODE_ENV=development node --env-file=.env.dev --env-file=.env --enable-source-maps dist/index.js'",
+    "dev": "node dev.js",
     "build": "tsup",
     "start": "node --enable-source-maps --env-file=.env dist/index.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -23,6 +23,7 @@
     "@nestjs/websockets": "^10.3.3",
     "@otog/contract": "workspace:*",
     "@otog/database": "workspace:*",
+    "@softnetics/dev-server": "^0.0.1",
     "@ts-rest/nest": "^3.45.2",
     "@ts-rest/open-api": "^3.45.2",
     "@types/passport-jwt": "^3.0.3",
