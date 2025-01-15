@@ -98,6 +98,7 @@ model Submission {
   result       String           @default("WAITING") @db.VarChar(255)
   score        Int?
   timeUsed     Int?
+  memUsed      Int?
   status       SubmissionStatus
   errmsg       String?
   contestId    Int?
@@ -108,6 +109,7 @@ model Submission {
   public       Boolean          @default(false)
   problem      Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
   user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullResult   Json?
 
   @@map("submission")
 }

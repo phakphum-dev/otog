@@ -59,8 +59,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/database
       '@softnetics/dev-server':
-        specifier: ^0.0.1
-        version: 0.0.1
+        specifier: ^0.0.2
+        version: 0.0.2
       '@ts-rest/nest':
         specifier: ^3.45.2
         version: 3.45.2(@nestjs/common@10.3.8)(@nestjs/core@10.3.8)(rxjs@7.8.1)(zod@3.22.5)
@@ -5177,8 +5177,8 @@ packages:
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
     dev: false
 
-  /@softnetics/dev-server@0.0.1:
-    resolution: {integrity: sha512-et/NtrNE8pv1vmTpZQ8iDi9g4qGoqNzH6yj8lSbTvz3N7kWUUYl4FUHwKqCbf1I954A5IuHvHE0GlRR5nR5ryQ==}
+  /@softnetics/dev-server@0.0.2:
+    resolution: {integrity: sha512-BXdP4m5g94pQiopx0poI/3ALT8MNoM86GeAkPXOROQMIIReSy0GEmKAAFYaDIkrA11zZDtGVo0MHnGAvBb9ZUg==}
     dependencies:
       chokidar: 3.6.0
       dotenv: 16.4.7
