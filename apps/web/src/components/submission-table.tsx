@@ -126,7 +126,7 @@ const columns = [
           }
           return (
             <code className="font-mono line-clamp-3 text-pretty">
-              {submission.result}
+              {submission.score ?? 0}/{submission.problem.score}
             </code>
           )
         }}
@@ -138,12 +138,28 @@ const columns = [
     },
   }),
   columnHelper.accessor('timeUsed', {
-    header: 'เวลารวม (วินาที)',
+    header: 'เวลาที่ใช้ (วินาที)',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
           return ((submission.timeUsed ?? 0) / 1000).toFixed(3)
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
+    },
+  }),
+  columnHelper.accessor('memUsed', {
+    header: 'ความจำที่ใช้ (kB)',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return submission.memUsed ? submission.memUsed.toString() : '-'
         }}
       />
     ),

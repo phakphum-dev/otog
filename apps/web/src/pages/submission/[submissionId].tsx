@@ -1,14 +1,14 @@
 import { CodeBracketIcon } from '@heroicons/react/24/solid'
 import Head from 'next/head'
 
-import { SubmissionWithSourceCodeSchema } from '@otog/contract'
+import { SubmissionDetailSchema } from '@otog/contract'
 import { Link } from '@otog/ui/link'
 
 import { withQuery } from '../../api/server'
 import { SubmissionDetail } from '../../components/submission-dialog'
 
 interface SubmissionPageProps {
-  submission: SubmissionWithSourceCodeSchema
+  submission: SubmissionDetailSchema
 }
 
 export const getServerSideProps = withQuery<SubmissionPageProps>(

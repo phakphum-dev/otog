@@ -20,8 +20,15 @@ export const WITHOUT_SOURCECODE = {
   creationDate: true,
   public: true,
   userId: true,
+  memUsed: true,
   problem: {
-    select: { id: true, name: true, timeLimit: true, memoryLimit: true },
+    select: {
+      id: true,
+      name: true,
+      timeLimit: true,
+      memoryLimit: true,
+      score: true,
+    },
   },
   user: { select: WITHOUT_PASSWORD },
 } as const
@@ -29,6 +36,7 @@ export const WITHOUT_SOURCECODE = {
 const WITH_SOURCECODE = {
   ...WITHOUT_SOURCECODE,
   sourceCode: true,
+  fullResult: true,
 }
 
 @Injectable()

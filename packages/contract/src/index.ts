@@ -137,6 +137,7 @@ const SubmissionSchema = SubmissionModel.pick({
   creationDate: true,
   public: true,
   userId: true,
+  memUsed: true,
 })
   .extend({
     problem: ProblemModel.pick({
@@ -144,19 +145,18 @@ const SubmissionSchema = SubmissionModel.pick({
       name: true,
       memoryLimit: true,
       timeLimit: true,
-    }).nullable(),
+      score: true,
+    }),
   })
   .extend({
-    user: UserWithourPasswordSchema.nullable(),
+    user: UserWithourPasswordSchema,
   })
 export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
-export const SubmissionWithSourceCodeSchema = SubmissionSchema.merge(
-  SubmissionModel.pick({ sourceCode: true })
+export const SubmissionDetailSchema = SubmissionSchema.merge(
+  SubmissionModel.pick({ sourceCode: true, fullResult: true })
 )
-export type SubmissionWithSourceCodeSchema = z.infer<
-  typeof SubmissionWithSourceCodeSchema
->
+export type SubmissionDetailSchema = z.infer<typeof SubmissionDetailSchema>
 
 const FileSchema = z.instanceof(File)
 type FileSchema = z.infer<typeof FileSchema>
@@ -186,7 +186,7 @@ export const submissionRouter = contract.router(
       path: '/problem/:problemId/latest',
       responses: {
         200: z.object({
-          submission: SubmissionWithSourceCodeSchema.nullable(),
+          submission: SubmissionDetailSchema.nullable(),
         }),
       },
       summary: 'Get latest submission for a problem',
@@ -210,7 +210,7 @@ export const submissionRouter = contract.router(
       path: '/latest',
       responses: {
         200: z.object({
-          submission: SubmissionWithSourceCodeSchema.nullable(),
+          submission: SubmissionDetailSchema.nullable(),
         }),
       },
       summary: 'Get latest submission for a user',
@@ -238,7 +238,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/:submissionId/code',
       responses: {
-        200: SubmissionWithSourceCodeSchema,
+        200: SubmissionDetailSchema,
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },

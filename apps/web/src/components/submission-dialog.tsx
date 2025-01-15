@@ -8,19 +8,34 @@ import {
   CodeBracketIcon,
 } from '@heroicons/react/24/solid'
 import { useQuery } from '@tanstack/react-query'
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import dayjs from 'dayjs'
+import { Sumana } from 'next/font/google'
 import NextLink from 'next/link'
+import { z } from 'zod'
 
-import { SubmissionWithSourceCodeSchema } from '@otog/contract'
+import { SubmissionDetailSchema } from '@otog/contract'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@otog/ui/accordion'
 import { Button } from '@otog/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
+import { Progress } from '@otog/ui/progress'
 import { Spinner } from '@otog/ui/spinner'
 
 import { submissionKey } from '../api/query'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
 import { CodeHighlight } from './code-highlight'
+import { TableComponent } from './table-component'
 import { UserAvatar } from './user-avatar'
 
 export const SubmissionDialog = ({
@@ -75,40 +90,71 @@ export const SubmissionDialog = ({
   )
 }
 
+const VerdictSchema = z.object({
+  status: z.string(),
+  percent: z.number(),
+  timeUse: z.number(),
+  memUse: z.number(),
+})
+type VerdictSchema = z.infer<typeof VerdictSchema>
+
+const FullResultSchema = z.array(
+  z.object({
+    score: z.number(),
+    fullScore: z.number(),
+    verdicts: z.array(VerdictSchema),
+  })
+)
+
 export const SubmissionDetail = ({
   submission,
 }: {
-  submission: SubmissionWithSourceCodeSchema
+  submission: SubmissionDetailSchema
 }) => {
   const { hasCopied, onCopy } = useClipboard()
+
+  const fullResultResult = FullResultSchema.safeParse(submission.fullResult)
+  const fullResult = fullResultResult.success ? fullResultResult.data : []
   return (
     <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
-      <div className="flex justify-between gap-2">
-        <code className="text-foreground">{submission.result}</code>
+      <div className="flex justify-between gap-2 items-center">
+        <div className="inline-flex gap-2 items-center">
+          <Progress
+            value={((submission.score ?? 0) * 100) / submission.problem.score}
+            className="w-28"
+          />
+          <p>
+            {submission.score ?? 0}/{submission.problem.score} คะแนน
+          </p>
+        </div>
         <p className="whitespace-nowrap">
-          เวลารวม {(submission.timeUsed ?? 0) / 1000} วินาที
+          เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
         </p>
       </div>
       <div className="flex justify-between gap-2">
-        <p>{submission.score ?? 0} คะแนน</p>
-        <p>ภาษา {LanguageName[submission.language as Language]}</p>
-      </div>
-
-      <div className="flex justify-between">
-        <Link
-          asChild
-          variant="hidden"
-          className="inline-flex gap-2 items-center"
-        >
-          <NextLink href={`/user/${submission.user!.id}`}>
-            <UserAvatar user={submission.user!} />
-            {submission.user!.showName}
-          </NextLink>
-        </Link>
         <p>
           ส่งเมื่อ{' '}
           {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
         </p>
+        <p className="whitespace-nowrap">
+          ความจำที่ใช้ {submission.memUsed ?? 0} kB
+        </p>
+      </div>
+
+      <div className="flex justify-between">
+        <div className="inline-flex gap-2 items-center">
+          <Link
+            asChild
+            variant="hidden"
+            className="inline-flex gap-2 items-center"
+          >
+            <NextLink href={`/user/${submission.user.id}`}>
+              <UserAvatar user={submission.user} />
+              {submission.user.showName}
+            </NextLink>
+          </Link>
+        </div>
+        <p>ภาษา {LanguageName[submission.language as Language]}</p>
       </div>
       <div className="relative">
         <CodeHighlight
@@ -126,12 +172,74 @@ export const SubmissionDetail = ({
             {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
           </Button>
           <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
-            <NextLink href={`/problem/${submission.problem!.id}`}>
+            <NextLink href={`/problem/${submission.problem.id}`}>
               <PencilSquareIcon />
             </NextLink>
           </Button>
         </div>
       </div>
+      <div className="relative">
+        {fullResult.map((result, index) => (
+          <Accordion type="multiple" key={index.toString()}>
+            <AccordionItem value={index.toString()}>
+              <AccordionTrigger>
+                <div className="flex gap-2 items-center">
+                  <p>ปัญหาย่อยที่ {index + 1}</p>
+                  <p>
+                    {result.score}/{result.fullScore}
+                  </p>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <SubtaskTable verdicts={result.verdicts} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        ))}
+      </div>
     </div>
   )
 }
+
+const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictSchema> }) => {
+  const table = useReactTable({
+    data: verdicts,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+  return (
+    <TableComponent table={table} classNames={{ head: 'whitespace-nowrap' }} />
+  )
+}
+
+const columnHelper = createColumnHelper<VerdictSchema>()
+const columns = [
+  columnHelper.display({
+    header: '#',
+    cell: ({ row }) => row.index + 1,
+    enableSorting: false,
+  }),
+  columnHelper.accessor('status', {
+    header: 'ผลตรวจ',
+    enableSorting: false,
+    meta: {
+      headClassName: 'w-full',
+    },
+  }),
+  columnHelper.accessor('timeUse', {
+    header: 'เวลาที่ใช้ (วินาที)',
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-right',
+      cellClassName: 'text-right',
+    },
+  }),
+  columnHelper.accessor('memUse', {
+    header: 'ความจำที่ใช้ (kB)',
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-right',
+      cellClassName: 'text-right',
+    },
+  }),
+]
