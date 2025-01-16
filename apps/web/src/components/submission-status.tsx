@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   CheckCircleIcon,
   ClockIcon,
+  ExclamationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 
@@ -17,6 +18,8 @@ export const SubmissionStatusLabel: Record<SubmissionStatus, string> = {
   grading: 'กำลังตรวจ',
   waiting: 'กำลังรอตรวจ',
   reject: 'ไม่ผ่าน',
+  compileError: 'Compilation Error',
+  judgeError: 'Judge Error',
 }
 
 export function SubmissionStatusIcon(props: { status?: SubmissionStatus }) {
@@ -28,6 +31,9 @@ export function SubmissionStatusIcon(props: { status?: SubmissionStatus }) {
       return <ClockIcon className="text-muted-foreground" />
     case 'reject':
       return <XCircleIcon className="text-destructive" />
+    case 'compileError':
+    case 'judgeError':
+      return <ExclamationCircleIcon className="text-primary" />
     default:
       return (
         <div className="size-[15px] border-muted-foreground border rounded-full" />

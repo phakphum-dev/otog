@@ -162,6 +162,8 @@ enum SubmissionStatus {
   grading
   accept
   reject
+  compileError
+  judgeError
 
   @@map("enum_submission_status")
 }

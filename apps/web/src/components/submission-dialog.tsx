@@ -119,15 +119,28 @@ export const SubmissionDetail = ({
   return (
     <div className="flex flex-col gap-2 text-sm min-w-0">
       <div className="flex justify-between gap-2 items-center">
-        <div className="inline-flex gap-2 items-center">
-          <Progress
-            value={((submission.score ?? 0) * 100) / submission.problem.score}
-            className="w-28"
-          />
-          <p>
-            {submission.score ?? 0}/{submission.problem.score} คะแนน
-          </p>
-        </div>
+        {(() => {
+          switch (submission.status) {
+            case 'accept':
+            case 'reject':
+              return (
+                <div className="inline-flex gap-2 items-center">
+                  <Progress
+                    value={
+                      ((submission.score ?? 0) * 100) / submission.problem.score
+                    }
+                    className="w-28"
+                  />
+                  <p>
+                    {submission.score ?? 0}/{submission.problem.score} คะแนน
+                  </p>
+                </div>
+              )
+            default:
+              // TODO: make this a button to show error message.
+              return <p>{submission.result}</p>
+          }
+        })()}
         <p className="whitespace-nowrap">
           เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
         </p>
@@ -258,7 +271,7 @@ const columns = [
   }),
   columnHelper.accessor('timeUse', {
     header: 'เวลาที่ใช้ (วินาที)',
-    cell: ({ row: { original } }) => (original.timeUse).toFixed(3),
+    cell: ({ row: { original } }) => original.timeUse.toFixed(3),
     enableSorting: false,
     meta: {
       headClassName: 'text-end',
