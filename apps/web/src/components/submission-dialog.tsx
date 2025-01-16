@@ -31,6 +31,7 @@ import { Link } from '@otog/ui/link'
 import { Progress } from '@otog/ui/progress'
 import { Spinner } from '@otog/ui/spinner'
 
+import { output } from '../../next.config'
 import { submissionKey } from '../api/query'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
@@ -116,7 +117,7 @@ export const SubmissionDetail = ({
   const fullResultResult = FullResultSchema.safeParse(submission.fullResult)
   const fullResult = fullResultResult.success ? fullResultResult.data : []
   return (
-    <div className="flex flex-col gap-2 text-sm min-w-0 text-muted-foreground">
+    <div className="flex flex-col gap-2 text-sm min-w-0">
       <div className="flex justify-between gap-2 items-center">
         <div className="inline-flex gap-2 items-center">
           <Progress
@@ -137,7 +138,7 @@ export const SubmissionDetail = ({
           {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
         </p>
         <p className="whitespace-nowrap">
-          ความจำที่ใช้ {submission.memUsed ?? 0} kB
+          ความจำที่ใช้ {submission.memUsed ?? '-'} kB
         </p>
       </div>
 
@@ -223,23 +224,53 @@ const columns = [
     header: 'ผลตรวจ',
     enableSorting: false,
     meta: {
+      cellClassName: 'whitespace-nowrap',
+    },
+  }),
+  columnHelper.accessor('status', {
+    header: 'รายละเอียด',
+    cell: ({ row: { original } }) => {
+      switch (original.status) {
+        case 'accept':
+          return 'Output is correct'
+        case 'partial':
+          return 'Output is partially correct'
+        case 'reject':
+          return 'Output is incorrect'
+        case 'time limit exceed':
+          return 'Time limit exceeded'
+        case 'runtime error':
+          return 'Runtime error'
+        case 'skip':
+          return 'Skipped'
+        case 'problem error':
+          return 'Problem error'
+        case 'internal error':
+          return 'Internal error'
+        default:
+          return 'Unknown'
+      }
+    },
+    enableSorting: false,
+    meta: {
       headClassName: 'w-full',
     },
   }),
   columnHelper.accessor('timeUse', {
     header: 'เวลาที่ใช้ (วินาที)',
+    cell: ({ row: { original } }) => (original.timeUse).toFixed(3),
     enableSorting: false,
     meta: {
-      headClassName: 'text-right',
-      cellClassName: 'text-right',
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
     },
   }),
   columnHelper.accessor('memUse', {
     header: 'ความจำที่ใช้ (kB)',
     enableSorting: false,
     meta: {
-      headClassName: 'text-right',
-      cellClassName: 'text-right',
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
     },
   }),
 ]

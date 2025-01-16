@@ -44,7 +44,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
       <Head>
         <title>One Tambon One Grader</title>
       </Head>
-      <section className="border rounded-2xl p-6 mt-8">
+      <section className="border rounded-2xl p-6 mt-8 mb-8">
         <Link
           isExternal
           variant="hidden"

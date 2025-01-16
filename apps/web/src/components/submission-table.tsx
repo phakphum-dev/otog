@@ -125,16 +125,17 @@ const columns = [
             )
           }
           return (
-            <code className="font-mono line-clamp-3 text-pretty">
+            <div>
               {submission.score ?? 0}/{submission.problem.score}
-            </code>
+            </div>
           )
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      cellClassName: 'max-w-[200px] whitespace-pre-wrap',
+      cellClassName: 'max-w-[200px] whitespace-pre-wrap text-end tabular-nums',
+      headClassName: 'text-end',
     },
   }),
   columnHelper.accessor('timeUsed', {
@@ -153,23 +154,6 @@ const columns = [
       cellClassName: 'text-end tabular-nums',
     },
   }),
-  columnHelper.accessor('memUsed', {
-    header: 'ความจำที่ใช้ (kB)',
-    cell: ({ row: { original } }) => (
-      <InlineComponent
-        render={() => {
-          const submission = useSubmissionPolling(original)
-          return submission.memUsed ? submission.memUsed.toString() : '-'
-        }}
-      />
-    ),
-    enableSorting: false,
-    meta: {
-      headClassName: 'text-end',
-      cellClassName: 'text-end tabular-nums',
-    },
-  }),
-
   columnHelper.accessor('status', {
     header: 'สถานะ',
     cell: ({ row: { original } }) => (
