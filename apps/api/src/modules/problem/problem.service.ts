@@ -274,7 +274,7 @@ export class ProblemService {
         rating: true,
         submission: {
           select: { id: true, status: true, userId: true },
-          where: { status: SubmissionStatus.accept },
+          where: { status: SubmissionStatus.accept, problemId: args.problemId },
           orderBy: { creationDate: 'desc' },
           take: 1,
         },
