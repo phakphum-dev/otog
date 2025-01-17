@@ -14,7 +14,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import dayjs from 'dayjs'
-import { Sumana } from 'next/font/google'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
@@ -25,16 +24,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@otog/ui/accordion'
+import { Badge } from '@otog/ui/badge'
 import { Button } from '@otog/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Progress } from '@otog/ui/progress'
 import { Spinner } from '@otog/ui/spinner'
 
-import { output } from '../../next.config'
 import { submissionKey } from '../api/query'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
+import { exhaustiveGuard } from '../utils/exhaustive-guard'
 import { CodeHighlight } from './code-highlight'
 import { TableComponent } from './table-component'
 import { UserAvatar } from './user-avatar'
@@ -92,8 +92,16 @@ export const SubmissionDialog = ({
 }
 
 const VerdictSchema = z.object({
-  status: z.string(),
-  percent: z.number(),
+  status: z.enum([
+    'accept',
+    'partial',
+    'reject',
+    'time limit exceed',
+    'runtime error',
+    'skip',
+    'problem error',
+    'internal error',
+  ]),
   timeUse: z.number(),
   memUse: z.number(),
 })
@@ -119,15 +127,23 @@ export const SubmissionDetail = ({
   return (
     <div className="flex flex-col gap-2 text-sm min-w-0">
       <div className="flex justify-between gap-2 items-center">
-        <div className="inline-flex gap-2 items-center">
-          <Progress
-            value={((submission.score ?? 0) * 100) / submission.problem.score}
-            className="w-28"
-          />
-          <p>
-            {submission.score ?? 0}/{submission.problem.score} คะแนน
-          </p>
-        </div>
+        {submission.fullResult ? (
+          <div className="inline-flex gap-2 items-center">
+            <Progress
+              value={((submission.score ?? 0) * 100) / submission.problem.score}
+              className="w-28"
+            />
+            <p>
+              {submission.score ?? 0}/{submission.problem.score} คะแนน
+            </p>
+          </div>
+        ) : submission.status === 'accept' || submission.status === 'reject' ? (
+          <code className="font-mono line-clamp-3 text-pretty">
+            {submission.result}
+          </code>
+        ) : (
+          <p>{submission.result}</p>
+        )}
         <p className="whitespace-nowrap">
           เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
         </p>
@@ -158,6 +174,7 @@ export const SubmissionDetail = ({
         <p>ภาษา {LanguageName[submission.language as Language]}</p>
       </div>
       <div className="relative">
+        {/* TODO: max height and expand */}
         <CodeHighlight
           className="relative border"
           code={submission.sourceCode ?? ''}
@@ -180,9 +197,9 @@ export const SubmissionDetail = ({
         </div>
       </div>
       <div className="relative">
-        {fullResult.map((result, index) => (
-          <Accordion type="multiple" key={index.toString()}>
-            <AccordionItem value={index.toString()}>
+        <Accordion type="multiple">
+          {fullResult.map((result, index) => (
+            <AccordionItem value={'subtask-' + index.toString()}>
               <AccordionTrigger>
                 <div className="flex gap-2 items-center">
                   <p>ปัญหาย่อยที่ {index + 1}</p>
@@ -192,14 +209,25 @@ export const SubmissionDetail = ({
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <SubtaskTable verdicts={result.verdicts} />
+                <SubtaskTable verdicts={CompressVerdicts(result.verdicts)} />
               </AccordionContent>
             </AccordionItem>
-          </Accordion>
-        ))}
+          ))}
+        </Accordion>
       </div>
     </div>
   )
+}
+
+const CompressVerdicts = (verdicts: Array<VerdictSchema>) => {
+  const compressed: Array<VerdictSchema> = []
+  for (const verdict of verdicts) {
+    compressed.push(verdict)
+    if (verdict.status === 'skip') {
+      break
+    }
+  }
+  return compressed
 }
 
 const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictSchema> }) => {
@@ -222,12 +250,36 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     header: 'ผลตรวจ',
+    cell: ({ row: { original } }) => {
+      switch (original.status) {
+        case 'accept':
+          return <Badge variant="success">Accepted</Badge>
+        case 'partial':
+          return <Badge variant="warning">Partially Correct</Badge>
+        case 'reject':
+          return <Badge variant="destructive">Wrong Answer</Badge>
+        case 'time limit exceed':
+          return <Badge variant="destructive">Time Limit Exceeded</Badge>
+        case 'runtime error':
+          return <Badge variant="destructive">Runtime Error</Badge>
+        case 'skip':
+          return <Badge variant="outline">Skipped</Badge>
+        case 'problem error':
+          return <Badge variant="error">Problem Error</Badge>
+        case 'internal error':
+          return <Badge variant="error">Internal Error</Badge>
+        default:
+          return exhaustiveGuard(original.status)
+      }
+    },
     enableSorting: false,
     meta: {
+      headClassName: 'min-w-44',
       cellClassName: 'whitespace-nowrap',
     },
   }),
   columnHelper.accessor('status', {
+    id: 'message',
     header: 'รายละเอียด',
     cell: ({ row: { original } }) => {
       switch (original.status) {
@@ -248,17 +300,17 @@ const columns = [
         case 'internal error':
           return 'Internal error'
         default:
-          return 'Unknown'
+          return exhaustiveGuard(original.status)
       }
     },
     enableSorting: false,
     meta: {
-      headClassName: 'w-full',
+      headClassName: 'min-w-52 w-full',
     },
   }),
   columnHelper.accessor('timeUse', {
     header: 'เวลาที่ใช้ (วินาที)',
-    cell: ({ row: { original } }) => (original.timeUse).toFixed(3),
+    cell: ({ row: { original } }) => original.timeUse.toFixed(3),
     enableSorting: false,
     meta: {
       headClassName: 'text-end',

@@ -25,6 +25,12 @@
     --ring: colorToHsl(theme(colors.orange.400));
     --success: colorToHsl(theme(colors.green.500));
     --success-foreground: colorToHsl(theme(colors.gray.50));
+    --warning: colorToHsl(theme(colors.amber.500));
+    --warning-foreground: colorToHsl(theme(colors.gray.50));
+    --info: colorToHsl(theme(colors.sky.500));
+    --info-foreground: colorToHsl(theme(colors.gray.50));
+    --error: colorToHsl(theme(colors.purple.500));
+    --error-foreground: colorToHsl(theme(colors.gray.50));
 
     --radius: 0.75rem;
     --navbar: 64px;
@@ -52,6 +58,12 @@
     --ring: colorToHsl(theme(colors.orange.500));
     --success: colorToHsl(theme(colors.green.600));
     --success-foreground: colorToHsl(theme(colors.gray.50));
+    --warning: colorToHsl(theme(colors.amber.600));
+    --warning-foreground: colorToHsl(theme(colors.gray.50));
+    --info: colorToHsl(theme(colors.sky.600));
+    --info-foreground: colorToHsl(theme(colors.gray.50));
+    --error: colorToHsl(theme(colors.purple.600));
+    --error-foreground: colorToHsl(theme(colors.gray.50));
   }
 }
 
