@@ -177,6 +177,7 @@ export const SubmissionDetail = ({
       </div>
       <div className="relative">
         {/* TODO: max height and expand */}
+        { /* TODO: max height and expand */ }
         <CodeHighlight
           className="relative border"
           code={submission.sourceCode ?? ''}
