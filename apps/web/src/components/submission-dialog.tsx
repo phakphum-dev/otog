@@ -140,9 +140,7 @@ export const SubmissionDetail = ({
             </p>
           </div>
         ) : submission.status === 'accept' || submission.status === 'reject' ? (
-          <code className="font-mono line-clamp-3 text-pretty">
-            {submission.result}
-          </code>
+          <code className="font-mono text-pretty">{submission.result}</code>
         ) : (
           <p>{submission.result}</p>
         )}
