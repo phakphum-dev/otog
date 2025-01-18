@@ -253,15 +253,15 @@ const columns = [
     cell: ({ row: { original } }) => {
       switch (original.status) {
         case 'accept':
-          return <Badge variant="success">Accepted</Badge>
+          return <Badge variant="accept">Accepted</Badge>
         case 'partial':
           return <Badge variant="warning">Partially Correct</Badge>
         case 'reject':
-          return <Badge variant="destructive">Wrong Answer</Badge>
+          return <Badge variant="reject">Wrong Answer</Badge>
         case 'time limit exceed':
-          return <Badge variant="destructive">Time Limit Exceeded</Badge>
+          return <Badge variant="reject">Time Limit Exceeded</Badge>
         case 'runtime error':
-          return <Badge variant="destructive">Runtime Error</Badge>
+          return <Badge variant="reject">Runtime Error</Badge>
         case 'skip':
           return <Badge variant="outline">Skipped</Badge>
         case 'problem error':
