@@ -30,7 +30,6 @@ import { Badge } from '@otog/ui/badge'
 import { Button } from '@otog/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
-import { Progress } from '@otog/ui/progress'
 import { Spinner } from '@otog/ui/spinner'
 
 import { submissionKey } from '../api/query'
@@ -61,7 +60,7 @@ export const SubmissionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-3xl rounded-2xl">
+      <DialogContent className="max-w-3xl rounded-2xl self-start">
         <NextLink
           title="เปิดแท็บใหม่"
           href={`/submission/${submission?.id}`}
@@ -78,13 +77,13 @@ export const SubmissionDialog = ({
             variant="hidden"
             href={`/api/problem/${submission?.problem?.id}`}
           >
-            ข้อ {submission?.problem?.name}
+            ผลตรวจข้อ {submission?.problem?.name}
           </Link>
         </DialogTitle>
         {submission ? (
           <SubmissionDetail submission={submission} />
         ) : (
-          <div className="w-full h-48 flex justify-center align-items">
+          <div className="w-full h-48 flex justify-center items-center">
             <Spinner />
           </div>
         )}
@@ -127,78 +126,57 @@ export const SubmissionDetail = ({
   const fullResultResult = FullResultSchema.safeParse(submission.fullResult)
   const fullResult = fullResultResult.success ? fullResultResult.data : []
   return (
-    <div className="flex flex-col gap-2 text-sm min-w-0">
-      <div className="flex justify-between gap-2 items-center">
-        {submission.fullResult ? (
-          <div className="inline-flex gap-2 items-center">
-            <Progress
-              value={((submission.score ?? 0) * 100) / submission.problem.score}
-              className="w-28"
-            />
-            <p>
-              {submission.score ?? 0} / {submission.problem.score} คะแนน
-            </p>
-          </div>
-        ) : submission.status === 'accept' || submission.status === 'reject' ? (
-          <code className="font-mono text-pretty">{submission.result}</code>
+    <div className="text-sm min-w-0">
+      <div className="flex flex-col gap-2">
+        {submission.fullResult !== null ? null : submission.status ===
+            'accept' || submission.status === 'reject' ? (
+          <code className="font-mono text-pretty break-all">
+            {submission.result}
+          </code>
         ) : (
           <p>{submission.result}</p>
         )}
-        <p className="whitespace-nowrap">
-          เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
-        </p>
-      </div>
-      <div className="flex justify-between gap-2">
-        <p>
-          ส่งเมื่อ{' '}
-          {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
-        </p>
-        <p className="whitespace-nowrap">
-          ความจำที่ใช้ {submission.memUsed ?? '-'} kB
-        </p>
+        <div className="flex justify-between gap-2 items-center">
+          {
+            <div className="inline-flex gap-2 items-center">
+              <p>
+                {submission.score ?? 0} / {submission.problem.score} คะแนน
+              </p>
+            </div>
+          }
+          <p className="whitespace-nowrap">
+            เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
+          </p>
+        </div>
+        <div className="flex justify-between gap-2">
+          <p>
+            ส่งเมื่อ{' '}
+            {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
+          </p>
+          <p className="whitespace-nowrap">
+            ความจำที่ใช้ {submission.memUsed ?? '-'} kB
+          </p>
+        </div>
+
+        <div className="flex justify-between">
+          <div className="inline-flex gap-2 items-center">
+            <Link
+              asChild
+              variant="hidden"
+              className="inline-flex gap-2 items-center"
+            >
+              <NextLink href={`/user/${submission.user.id}`}>
+                <UserAvatar user={submission.user} />
+                {submission.user.showName}
+              </NextLink>
+            </Link>
+          </div>
+          <p>ภาษา {LanguageName[submission.language as Language]}</p>
+        </div>
       </div>
 
-      <div className="flex justify-between">
-        <div className="inline-flex gap-2 items-center">
-          <Link
-            asChild
-            variant="hidden"
-            className="inline-flex gap-2 items-center"
-          >
-            <NextLink href={`/user/${submission.user.id}`}>
-              <UserAvatar user={submission.user} />
-              {submission.user.showName}
-            </NextLink>
-          </Link>
-        </div>
-        <p>ภาษา {LanguageName[submission.language as Language]}</p>
-      </div>
-      <div className="relative">
-        {/* TODO: max height and expand */}
-        {/* TODO: max height and expand */}
-        <CodeHighlight
-          className="relative border"
-          code={submission.sourceCode ?? ''}
-          language={submission.language ?? 'cpp'}
-        />
-        <div className="flex gap-1 absolute top-1 right-1">
-          <Button
-            size="icon"
-            title="คัดลอก"
-            variant="ghost"
-            onClick={() => onCopy(submission.sourceCode ?? '')}
-          >
-            {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
-          </Button>
-          <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
-            <NextLink href={`/problem/${submission.problem.id}`}>
-              <PencilSquareIcon />
-            </NextLink>
-          </Button>
-        </div>
-      </div>
-      <div className="relative">
-        <Accordion type="multiple">
+      {fullResult.length > 0 && (
+        <Accordion type="multiple" className="mt-2">
           {fullResult.map((result, index) => {
             function getBadgeVariant() {
               if (result.score === result.fullScore) return 'accept'
@@ -222,6 +200,29 @@ export const SubmissionDetail = ({
             )
           })}
         </Accordion>
+      )}
+
+      <div className="relative mt-4">
+        <CodeHighlight
+          className="relative border"
+          code={submission.sourceCode ?? ''}
+          language={submission.language ?? 'cpp'}
+        />
+        <div className="flex gap-1 absolute top-1 right-1">
+          <Button
+            size="icon"
+            title="คัดลอก"
+            variant="ghost"
+            onClick={() => onCopy(submission.sourceCode ?? '')}
+          >
+            {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
+          </Button>
+          <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
+            <NextLink href={`/problem/${submission.problem.id}`}>
+              <PencilSquareIcon />
+            </NextLink>
+          </Button>
+        </div>
       </div>
     </div>
   )

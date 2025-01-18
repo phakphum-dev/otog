@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -15,6 +16,7 @@ import { SubmissionStatus } from '@otog/database'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
 import { TableCell, TableFooter, TableRow } from '@otog/ui/table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@otog/ui/tooltip'
 
 import { submissionKey } from '../api/query'
 import { InlineComponent } from './inline-component'
@@ -139,7 +141,17 @@ const columns = [
     },
   }),
   columnHelper.accessor('timeUsed', {
-    header: 'เวลาที่ใช้ (วินาที)',
+    header: () => (
+      <span className="inline-flex gap-2">
+        เวลาที่ใช้ (วินาที)
+        <Tooltip>
+          <TooltipTrigger>
+            <InformationCircleIcon className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent>เวลารวมถูกปรับเป็นเวลาสูงสุดที่ใช้</TooltipContent>
+        </Tooltip>
+      </span>
+    ),
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
