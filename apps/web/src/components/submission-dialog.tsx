@@ -136,7 +136,7 @@ export const SubmissionDetail = ({
               className="w-28"
             />
             <p>
-              {submission.score ?? 0}/{submission.problem.score} คะแนน
+              {submission.score ?? 0} / {submission.problem.score} คะแนน
             </p>
           </div>
         ) : submission.status === 'accept' || submission.status === 'reject' ? (
@@ -175,7 +175,7 @@ export const SubmissionDetail = ({
       </div>
       <div className="relative">
         {/* TODO: max height and expand */}
-        { /* TODO: max height and expand */ }
+        {/* TODO: max height and expand */}
         <CodeHighlight
           className="relative border"
           code={submission.sourceCode ?? ''}
@@ -199,21 +199,28 @@ export const SubmissionDetail = ({
       </div>
       <div className="relative">
         <Accordion type="multiple">
-          {fullResult.map((result, index) => (
-            <AccordionItem value={'subtask-' + index.toString()}>
-              <AccordionTrigger>
-                <div className="flex gap-2 items-center">
-                  <p>ปัญหาย่อยที่ {index + 1}</p>
-                  <p>
-                    {result.score}/{result.fullScore}
-                  </p>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <SubtaskTable verdicts={result.verdicts} />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+          {fullResult.map((result, index) => {
+            function getBadgeVariant() {
+              if (result.score === result.fullScore) return 'accept'
+              if (result.score === 0) return 'reject'
+              return 'warning'
+            }
+            return (
+              <AccordionItem value={'subtask-' + index.toString()}>
+                <AccordionTrigger>
+                  <div className="flex gap-2 justify-between items-center w-full ml-2">
+                    <p>ปัญหาย่อยที่ {index + 1}</p>
+                    <Badge variant={getBadgeVariant()}>
+                      {result.score} / {result.fullScore}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <SubtaskTable verdicts={result.verdicts} />
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
         </Accordion>
       </div>
     </div>

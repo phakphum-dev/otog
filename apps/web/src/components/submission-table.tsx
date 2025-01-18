@@ -126,7 +126,7 @@ const columns = [
           }
           return (
             <div>
-              {submission.score ?? 0}/{submission.problem.score}
+              {submission.score ?? 0} / {submission.problem.score}
             </div>
           )
         }}
