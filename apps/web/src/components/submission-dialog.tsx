@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import {
   CheckIcon,
   DocumentDuplicateIcon,
@@ -209,7 +211,7 @@ export const SubmissionDetail = ({
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <SubtaskTable verdicts={CompressVerdicts(result.verdicts)} />
+                <SubtaskTable verdicts={result.verdicts} />
               </AccordionContent>
             </AccordionItem>
           ))}
@@ -219,20 +221,19 @@ export const SubmissionDetail = ({
   )
 }
 
-const CompressVerdicts = (verdicts: Array<VerdictSchema>) => {
-  const compressed: Array<VerdictSchema> = []
-  for (const verdict of verdicts) {
-    compressed.push(verdict)
-    if (verdict.status === 'skip') {
-      break
-    }
-  }
-  return compressed
-}
-
 const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictSchema> }) => {
+  const data = useMemo(() => {
+    const compressed: Array<VerdictSchema> = []
+    for (const verdict of verdicts) {
+      compressed.push(verdict)
+      if (verdict.status === 'skip') {
+        break
+      }
+    }
+    return compressed
+  }, [])
   const table = useReactTable({
-    data: verdicts,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
