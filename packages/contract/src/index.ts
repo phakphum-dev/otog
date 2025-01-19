@@ -161,6 +161,12 @@ export type SubmissionWithSourceCodeSchema = z.infer<
 const FileSchema = z.instanceof(File)
 type FileSchema = z.infer<typeof FileSchema>
 
+const GetSubmissionsQuery = PaginationQuerySchema.extend({
+  userId: z.number().optional(),
+  problemSearch: z.string().optional(),
+})
+export type GetSubmissionsQuery = z.infer<typeof GetSubmissionsQuery>
+
 export const submissionRouter = contract.router(
   {
     getSubmissions: {
@@ -169,7 +175,7 @@ export const submissionRouter = contract.router(
       responses: {
         200: z.array(SubmissionSchema),
       },
-      query: PaginationQuerySchema,
+      query: GetSubmissionsQuery,
       summary: 'Get paginated submissions',
     },
     getContestSubmissions: {
@@ -593,6 +599,17 @@ export const problemRouter = contract.router(
       },
       body: z.any(),
       summary: 'Update problem example testcases',
+    },
+    listProblem: {
+      method: 'GET',
+      path: '/list',
+      responses: {
+        200: z.array(ProblemModel.pick({ id: true, name: true })),
+      },
+      query: PaginationQuerySchema.extend({
+        search: z.string().optional(),
+      }),
+      summary: 'List problems',
     },
   },
   { pathPrefix: '/problem' }

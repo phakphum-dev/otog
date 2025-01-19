@@ -5,14 +5,12 @@ import { cva } from 'class-variance-authority'
 import { cn } from './utils'
 
 export const inputStyles = cva(
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-destructive',
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-destructive',
   {
     variants: {
       focus: {
-        visible:
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        within:
-          'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+        visible: 'focus-visible:ring-focus',
+        within: 'focus-within:ring-focus',
       },
     },
     defaultVariants: {
