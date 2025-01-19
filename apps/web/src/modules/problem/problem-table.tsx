@@ -584,7 +584,7 @@ const PassedUserDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm self-start">
         <DialogTitle>ผู้ที่ผ่านข้อ {problem.name}</DialogTitle>
         <DialogDescription>ผ่านแล้ว {problem.passedCount} คน</DialogDescription>
         {!users ? (
