@@ -29,7 +29,12 @@ import {
 } from '@otog/ui/accordion'
 import { Badge } from '@otog/ui/badge'
 import { Button } from '@otog/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
 
@@ -122,8 +127,21 @@ export const SubmissionDetail = ({
                   </div>
                 )
               case 'compileError':
-                // TODO: make this a button that shows the error message
-                return <Badge variant="error">Compile Error</Badge>
+                return (
+                  <Dialog>
+                    <DialogTrigger className="rounded-full focus-visible:ring-focus shadow">
+                      <Badge variant="error">Compile Error</Badge>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-screen-sm">
+                      <DialogTitle>Compile Error</DialogTitle>
+                      <CodeHighlight
+                        code={submission.submissionResult?.errmsg ?? ''}
+                        language="cpp"
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )
+
               case 'judgeError':
                 return <Badge variant="error">Judge Error</Badge>
               case 'accept':
@@ -138,6 +156,13 @@ export const SubmissionDetail = ({
             }
           })()}
         </div>
+        {/* handle old submission (no memUsed record) */}
+        {(submission.status === 'accept' || submission.status === 'reject') &&
+          submission.submissionResult?.memUsed === -1 && (
+            <code className="font-mono break-all">
+              {submission.submissionResult.result}
+            </code>
+          )}
         <div className="flex justify-between gap-2 items-center">
           {
             <div className="inline-flex gap-2 items-center">
