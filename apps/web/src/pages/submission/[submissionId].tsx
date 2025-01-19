@@ -48,11 +48,11 @@ export default function SubmissionPage(props: SubmissionPageProps) {
         <Link
           isExternal
           variant="hidden"
-          href={`/api/problem/${submission.problem!.id}`}
+          href={`/api/problem/${submission.problem.id}`}
           className="text-lg font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
         >
           <CodeBracketIcon className="size-6" />
-          <h1>ข้อ {submission.problem!.name}</h1>
+          <h1>ผลตรวจข้อ {submission.problem.name}</h1>
         </Link>
         <SubmissionDetail submission={submission} />
       </section>
