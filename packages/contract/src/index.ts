@@ -387,7 +387,7 @@ export type ContestScoreboard = z.infer<typeof ContestScoreboard>
 export const ContestPrize = z.object({
   firstBlood: z.array(PrizeSchema),
   fasterThanLight: z.array(PrizeSchema),
-  passedInOne: z.array(PrizeSchema),
+  // passedInOne: z.array(PrizeSchema),
   oneManSolve: z.array(PrizeSchema),
 })
 export type ContestPrize = z.infer<typeof ContestPrize>

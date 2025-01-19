@@ -35,7 +35,7 @@ export const getServerSideProps = withQuery<ContestPageProps>(
     return {
       props: {
         currentContest: getCurrentContest.body.currentContest,
-        serverTime: getTime.body.toISOString(),
+        serverTime: getTime.body.toString(),
       },
     }
   }
