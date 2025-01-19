@@ -152,7 +152,7 @@ export default function ContestHistory({
             const submission = row.submissions.find(
               (submission) => submission.problemId === contestProblem.problemId
             )
-            return submission?.score
+            return submission?.submissionResult?.score
           },
           {
             id: `problem-${contestProblem.problemId.toString()}`,
@@ -326,11 +326,11 @@ export const prizeDescription: Record<
     description: 'The first user that passed the task.',
     emoji: '💀',
   },
-  fasterThanLight: {
-    name: 'Faster Than Light',
-    description: 'The user that solved the task with fastest algorithm.',
-    emoji: '⚡️',
-  },
+  // fasterThanLight: {
+  //   name: 'Faster Than Light',
+  //   description: 'The user that solved the task with fastest algorithm.',
+  //   emoji: '⚡️',
+  // },
   // passedInOne: {
   //   name: 'Passed In One',
   //   description: 'The user that passed the task in one submission.',

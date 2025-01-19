@@ -89,8 +89,10 @@ export class ContestService {
         userId: true,
         submissionResult: {
           select: {
+            id: true,
             score: true,
             timeUsed: true,
+            memUsed: true,
           },
         },
       },
@@ -142,7 +144,7 @@ export class ContestService {
     return { contest, userContest: userContestScoreboards }
   }
 
-  // TODO: RAW
+  // TODO: fix
   async scoreboardPrizeByContestId(contestId: number) {
     await this.prisma.contest.findUnique({
       where: { id: contestId },
@@ -169,33 +171,33 @@ export class ContestService {
     })
 
     // * 2. Faster Than Light: The user that solved the task with fastest algorithm.
-    const fasterThanLightResult = await this.prisma.$queryRaw<{ id: number }[]>`
-      SELECT s.id AS id
-        FROM (
-          SELECT "problemId", MIN("timeUsed") AS "minTimeUsed"
-          FROM submission
-          INNER JOIN "user"
-          ON "user".id = submission."userId" AND "user"."role"='user'
-          WHERE "contestId" = ${contestId} AND status = 'accept' GROUP BY "submission"."problemId"
-        ) t
-        INNER JOIN (
-          SELECT submission.*
-          FROM submission
-          INNER JOIN "user"
-          ON "user".id = submission."userId" AND "user"."role"='user'
-          WHERE "contestId" = ${contestId} AND status = 'accept'
-        ) s
-        ON s."problemId" = t."problemId" AND s."timeUsed" = t."minTimeUsed"`
-    const fasterThanLightIds = fasterThanLightResult.map((result) => result.id)
-    const fasterThanLight = await this.prisma.submission.findMany({
-      select,
-      where: {
-        contestId,
-        id: {
-          in: fasterThanLightIds,
-        },
-      },
-    })
+    // const fasterThanLightResult = await this.prisma.$queryRaw<{ id: number }[]>`
+    //   SELECT s.id AS id
+    //     FROM (
+    //       SELECT "problemId", MIN("timeUsed") AS "minTimeUsed"
+    //       FROM submission
+    //       INNER JOIN "user"
+    //       ON "user".id = submission."userId" AND "user"."role"='user'
+    //       WHERE "contestId" = ${contestId} AND status = 'accept' GROUP BY "submission"."problemId"
+    //     ) t
+    //     INNER JOIN (
+    //       SELECT submission.*
+    //       FROM submission
+    //       INNER JOIN "user"
+    //       ON "user".id = submission."userId" AND "user"."role"='user'
+    //       WHERE "contestId" = ${contestId} AND status = 'accept'
+    //     ) s
+    //     ON s."problemId" = t."problemId" AND s."timeUsed" = t."minTimeUsed"`
+    // const fasterThanLightIds = fasterThanLightResult.map((result) => result.id)
+    // const fasterThanLight = await this.prisma.submission.findMany({
+    //   select,
+    //   where: {
+    //     contestId,
+    //     id: {
+    //       in: fasterThanLightIds,
+    //     },
+    //   },
+    // })
 
     // * 3. Passed In One: The user that passed the task in one submission.
     // const passedInOneResult = await this.prisma.$queryRaw<{ id: number }[]>`
@@ -245,7 +247,7 @@ export class ContestService {
       },
     })
 
-    return { firstBlood, fasterThanLight, oneManSolve }
+    return { firstBlood, oneManSolve }
   }
 
   currentContest() {

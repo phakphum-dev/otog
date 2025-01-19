@@ -394,10 +394,15 @@ export const UserContestScoreboard = UserContestModel.extend({
     SubmissionModel.pick({
       id: true,
       problemId: true,
-      score: true,
-      timeUsed: true,
       status: true,
       userId: true,
+    }).extend({
+      submissionResult: SubmissionResultModel.pick({
+        id: true,
+        timeUsed: true,
+        score: true,
+        memUsed: true,
+      }).nullable(),
     })
   ),
 })
@@ -416,7 +421,7 @@ export type ContestScoreboard = z.infer<typeof ContestScoreboard>
 
 export const ContestPrize = z.object({
   firstBlood: z.array(PrizeSchema),
-  fasterThanLight: z.array(PrizeSchema),
+  // fasterThanLight: z.array(PrizeSchema),
   // passedInOne: z.array(PrizeSchema),
   oneManSolve: z.array(PrizeSchema),
 })
