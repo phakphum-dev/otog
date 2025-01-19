@@ -409,7 +409,7 @@ const columns = [
           isExternal
           href={`/api/problem/${problem.id}`}
           className={clsx(
-            'flex flex-col',
+            'flex flex-col text-sm',
             !problem.show && 'text-muted-foreground'
           )}
         >
@@ -422,7 +422,7 @@ const columns = [
               </span>
             )}
           </span>
-          <span className="text-sm">
+          <span>
             ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
           </span>
         </Link>
