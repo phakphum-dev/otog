@@ -85,10 +85,14 @@ export class ContestService {
       select: {
         id: true,
         problemId: true,
-        score: true,
-        timeUsed: true,
         status: true,
         userId: true,
+        submissionResult: {
+          select: {
+            score: true,
+            timeUsed: true,
+          },
+        },
       },
     })
 
@@ -104,11 +108,11 @@ export class ContestService {
       contest.userContest.map((userContest) => {
         const submissions = userIdToSubmissions.get(userContest.userId) ?? []
         const totalScore = submissions
-          .map((s) => s.score ?? 0)
+          .map((s) => s.submissionResult?.score ?? 0)
           .reduce((acc, val) => acc + val, 0)
         const totalTimeUsed =
           submissions
-            .map((s) => s.timeUsed ?? 0)
+            .map((s) => s.submissionResult?.timeUsed ?? 0)
             .reduce((acc, val) => acc + val, 0) / 1000
         return {
           ...userContest,

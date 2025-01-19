@@ -104,7 +104,7 @@ model Submission {
   public           Boolean           @default(false)
   problem          Problem           @relation(fields: [problemId], references: [id], onDelete: Cascade)
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  SubmissionResult SubmissionResult?
+  submissionResult SubmissionResult?
 
   @@map("submission")
 }

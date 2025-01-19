@@ -109,26 +109,28 @@ const columns = [
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor('result', {
-    header: 'ผลลัพธ์',
+  columnHelper.display({
+    id: 'score',
+    header: 'คะแนน',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
           if (
-            submission.status === SubmissionStatus.waiting ||
-            submission.status === SubmissionStatus.grading
+            submission.status == SubmissionStatus.waiting ||
+            submission.status == SubmissionStatus.grading
           ) {
             return (
               <div className="inline-flex gap-2 items-center">
                 <Spinner size="sm" />
-                {submission.result}
+                Waiting...
               </div>
             )
           }
           return (
             <div>
-              {submission.score ?? 0} / {submission.problem.score}
+              {submission.submissionResult?.score ?? 0} /{' '}
+              {submission.problem.score}
             </div>
           )
         }}
@@ -140,7 +142,8 @@ const columns = [
       headClassName: 'text-end',
     },
   }),
-  columnHelper.accessor('timeUsed', {
+  columnHelper.display({
+    id: 'timeUsed',
     header: () => (
       <span className="inline-flex gap-2">
         เวลาที่ใช้ (วินาที)
@@ -156,7 +159,9 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return ((submission.timeUsed ?? 0) / 1000).toFixed(3)
+          return ((submission.submissionResult?.timeUsed ?? 0) / 1000).toFixed(
+            3
+          )
         }}
       />
     ),

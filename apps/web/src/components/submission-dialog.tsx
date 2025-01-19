@@ -20,6 +20,7 @@ import NextLink from 'next/link'
 import { z } from 'zod'
 
 import { SubmissionDetailSchema } from '@otog/contract'
+import { VerdictModel } from '@otog/database'
 import {
   Accordion,
   AccordionContent,
@@ -92,30 +93,6 @@ export const SubmissionDialog = ({
   )
 }
 
-const VerdictSchema = z.object({
-  status: z.enum([
-    'accept',
-    'partial',
-    'reject',
-    'time limit exceed',
-    'runtime error',
-    'skip',
-    'problem error',
-    'internal error',
-  ]),
-  timeUse: z.number(),
-  memUse: z.number(),
-})
-type VerdictSchema = z.infer<typeof VerdictSchema>
-
-const FullResultSchema = z.array(
-  z.object({
-    score: z.number(),
-    fullScore: z.number(),
-    verdicts: z.array(VerdictSchema),
-  })
-)
-
 export const SubmissionDetail = ({
   submission,
 }: {
@@ -123,29 +100,56 @@ export const SubmissionDetail = ({
 }) => {
   const { hasCopied, onCopy } = useClipboard()
 
-  const fullResultResult = FullResultSchema.safeParse(submission.fullResult)
-  const fullResult = fullResultResult.success ? fullResultResult.data : []
   return (
     <div className="text-sm min-w-0">
       <div className="flex flex-col gap-2">
-        {submission.fullResult !== null ? null : submission.status ===
-            'accept' || submission.status === 'reject' ? (
-          <code className="font-mono text-pretty break-all">
-            {submission.result}
-          </code>
-        ) : (
-          <p>{submission.result}</p>
-        )}
+        <div>
+          {(() => {
+            switch (submission.status) {
+              case 'waiting':
+                return (
+                  <div className="inline-flex gap-2 items-center">
+                    <Spinner size="sm" />
+                    Waiting...
+                  </div>
+                )
+              case 'grading':
+                // TODO: change to something else (ask ttamx)
+                return (
+                  <div className="inline-flex gap-2 items-center">
+                    <Spinner size="sm" />
+                    Grading...
+                  </div>
+                )
+              case 'compileError':
+                // TODO: make this a button that shows the error message
+                return <Badge variant="error">Compile Error</Badge>
+              case 'judgeError':
+                return <Badge variant="error">Judge Error</Badge>
+              case 'accept':
+              case 'reject':
+                return (
+                  <Badge variant={submission.status}>
+                    {submission.status === 'accept' ? 'Accepted' : 'Rejected'}
+                  </Badge>
+                )
+              default:
+                return exhaustiveGuard(submission.status)
+            }
+          })()}
+        </div>
         <div className="flex justify-between gap-2 items-center">
           {
             <div className="inline-flex gap-2 items-center">
               <p>
-                {submission.score ?? 0} / {submission.problem.score} คะแนน
+                {submission.submissionResult?.score ?? 0} /{' '}
+                {submission.problem.score} คะแนน
               </p>
             </div>
           }
           <p className="whitespace-nowrap">
-            เวลาที่ใช้ {(submission.timeUsed ?? 0) / 1000} วินาที
+            เวลาที่ใช้ {(submission.submissionResult?.timeUsed ?? 0) / 1000}{' '}
+            วินาที
           </p>
         </div>
         <div className="flex justify-between gap-2">
@@ -154,7 +158,13 @@ export const SubmissionDetail = ({
             {dayjs(submission.creationDate!).format('DD/MM/BBBB HH:mm:ss')}
           </p>
           <p className="whitespace-nowrap">
-            ความจำที่ใช้ {submission.memUsed ?? '-'} kB
+            ความจำที่ใช้{' '}
+            {submission.submissionResult
+              ? submission.submissionResult.memUsed < 0
+                ? '-'
+                : submission.submissionResult.memUsed
+              : 0}{' '}
+            kB
           </p>
         </div>
 
@@ -175,32 +185,33 @@ export const SubmissionDetail = ({
         </div>
       </div>
 
-      {fullResult.length > 0 && (
-        <Accordion type="multiple" className="mt-2">
-          {fullResult.map((result, index) => {
-            function getBadgeVariant() {
-              if (result.score === result.fullScore) return 'accept'
-              if (result.score === 0) return 'reject'
-              return 'warning'
-            }
-            return (
-              <AccordionItem value={'subtask-' + index.toString()}>
-                <AccordionTrigger>
-                  <div className="flex gap-2 justify-between items-center w-full ml-2">
-                    <p>ปัญหาย่อยที่ {index + 1}</p>
-                    <Badge variant={getBadgeVariant()}>
-                      {result.score} / {result.fullScore}
-                    </Badge>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <SubtaskTable verdicts={result.verdicts} />
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
-        </Accordion>
-      )}
+      {submission.submissionResult &&
+        submission.submissionResult.subtaskResults.length > 0 && (
+          <Accordion type="multiple" className="mt-2">
+            {submission.submissionResult.subtaskResults.map((result, index) => {
+              function getBadgeVariant() {
+                if (result.score === result.fullScore) return 'accept'
+                if (result.score === 0) return 'reject'
+                return 'warning'
+              }
+              return (
+                <AccordionItem value={'subtask-' + index.toString()}>
+                  <AccordionTrigger>
+                    <div className="flex gap-2 justify-between items-center w-full ml-2">
+                      <p>ปัญหาย่อยที่ {index + 1}</p>
+                      <Badge variant={getBadgeVariant()}>
+                        {result.score} / {result.fullScore}
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <SubtaskTable verdicts={result.verdicts} />
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            })}
+          </Accordion>
+        )}
 
       <div className="relative mt-4">
         <CodeHighlight
@@ -228,12 +239,14 @@ export const SubmissionDetail = ({
   )
 }
 
-const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictSchema> }) => {
+type VerdictModel = z.infer<typeof VerdictModel>
+
+const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictModel> }) => {
   const data = useMemo(() => {
-    const compressed: Array<VerdictSchema> = []
+    const compressed: Array<VerdictModel> = []
     for (const verdict of verdicts) {
       compressed.push(verdict)
-      if (verdict.status === 'skip') {
+      if (verdict.status === 'SKIPPED') {
         break
       }
     }
@@ -249,7 +262,7 @@ const SubtaskTable = ({ verdicts }: { verdicts: Array<VerdictSchema> }) => {
   )
 }
 
-const columnHelper = createColumnHelper<VerdictSchema>()
+const columnHelper = createColumnHelper<VerdictModel>()
 const columns = [
   columnHelper.display({
     header: '#',
@@ -258,26 +271,27 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     header: 'ผลตรวจ',
-    cell: ({ row: { original } }) => {
-      switch (original.status) {
-        case 'accept':
+    cell: ({ getValue }) => {
+      const status = getValue()
+      switch (status) {
+        case 'ACCEPTED':
           return <Badge variant="accept">Accepted</Badge>
-        case 'partial':
+        case 'PARTIAL':
           return <Badge variant="warning">Partially Correct</Badge>
-        case 'reject':
+        case 'REJECTED':
           return <Badge variant="reject">Wrong Answer</Badge>
-        case 'time limit exceed':
+        case 'TIME_LIMIT_EXCEEDED':
           return <Badge variant="reject">Time Limit Exceeded</Badge>
-        case 'runtime error':
+        case 'RUNTIME_ERROR':
           return <Badge variant="reject">Runtime Error</Badge>
-        case 'skip':
+        case 'SKIPPED':
           return <Badge variant="outline">Skipped</Badge>
-        case 'problem error':
+        case 'PROBLEM_ERROR':
           return <Badge variant="error">Problem Error</Badge>
-        case 'internal error':
+        case 'INTERNAL_ERROR':
           return <Badge variant="error">Internal Error</Badge>
         default:
-          return exhaustiveGuard(original.status)
+          return exhaustiveGuard(status)
       }
     },
     enableSorting: false,
@@ -289,26 +303,27 @@ const columns = [
   columnHelper.accessor('status', {
     id: 'message',
     header: 'รายละเอียด',
-    cell: ({ row: { original } }) => {
-      switch (original.status) {
-        case 'accept':
+    cell: ({ getValue }) => {
+      const status = getValue()
+      switch (status) {
+        case 'ACCEPTED':
           return 'Output is correct'
-        case 'partial':
+        case 'PARTIAL':
           return 'Output is partially correct'
-        case 'reject':
+        case 'REJECTED':
           return 'Output is incorrect'
-        case 'time limit exceed':
+        case 'TIME_LIMIT_EXCEEDED':
           return 'Time limit exceeded'
-        case 'runtime error':
+        case 'RUNTIME_ERROR':
           return 'Runtime error'
-        case 'skip':
+        case 'SKIPPED':
           return 'Skipped'
-        case 'problem error':
+        case 'PROBLEM_ERROR':
           return 'Problem error'
-        case 'internal error':
+        case 'INTERNAL_ERROR':
           return 'Internal error'
         default:
-          return exhaustiveGuard(original.status)
+          return exhaustiveGuard(status)
       }
     },
     enableSorting: false,
@@ -316,16 +331,16 @@ const columns = [
       headClassName: 'min-w-52 w-full',
     },
   }),
-  columnHelper.accessor('timeUse', {
+  columnHelper.accessor('timeUsed', {
     header: 'เวลาที่ใช้ (วินาที)',
-    cell: ({ row: { original } }) => original.timeUse.toFixed(3),
+    cell: ({ getValue }) => getValue().toFixed(3),
     enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end tabular-nums',
     },
   }),
-  columnHelper.accessor('memUse', {
+  columnHelper.accessor('memUsed', {
     header: 'ความจำที่ใช้ (kB)',
     enableSorting: false,
     meta: {

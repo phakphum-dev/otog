@@ -9,8 +9,11 @@ import {
   ContestProblemModel,
   ProblemModel,
   SubmissionModel,
+  SubmissionResultModel,
+  SubtaskResultModel,
   UserContestModel,
   UserModel,
+  VerdictModel,
 } from '@otog/database'
 
 // TODO: https://github.com/colinhacks/zod/discussions/2171
@@ -127,35 +130,56 @@ export type UserWithourPasswordSchema = z.infer<
 
 const SubmissionSchema = SubmissionModel.pick({
   id: true,
-  result: true,
-  score: true,
-  timeUsed: true,
   status: true,
-  errmsg: true,
   contestId: true,
   language: true,
   creationDate: true,
   public: true,
   userId: true,
   memUsed: true,
+}).extend({
+  problem: ProblemModel.pick({
+    id: true,
+    name: true,
+    memoryLimit: true,
+    timeLimit: true,
+    score: true,
+  }),
+  submissionResult: SubmissionResultModel.pick({
+    id: true,
+    score: true,
+    result: true,
+    timeUsed: true,
+    memUsed: true,
+  }).nullable(),
+  user: UserWithourPasswordSchema,
 })
-  .extend({
-    problem: ProblemModel.pick({
-      id: true,
-      name: true,
-      memoryLimit: true,
-      timeLimit: true,
-      score: true,
-    }),
-  })
-  .extend({
-    user: UserWithourPasswordSchema,
-  })
 export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
 export const SubmissionDetailSchema = SubmissionSchema.merge(
-  SubmissionModel.pick({ sourceCode: true, fullResult: true })
-)
+  SubmissionModel.pick({ sourceCode: true })
+).extend({
+  submissionResult: SubmissionResultModel.pick({
+    id: true,
+    score: true,
+    result: true,
+    timeUsed: true,
+    memUsed: true,
+    errmsg: true,
+  })
+    .extend({
+      subtaskResults: z.array(
+        SubtaskResultModel.pick({
+          score: true,
+          fullScore: true,
+          subtaskIndex: true,
+        }).extend({
+          verdicts: z.array(VerdictModel),
+        })
+      ),
+    })
+    .nullable(),
+})
 export type SubmissionDetailSchema = z.infer<typeof SubmissionDetailSchema>
 
 const FileSchema = z.instanceof(File)
