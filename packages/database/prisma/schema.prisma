@@ -92,26 +92,59 @@ model RefreshToken {
 }
 
 model Submission {
-  id           Int              @id @default(autoincrement())
-  userId       Int
-  problemId    Int
-  result       String           @default("WAITING") @db.VarChar(255)
-  score        Int?
-  timeUsed     Int?
-  memUsed      Int?
-  status       SubmissionStatus
-  errmsg       String?
-  contestId    Int?
-  sourceCode   String?
-  language     String           @db.VarChar(255)
-  creationDate DateTime         @default(now()) @db.Timestamptz(6)
-  updateDate   DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
-  public       Boolean          @default(false)
-  problem      Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullResult   Json?
+  id               Int               @id @default(autoincrement())
+  userId           Int
+  problemId        Int
+  status           SubmissionStatus
+  contestId        Int?
+  sourceCode       String?
+  language         String            @db.VarChar(255)
+  creationDate     DateTime          @default(now()) @db.Timestamptz(6)
+  updateDate       DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  public           Boolean           @default(false)
+  problem          Problem           @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  SubmissionResult SubmissionResult?
 
   @@map("submission")
+}
+
+model SubmissionResult {
+  id             Int             @id @default(autoincrement())
+  submissionId   Int             @unique
+  result         String          @db.VarChar(255)
+  errmsg         String?
+  score          Int
+  timeUsed       Int
+  memUsed        Int
+  submission     Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  subtaskResults SubtaskResult[]
+
+  @@map("submissionResult")
+}
+
+model SubtaskResult {
+  id                 Int              @id @default(autoincrement())
+  submissionResultId Int
+  score              Int
+  fullScore          Int
+  subtaskIndex       Int
+  submissionResult   SubmissionResult @relation(fields: [submissionResultId], references: [id], onDelete: Cascade)
+  verdicts           Verdict[]
+
+  @@map("subtaskResult")
+}
+
+model Verdict {
+  id            Int           @id @default(autoincrement())
+  subtaskId     Int
+  status        VerdictStatus
+  percent       Float
+  timeUsed      Int
+  memUsed       Int
+  subtaskResult SubtaskResult @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
+
+  @@map("verdict")
 }
 
 model User {
@@ -162,6 +195,8 @@ enum SubmissionStatus {
   grading
   accept
   reject
+  compileError
+  judgeError
 
   @@map("enum_submission_status")
 }
@@ -171,4 +206,17 @@ enum UserRole {
   admin
 
   @@map("enum_user_role")
+}
+
+enum VerdictStatus {
+  ACCEPTED
+  PARTIAL
+  REJECTED
+  TIME_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  SKIPPED
+  PROBLEM_ERROR
+  INTERNAL_ERROR
+
+  @@map("enum_verdict_status")
 }
