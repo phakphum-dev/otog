@@ -1,18 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import {
-  MagnifyingGlassCircleIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline'
+import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'
 
 import { SubmissionSchema } from '@otog/contract'
 import { Input, InputGroup, InputLeftIcon } from '@otog/ui/input'
-import { Label } from '@otog/ui/label'
 import { Link } from '@otog/ui/link'
-import { Switch } from '@otog/ui/switch'
+import { Toggle } from '@otog/ui/toggle'
 
 import { submissionKey, submissionQuery } from '../../api/query'
 import { withQuery } from '../../api/server'
@@ -74,11 +70,17 @@ const LatestSubmissionSecion = ({
       <h2 id="latest-submission" className="font-semibold">
         ส่งข้อล่าสุด
       </h2>
-      <Link isExternal href={`/api/problem/${problem.id}`} className="text-sm">
-        <span>{problem.name}</span>
-        <p>
+      <Link
+        isExternal
+        href={`/api/problem/${problem.id}`}
+        className="text-sm flex flex-col"
+      >
+        <span className="text-pretty font-semibold tracking-wide mb-0.5">
+          {problem.name}
+        </span>
+        <span>
           ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
-        </p>
+        </span>
       </Link>
       <div className="ml-auto flex items-center gap-2">
         <SubmitCode problem={problem} />
@@ -125,16 +127,16 @@ const SubmissionSection = () => {
       <h2 id="submission" className="sr-only">
         ตารางผลตรวจ
       </h2>
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-between">
         <DebounceInput onChange={setProblemSearch} />
-        <div className="flex items-center gap-2 ml-auto whitespace-nowrap">
-          <Switch
-            id="toggle-all-submission"
-            onCheckedChange={(checked) => setOnlyMe(checked)}
-            checked={onlyMe}
-          />
-          <Label htmlFor="toggle-all-submission">ผลตรวจของคุณ</Label>
-        </div>
+        {isAuthenticated && (
+          <Toggle
+            onPressedChange={(pressed) => setOnlyMe(pressed)}
+            pressed={onlyMe}
+          >
+            <FunnelIcon className="me-2" /> เฉพาะคุณ
+          </Toggle>
+        )}
       </div>
       <SubmissionTable
         data={submissions}
