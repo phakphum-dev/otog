@@ -1,4 +1,4 @@
-import { ClientArgs } from '@ts-rest/core'
+import { ClientArgs, isZodType } from '@ts-rest/core'
 import FormDataAddon from 'wretch/addons/formData'
 import { create } from 'zustand'
 
@@ -69,7 +69,17 @@ const client = api
 export const clientArgs: ClientArgs = {
   baseUrl: '',
   jsonQuery: true,
-  api: async ({ path, method, headers, body, contentType, rawBody }) => {
+  validateResponse: true,
+  api: async ({
+    path,
+    method,
+    headers,
+    body,
+    contentType,
+    rawBody,
+    route,
+    validateResponse,
+  }) => {
     const fetcher =
       contentType === 'multipart/form-data'
         ? client.formData(rawBody as any)
@@ -79,9 +89,22 @@ export const clientArgs: ClientArgs = {
       .fetch(method, path)
       .res()
       .then(async (response) => {
+        const json = await response.json()
+        if (!validateResponse) {
+          return {
+            status: response.status,
+            body: json,
+            headers: response.headers,
+          }
+        }
+        const schema = route.responses[response.status]
+        if (!schema || !isZodType(schema)) {
+          throw new TypeError("The route doesn't have zod parser")
+        }
+        const body = schema.parse(json)
         return {
           status: response.status,
-          body: await response.json(),
+          body: body,
           headers: response.headers,
         }
       })

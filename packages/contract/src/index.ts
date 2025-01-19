@@ -650,7 +650,7 @@ export const appRouter = contract.router({
     method: 'GET',
     path: '/time',
     responses: {
-      200: z.string(),
+      200: z.coerce.date(),
     },
     summary: 'Get server time',
   },
