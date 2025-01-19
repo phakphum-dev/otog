@@ -362,7 +362,7 @@ const columns = [
       cellClassName: 'text-muted-foreground tabular-nums',
     },
   }),
-  columnHelper.accessor('result', {
+  columnHelper.accessor('submissionResult.score', {
     header: 'ผลลัพธ์',
     cell: ({ row: { original } }) => (
       <InlineComponent
@@ -375,13 +375,13 @@ const columns = [
             return (
               <div className="inline-flex gap-2 items-center">
                 <Spinner size="sm" />
-                {submission.result}
+                {submission.submissionResult?.score}
               </div>
             )
           }
           return (
             <code className="font-mono line-clamp-3 text-pretty">
-              {submission.result}
+              {submission.submissionResult?.score}
             </code>
           )
         }}
@@ -392,13 +392,15 @@ const columns = [
       cellClassName: 'max-w-[200px] whitespace-pre-wrap',
     },
   }),
-  columnHelper.accessor('timeUsed', {
+  columnHelper.accessor('submissionResult.timeUsed', {
     header: 'เวลารวม (วินาที)',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return ((submission.timeUsed ?? 0) / 1000).toFixed(3)
+          return ((submission.submissionResult?.timeUsed ?? 0) / 1000).toFixed(
+            3
+          )
         }}
       />
     ),
