@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useState } from 'react'
+import { ReactNode, forwardRef, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import {
@@ -11,6 +11,7 @@ import {
   ListBulletIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
+  ViewColumnsIcon,
   XCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
@@ -21,6 +22,7 @@ import {
   ColumnFiltersState,
   Row,
   Table,
+  VisibilityState,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -32,11 +34,17 @@ import NextLink from 'next/link'
 
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
-import { AvatarGroup, AvatarMore } from '@otog/ui/avatar'
 import { Button, ButtonProps } from '@otog/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@otog/ui/dialog'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -71,15 +79,21 @@ export const ProblemTable = () => {
   )
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    recentShowTime: false,
+    passedCount: false,
+  })
   const table = useReactTable({
     columns,
     data: problems,
     filterFns: {},
     state: {
       columnFilters,
-      columnVisibility: { recentShowTime: false },
+      columnVisibility,
     },
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -212,6 +226,8 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
       newProblemFilterValue === NEW_PROBLEM ? undefined : NEW_PROBLEM
     )
   }
+  const passedCountColumn = table.getColumn('passedCount')!
+
   return (
     <div className="flex gap-4 sticky py-2 -my-2 top-[calc(var(--navbar))] bg-background z-10">
       <InputGroup>
@@ -273,6 +289,21 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
             <XMarkIcon />
           </Button>
         )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <ViewColumnsIcon aria-label="คอลัมน์ที่แสดง" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuCheckboxItem
+              checked={passedCountColumn.getIsVisible()}
+              onClick={() => passedCountColumn.toggleVisibility()}
+            >
+              ผู้ที่ผ่าน
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )
@@ -402,36 +433,22 @@ const columns = [
     },
   }),
   columnHelper.accessor('passedCount', {
-    header: 'ผ่านแล้ว',
+    header: 'ผ่าน',
     cell: ({ row, getValue }) => (
       <InlineComponent
         render={() => {
           const passedCount = getValue()
           const [open, setOpen] = useState(false)
           return passedCount > 0 ? (
-            <>
-              <AvatarGroup asChild>
-                <Button
-                  title={`${passedCount} คน`}
-                  aria-label={`${passedCount} คน`}
-                  variant="ghost"
-                  className="gap-0 px-1"
-                  onClick={() => setOpen(true)}
-                >
-                  {row.original.samplePassedUsers.map((user) => (
-                    <UserAvatar key={user.id} user={user} />
-                  ))}
-                  {passedCount > 3 && (
-                    <AvatarMore aria-hidden count={passedCount} />
-                  )}
-                </Button>
-              </AvatarGroup>
-              <PassedUserDialog
-                problem={row.original}
-                open={open}
-                setOpen={setOpen}
-              />
-            </>
+            <PassedUserDialog
+              problem={row.original}
+              open={open}
+              setOpen={setOpen}
+            >
+              <DialogTrigger className="focus-visible:ring-focus text-muted-foreground">
+                {passedCount}
+              </DialogTrigger>
+            </PassedUserDialog>
           ) : (
             <div className="px-1 text-muted-foreground">-</div>
           )
@@ -439,8 +456,8 @@ const columns = [
       />
     ),
     meta: {
-      headClassName: 'text-end px-0 whitespace-pre',
-      cellClassName: 'text-end px-0',
+      headClassName: 'text-center whitespace-pre',
+      cellClassName: 'text-center',
     },
   }),
   columnHelper.display({
@@ -546,10 +563,12 @@ const PassedUserDialog = ({
   problem,
   open,
   setOpen,
+  children,
 }: {
-  problem: Pick<ProblemTableRowSchema, 'id' | 'name'>
+  problem: Pick<ProblemTableRowSchema, 'id' | 'name' | 'passedCount'>
   open: boolean
   setOpen: (open: boolean) => void
+  children?: ReactNode
 }) => {
   const getPassedUsers = useQuery({
     ...problemKey.getPassedUsers({
@@ -564,8 +583,10 @@ const PassedUserDialog = ({
   const { isAdmin } = useUserContext()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      {children}
       <DialogContent className="max-w-sm">
         <DialogTitle>ผู้ที่ผ่านข้อ {problem.name}</DialogTitle>
+        <DialogDescription>ผ่านแล้ว {problem.passedCount} คน</DialogDescription>
         {!users ? (
           <div className="flex items-center justify-center">
             <Spinner />
