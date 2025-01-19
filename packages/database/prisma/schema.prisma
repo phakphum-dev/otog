@@ -132,6 +132,7 @@ model SubtaskResult {
   submissionResult   SubmissionResult @relation(fields: [submissionResultId], references: [id], onDelete: Cascade)
   verdicts           Verdict[]
 
+  @@unique([submissionResultId, subtaskIndex])
   @@map("subtaskResult")
 }
 
@@ -142,8 +143,10 @@ model Verdict {
   percent       Float
   timeUsed      Int
   memUsed       Int
+  TestCaseIndex Int
   subtaskResult SubtaskResult @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
 
+  @@unique([subtaskId, TestCaseIndex])
   @@map("verdict")
 }
 
