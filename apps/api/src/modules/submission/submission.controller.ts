@@ -35,20 +35,28 @@ export class SubmissionController {
     private contestService: ContestService
   ) {}
 
-  @TsRestHandler(c.getSubmissions)
+  @TsRestHandler(c.getSubmissions, { jsonQuery: true })
   getSubmissions(@User() user: UserDTO | undefined) {
     return tsRestHandler(
       c.getSubmissions,
-      async ({ query: { limit, offset } }) => {
+      async ({
+        query: { offset = 1e9, limit = 89, problemSearch, userId },
+      }) => {
         if (!user || user.role !== Role.Admin) {
-          const submissions =
-            await this.submissionService.findAllWithOutContestAndAdmin(
-              offset,
-              limit
-            )
+          const submissions = await this.submissionService.findMany({
+            offset,
+            limit,
+            problemSearch,
+            userId,
+          })
           return { status: 200, body: submissions }
         }
-        const submissions = await this.submissionService.findAll(offset, limit)
+        const submissions = await this.submissionService.findManyWithAdmin({
+          offset,
+          limit,
+          problemSearch,
+          userId,
+        })
         return { status: 200, body: submissions }
       }
     )

@@ -198,23 +198,23 @@ export class ContestService {
     })
 
     // * 3. Passed In One: The user that passed the task in one submission.
-    const passedInOneResult = await this.prisma.$queryRaw<{ id: number }[]>`
-      SELECT s.id AS id
-        FROM (
-          SELECT "problemId", "userId", MIN(submission.id) as id
-            FROM submission
-            INNER JOIN "user"
-            ON "user".id = submission."userId" AND "user"."role"='user'
-            WHERE "contestId" = ${contestId}
-            GROUP BY "problemId", "userId"
-        ) t
-        INNER JOIN submission s
-        ON s.id = t.id AND s.status = 'accept'`
-    const passedInOneIds = passedInOneResult.map((result) => result.id)
-    const passedInOne = await this.prisma.submission.findMany({
-      select,
-      where: { id: { in: passedInOneIds } },
-    })
+    // const passedInOneResult = await this.prisma.$queryRaw<{ id: number }[]>`
+    //   SELECT s.id AS id
+    //     FROM (
+    //       SELECT "problemId", "userId", MIN(submission.id) as id
+    //         FROM submission
+    //         INNER JOIN "user"
+    //         ON "user".id = submission."userId" AND "user"."role"='user'
+    //         WHERE "contestId" = ${contestId}
+    //         GROUP BY "problemId", "userId"
+    //     ) t
+    //     INNER JOIN submission s
+    //     ON s.id = t.id AND s.status = 'accept'`
+    // const passedInOneIds = passedInOneResult.map((result) => result.id)
+    // const passedInOne = await this.prisma.submission.findMany({
+    //   select,
+    //   where: { id: { in: passedInOneIds } },
+    // })
 
     // * 4. One Man Solve: The only one user that passed the task.
     const oneManSolveResult = await this.prisma.$queryRaw<{ id: number }[]>`
@@ -245,7 +245,7 @@ export class ContestService {
       },
     })
 
-    return { firstBlood, fasterThanLight, passedInOne, oneManSolve }
+    return { firstBlood, fasterThanLight, oneManSolve }
   }
 
   currentContest() {

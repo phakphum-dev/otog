@@ -185,6 +185,12 @@ export type SubmissionDetailSchema = z.infer<typeof SubmissionDetailSchema>
 const FileSchema = z.instanceof(File)
 type FileSchema = z.infer<typeof FileSchema>
 
+const GetSubmissionsQuery = PaginationQuerySchema.extend({
+  userId: z.number().optional(),
+  problemSearch: z.string().optional(),
+})
+export type GetSubmissionsQuery = z.infer<typeof GetSubmissionsQuery>
+
 export const submissionRouter = contract.router(
   {
     getSubmissions: {
@@ -193,7 +199,7 @@ export const submissionRouter = contract.router(
       responses: {
         200: z.array(SubmissionSchema),
       },
-      query: PaginationQuerySchema,
+      query: GetSubmissionsQuery,
       summary: 'Get paginated submissions',
     },
     getContestSubmissions: {
@@ -411,7 +417,7 @@ export type ContestScoreboard = z.infer<typeof ContestScoreboard>
 export const ContestPrize = z.object({
   firstBlood: z.array(PrizeSchema),
   fasterThanLight: z.array(PrizeSchema),
-  passedInOne: z.array(PrizeSchema),
+  // passedInOne: z.array(PrizeSchema),
   oneManSolve: z.array(PrizeSchema),
 })
 export type ContestPrize = z.infer<typeof ContestPrize>
@@ -618,6 +624,17 @@ export const problemRouter = contract.router(
       body: z.any(),
       summary: 'Update problem example testcases',
     },
+    listProblem: {
+      method: 'GET',
+      path: '/list',
+      responses: {
+        200: z.array(ProblemModel.pick({ id: true, name: true })),
+      },
+      query: PaginationQuerySchema.extend({
+        search: z.string().optional(),
+      }),
+      summary: 'List problems',
+    },
   },
   { pathPrefix: '/problem' }
 )
@@ -674,7 +691,7 @@ export const appRouter = contract.router({
     method: 'GET',
     path: '/time',
     responses: {
-      200: z.string(),
+      200: z.coerce.date(),
     },
     summary: 'Get server time',
   },

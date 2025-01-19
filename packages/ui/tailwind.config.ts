@@ -206,6 +206,10 @@ const config = {
             display: 'none',
           },
         },
+        '.ring-focus': {
+          '@apply ring-ring ring-2 ring-offset-background ring-offset-2 outline-none':
+            {},
+        },
       })
     }),
   ],

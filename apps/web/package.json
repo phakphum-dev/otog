@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0  --ignore-pattern \"**/clangd-editor/*\""
+    "lint": "eslint . --max-warnings 0  --ignore-pattern \"**/clangd-editor/*\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ark-ui/react": "^4.6.0",

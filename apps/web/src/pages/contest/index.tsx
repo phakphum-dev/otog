@@ -35,7 +35,7 @@ export const getServerSideProps = withQuery<ContestPageProps>(
     return {
       props: {
         currentContest: getCurrentContest.body.currentContest,
-        serverTime: getTime.body,
+        serverTime: getTime.body.toString(),
       },
     }
   }
@@ -140,11 +140,11 @@ const PreContest = (props: ContestProps) => {
 const CountDown = (props: ContestProps) => {
   const serverTimeQuery = useQuery({
     ...appKey.time(),
-    initialData: initialDataSuccess(props.serverTime),
+    initialData: initialDataSuccess(new Date(props.serverTime)),
   })
   const remaining = useTimer({
     start: serverTimeQuery.data.body,
-    end: props.currentContest.timeStart.toString(), // TODO
+    end: props.currentContest.timeStart,
   })
   const queryClient = useQueryClient()
   useEffect(() => {
@@ -186,11 +186,11 @@ const MidContest = (props: ContestProps) => {
 const Timer = (props: ContestProps) => {
   const serverTimeQuery = useQuery({
     ...appKey.time(),
-    initialData: initialDataSuccess(props.serverTime),
+    initialData: initialDataSuccess(new Date(props.serverTime)),
   })
   const remaining = useTimer({
     start: serverTimeQuery.data.body,
-    end: props.currentContest.timeEnd.toString(), // TODO
+    end: props.currentContest.timeEnd,
   })
   const queryClient = useQueryClient()
   useEffect(() => {

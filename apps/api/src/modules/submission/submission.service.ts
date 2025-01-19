@@ -66,23 +66,44 @@ const WITH_DETAIL = {
 export class SubmissionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(offset = 1e9, limit = 89) {
-    return this.prisma.submission.findMany({
-      where: { id: { lt: offset } },
-      take: limit,
+  async findManyWithAdmin(args: {
+    offset: number
+    limit: number
+    userId?: number
+    problemSearch?: string
+  }) {
+    return await this.prisma.submission.findMany({
+      where: {
+        contestId: null,
+        id: { lt: args.offset },
+        userId: args.userId,
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
+      },
+      take: args.limit,
       select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
 
-  findAllWithOutContestAndAdmin(offset = 1e9, limit = 89) {
-    return this.prisma.submission.findMany({
+  async findMany(args: {
+    offset: number
+    limit: number
+    userId?: number
+    problemSearch?: string
+  }) {
+    return await this.prisma.submission.findMany({
       where: {
         contestId: null,
-        id: { lt: offset },
-        user: { role: { not: UserRole.admin } },
+        id: { lt: args.offset },
+        userId: args.userId,
+        user: args.userId ? undefined : { role: UserRole.user },
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
       },
-      take: limit,
+      take: args.limit,
       select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })

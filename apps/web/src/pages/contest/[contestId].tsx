@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import {
-  Bars3BottomLeftIcon,
-  Bars3BottomRightIcon,
-} from '@heroicons/react/24/outline'
+import { ListBulletIcon } from '@heroicons/react/24/outline'
 import { useReactTable } from '@tanstack/react-table'
 import {
   createColumnHelper,
@@ -24,6 +21,7 @@ import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../api/server'
 import { TableComponent } from '../../components/table-component'
+import { UserAvatar } from '../../components/user-avatar'
 
 interface ContestHistoryProps {
   contestScoreboard: ContestScoreboard
@@ -98,7 +96,13 @@ export default function ContestHistory({
               )}
               asChild
             >
-              <NextLink href={`/user/${row.original.userId}`}>
+              <NextLink
+                href={`/user/${row.original.userId}`}
+                className="inline-flex gap-2 items-center"
+              >
+                {table.options.meta?.expanded && (
+                  <UserAvatar user={row.original.user} />
+                )}
                 {getValue()}
               </NextLink>
             </Link>
@@ -167,7 +171,7 @@ export default function ContestHistory({
     [contestScoreboard]
   )
 
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [columnVisibility, setColumnVisibility] = useState({})
   const table = useReactTable({
     data: contestScoreboard.userContest,
@@ -200,22 +204,12 @@ export default function ContestHistory({
           <h1 className="font-heading text-2xl font-semibold">
             {contestScoreboard.contest.name}
           </h1>
-          <div>
-            <Toggle
-              className="rounded-r-none"
-              pressed={!expanded}
-              onPressedChange={() => setExpanded(false)}
-            >
-              <Bars3BottomLeftIcon />
-            </Toggle>
-            <Toggle
-              className="rounded-l-none"
-              pressed={expanded}
-              onPressedChange={() => setExpanded(true)}
-            >
-              <Bars3BottomRightIcon />
-            </Toggle>
-          </div>
+          <Toggle
+            pressed={!expanded}
+            onPressedChange={() => setExpanded((expanded) => !expanded)}
+          >
+            <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
+          </Toggle>
         </div>
         <TableComponent
           table={table}
@@ -337,11 +331,11 @@ export const prizeDescription: Record<
     description: 'The user that solved the task with fastest algorithm.',
     emoji: '⚡️',
   },
-  passedInOne: {
-    name: 'Passed In One',
-    description: 'The user that passed the task in one submission.',
-    emoji: '🎯',
-  },
+  // passedInOne: {
+  //   name: 'Passed In One',
+  //   description: 'The user that passed the task in one submission.',
+  //   emoji: '🎯',
+  // },
   oneManSolve: {
     name: 'One Man Solve',
     description: 'The only one user that passed the task.',

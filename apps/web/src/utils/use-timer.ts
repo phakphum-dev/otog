@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { ONE_SECOND, getRemaining } from './time'
+import { ONE_SECOND } from './time'
 
-export function useTimer({ start, end }: { start: string; end: string }) {
-  const [remaining, setRemaining] = useState(() => getRemaining(start, end))
+export function useTimer({ start, end }: { start: Date; end: Date }) {
+  const [remaining, setRemaining] = useState(
+    () => start.getTime() - end.getTime()
+  )
 
   useEffect(() => {
-    if (start && end) {
-      setRemaining(getRemaining(start, end))
-    }
+    setRemaining(start.getTime() - end.getTime())
   }, [start, end])
 
   const enabled = remaining > 0

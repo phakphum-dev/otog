@@ -1,15 +1,24 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import {
+  MagnifyingGlassCircleIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/outline'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'
 
 import { SubmissionSchema } from '@otog/contract'
+import { Input, InputGroup, InputLeftIcon } from '@otog/ui/input'
+import { Label } from '@otog/ui/label'
 import { Link } from '@otog/ui/link'
+import { Switch } from '@otog/ui/switch'
 
 import { submissionKey, submissionQuery } from '../../api/query'
 import { withQuery } from '../../api/server'
 import { SubmissionStatusButton } from '../../components/submission-status'
 import { SubmissionTable } from '../../components/submission-table'
+import { useUserContext } from '../../context/user-context'
 import { SubmitCode } from '../../modules/problem/submit-code'
 
 interface SubmissionPageProps {
@@ -37,7 +46,7 @@ export const getServerSideProps = withQuery<SubmissionPageProps>(
 
 export default function SubmissionPage(props: SubmissionPageProps) {
   return (
-    <main id="content" className="container flex-1 flex flex-col gap-4 py-8">
+    <main id="content" className="container flex-1 flex flex-col gap-6 py-8">
       <Head>
         <title>Submission | One Tambon One Grader</title>
       </Head>
@@ -80,13 +89,26 @@ const LatestSubmissionSecion = ({
 }
 
 const SubmissionSection = () => {
+  const { user, isAuthenticated } = useUserContext()
+  const [onlyMe, setOnlyMe] = useState(isAuthenticated)
+
+  const [problemSearch, setProblemSearch] = useState<string>('')
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: submissionKey.getSubmissions._def,
+      queryKey: submissionKey.getSubmissions({
+        query: {
+          userId: onlyMe ? user?.id : undefined,
+          problemSearch,
+        },
+      }).queryKey,
       // TODO: https://github.com/lukemorales/query-key-factory/issues/89
       queryFn: ({ pageParam }) =>
         submissionQuery.getSubmissions.query({
-          query: { offset: pageParam },
+          query: {
+            offset: pageParam,
+            userId: onlyMe ? user?.id : undefined,
+            problemSearch,
+          },
         }),
       initialPageParam: undefined as number | undefined,
       getNextPageParam: (lastPage) =>
@@ -99,10 +121,21 @@ const SubmissionSection = () => {
     [data]
   )
   return (
-    <section aria-labelledby="submission">
+    <section aria-labelledby="submission" className="flex flex-col gap-4">
       <h2 id="submission" className="sr-only">
         ตารางผลตรวจ
       </h2>
+      <div className="flex gap-2">
+        <DebounceInput onChange={setProblemSearch} />
+        <div className="flex items-center gap-2 ml-auto whitespace-nowrap">
+          <Switch
+            id="toggle-all-submission"
+            onCheckedChange={(checked) => setOnlyMe(checked)}
+            checked={onlyMe}
+          />
+          <Label htmlFor="toggle-all-submission">ผลตรวจของคุณ</Label>
+        </div>
+      </div>
       <SubmissionTable
         data={submissions}
         isLoading={isLoading}
@@ -111,5 +144,28 @@ const SubmissionSection = () => {
         fetchNextPage={fetchNextPage}
       />
     </section>
+  )
+}
+
+interface DebounceInputProps {
+  onChange: (value: string) => void
+}
+function DebounceInput(props: DebounceInputProps) {
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+  useEffect(() => {
+    props.onChange(debouncedSearch)
+  }, [debouncedSearch])
+  return (
+    <InputGroup className="max-w-[240px]">
+      <InputLeftIcon>
+        <MagnifyingGlassIcon />
+      </InputLeftIcon>
+      <Input
+        placeholder="ค้นหาโจทย์"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </InputGroup>
   )
 }
