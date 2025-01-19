@@ -143,10 +143,10 @@ model Verdict {
   percent       Float
   timeUsed      Int
   memUsed       Int
-  TestCaseIndex Int
+  testcaseIndex Int
   subtaskResult SubtaskResult @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
 
-  @@unique([subtaskId, TestCaseIndex])
+  @@unique([subtaskId, testcaseIndex])
   @@map("verdict")
 }
 
