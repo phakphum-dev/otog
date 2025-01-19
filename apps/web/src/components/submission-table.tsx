@@ -123,7 +123,10 @@ const columns = [
             return (
               <div className="inline-flex gap-2 items-center">
                 <Spinner size="sm" />
-                Waiting...
+                <div>
+                  {submission.submissionResult?.score ?? 0} /{' '}
+                  {submission.problem.score}
+                </div>
               </div>
             )
           }
