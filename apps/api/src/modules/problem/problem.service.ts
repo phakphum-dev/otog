@@ -149,6 +149,7 @@ export class ProblemService {
                   select: {
                     id: true,
                     status: true,
+                    userId: true,
                   },
                   orderBy: { creationDate: 'desc' },
                   where: { userId: args.userId },

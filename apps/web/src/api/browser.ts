@@ -99,12 +99,17 @@ export const clientArgs: ClientArgs = {
         }
         const schema = route.responses[response.status]
         if (!schema || !isZodType(schema)) {
-          throw new TypeError("The route doesn't have zod parser")
+          console.error("The route doesn't have zod parser")
+          throw new Error("The route doesn't have zod parser")
         }
-        const body = schema.parse(json)
+        const result = schema.safeParse(json)
+        if (!result.success) {
+          console.error('Client parsing failed', { cause: result.error })
+          throw new Error('Client parsing failed')
+        }
         return {
           status: response.status,
-          body: body,
+          body: result.data,
           headers: response.headers,
         }
       })
