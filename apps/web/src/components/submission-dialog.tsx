@@ -358,7 +358,7 @@ const columns = [
   }),
   columnHelper.accessor('timeUsed', {
     header: 'เวลาที่ใช้ (วินาที)',
-    cell: ({ getValue }) => getValue().toFixed(3),
+    cell: ({ getValue }) => (getValue() / 1000).toFixed(3),
     enableSorting: false,
     meta: {
       headClassName: 'text-end',
