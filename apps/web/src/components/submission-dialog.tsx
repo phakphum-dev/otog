@@ -3,13 +3,15 @@ import { useMemo } from 'react'
 import {
   CheckIcon,
   DocumentDuplicateIcon,
+  EyeIcon,
+  EyeSlashIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
 import {
   ArrowTopRightOnSquareIcon,
   CodeBracketIcon,
 } from '@heroicons/react/24/solid'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -38,7 +40,8 @@ import {
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
 
-import { submissionKey } from '../api/query'
+import { submissionKey, submissionQuery } from '../api/query'
+import { useUserContext } from '../context/user-context'
 import { Language, LanguageName } from '../enums'
 import { useClipboard } from '../hooks/use-clipboard'
 import { exhaustiveGuard } from '../utils/exhaustive-guard'
@@ -104,7 +107,9 @@ export const SubmissionDetail = ({
   submission: SubmissionDetailSchema
 }) => {
   const { hasCopied, onCopy } = useClipboard()
-
+  const queryClient = useQueryClient()
+  const shareSubmission = submissionQuery.shareSubmission.useMutation()
+  const { user } = useUserContext()
   return (
     <div className="text-sm min-w-0">
       <div className="flex flex-col gap-2">
@@ -245,6 +250,39 @@ export const SubmissionDetail = ({
           language={submission.language ?? 'cpp'}
         />
         <div className="flex gap-1 absolute top-1 right-1">
+          {(user?.id === submission.userId || user?.role === 'admin') && (
+            <Button
+              size="icon"
+              title="แบ่งปัน"
+              variant="ghost"
+              onClick={() => {
+                shareSubmission.mutateAsync(
+                  {
+                    body: {
+                      show: !submission?.public,
+                    },
+                    params: {
+                      submissionId: submission.id.toString(),
+                    },
+                  },
+                  {
+                    onSuccess: () => {
+                      queryClient.invalidateQueries({
+                        queryKey: submissionKey.getSubmissionWithSourceCode({
+                          params: { submissionId: submission.id.toString() },
+                        }).queryKey,
+                      })
+                    },
+                    onError: (error) => {
+                      console.error(error)
+                    },
+                  }
+                )
+              }}
+            >
+              {submission?.public ? <EyeIcon /> : <EyeSlashIcon />}
+            </Button>
+          )}
           <Button
             size="icon"
             title="คัดลอก"
