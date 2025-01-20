@@ -87,6 +87,7 @@ export class ContestService {
         problemId: true,
         status: true,
         userId: true,
+        creationDate: true,
         submissionResult: {
           select: {
             id: true,
@@ -112,20 +113,21 @@ export class ContestService {
         const totalScore = submissions
           .map((s) => s.submissionResult?.score ?? 0)
           .reduce((acc, val) => acc + val, 0)
-        const totalTimeUsed =
+        const maxPenalty = Math.floor(
           submissions
-            .map((s) => s.submissionResult?.timeUsed ?? 0)
-            .reduce((acc, val) => acc + val, 0) / 1000
+            .map((s) => s.creationDate.getTime() - contest.timeStart.getTime())
+            .reduce((acc, val) => Math.max(acc, val), 0) / 1000
+        )
         return {
           ...userContest,
           submissions,
           totalScore,
-          totalTimeUsed,
+          maxPenalty,
         }
       })
     userContestScoreboards.sort((a, b) => {
       if (b.totalScore === a.totalScore) {
-        return b.totalTimeUsed - a.totalTimeUsed
+        return a.maxPenalty - b.maxPenalty
       }
       return b.totalScore - a.totalScore
     })
@@ -135,7 +137,10 @@ export class ContestService {
         return
       }
       const prevUser = userContestScoreboards[index - 1]!
-      if (user.totalScore === prevUser.totalScore) {
+      if (
+        user.totalScore === prevUser.totalScore &&
+        user.maxPenalty === prevUser.maxPenalty
+      ) {
         user.rank = prevUser.rank
         return
       }

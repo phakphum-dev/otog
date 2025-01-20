@@ -131,20 +131,28 @@ export default function ContestHistory({
           </span>
         ),
       }),
-      columnHelper.accessor('totalTimeUsed', {
-        header: 'เวลาที่ใช้รวม',
-        cell: ({ getValue, row, table }) => (
-          <span
-            className={clsx(
-              'transition-[font-size]',
-              table.options.meta?.expanded
-                ? 'text-base tabular-nums'
-                : fontSize[row.original.rank!]
-            )}
-          >
-            {getValue().toFixed(3)}
-          </span>
-        ),
+      columnHelper.accessor('maxPenalty', {
+        header: 'ส่งล่าสุดเมื่อ',
+        cell: ({ getValue, row, table }) => {
+          const penalty = getValue()
+          const hour = Math.floor(penalty / 3600) % 60
+          const minute = Math.floor(penalty / 60) % 60
+          const second = penalty % 60
+          return (
+            <span
+              className={clsx(
+                'transition-[font-size]',
+                table.options.meta?.expanded
+                  ? 'text-base tabular-nums'
+                  : fontSize[row.original.rank!]
+              )}
+            >
+              {hour}:{minute.toString().padStart(2, '0')}:
+              {second.toString().padStart(2, '0')}
+            </span>
+          )
+        },
+        enableSorting: false,
       }),
       ...contestScoreboard.contest.contestProblem.map((contestProblem) =>
         columnHelper.accessor(

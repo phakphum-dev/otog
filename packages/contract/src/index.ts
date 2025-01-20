@@ -383,7 +383,7 @@ const PrizeSchema = z.object({
 
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
-  totalTimeUsed: z.number(),
+  maxPenalty: z.number(),
   user: UserModel.pick({
     id: true,
     showName: true,
