@@ -150,6 +150,7 @@ export class ProblemService {
                     id: true,
                     status: true,
                     userId: true,
+                    public: true,
                   },
                   orderBy: { creationDate: 'desc' },
                   where: { userId: args.userId },
@@ -274,7 +275,7 @@ export class ProblemService {
         showName: true,
         rating: true,
         submission: {
-          select: { id: true, status: true, userId: true },
+          select: { id: true, status: true, userId: true, public: true },
           where: { status: SubmissionStatus.accept, problemId: args.problemId },
           orderBy: { creationDate: 'desc' },
           take: 1,
