@@ -33,6 +33,7 @@ import { clsx } from '@otog/ui/utils'
 
 import Logo from '../../public/logo512.png'
 import { useUserContext } from '../context/user-context'
+import { Search } from './search'
 import { ThemeToggle } from './theme-provider'
 import { UserAvatar } from './user-avatar'
 
@@ -81,6 +82,7 @@ export const Navbar = () => {
             </ul>
           </div>
           <div className="flex gap-2 max-lg:hidden">
+            <Search />
             <ThemeToggle />
             {user ? (
               <Menu user={user} />
