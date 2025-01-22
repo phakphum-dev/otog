@@ -77,6 +77,10 @@ function SearchCombobox({ onClose }: { onClose: () => void }) {
   )
   return (
     <Combobox.Root
+      open
+      disableLayer
+      inputBehavior="autohighlight"
+      selectionBehavior="clear"
       collection={collection}
       onValueChange={() => onClose()}
       onInputValueChange={({ inputValue }) => {
