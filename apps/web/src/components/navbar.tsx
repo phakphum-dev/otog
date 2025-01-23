@@ -189,7 +189,7 @@ const Menu = ({ user }: MenuProps) => {
           <ChevronDownIcon className="size-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel className="max-w-60 truncate">
           {user.showName}
         </DropdownMenuLabel>
