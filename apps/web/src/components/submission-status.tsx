@@ -45,7 +45,7 @@ export function SubmissionStatusIcon(props: { status?: SubmissionStatus }) {
 export const SubmissionStatusButton = ({
   submission,
 }: {
-  submission: Pick<Submission, 'id' | 'status' | 'userId'> | null
+  submission: Pick<Submission, 'id' | 'status' | 'userId' | 'public'> | null
 }) => {
   const [open, setOpen] = useState(false)
   const { user } = useUserContext()
@@ -61,7 +61,14 @@ export const SubmissionStatusButton = ({
       </div>
     )
   }
-  if (!user || !(submission.userId === user.id || user.role === 'admin')) {
+  if (
+    !user ||
+    !(
+      submission.userId === user.id ||
+      user.role === 'admin' ||
+      submission.public
+    )
+  ) {
     return (
       <div className="[&>svg]:size-5 size-10 inline-flex justify-center items-center">
         <SubmissionStatusIcon status={submission.status} />
