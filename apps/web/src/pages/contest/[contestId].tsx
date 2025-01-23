@@ -157,10 +157,11 @@ export default function ContestHistory({
       ...contestScoreboard.contest.contestProblem.map((contestProblem) =>
         columnHelper.accessor(
           (row) => {
-            const submission = row.submissions.find(
-              (submission) => submission.problemId === contestProblem.problemId
+            const problemResult = row.problemResults.find(
+              (problemResult) =>
+                problemResult.problemId === contestProblem.problemId
             )
-            return submission?.submissionResult?.score
+            return problemResult?.score
           },
           {
             id: `problem-${contestProblem.problemId.toString()}`,

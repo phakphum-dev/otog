@@ -381,6 +381,13 @@ const PrizeSchema = z.object({
   user: UserModel.pick({ id: true, showName: true }).nullable(),
 })
 
+export const ProblemResultSchema = z.object({
+  problemId: z.number(),
+  score: z.number(),
+  penalty: z.number(),
+})
+export type ProblemResultSchema = z.infer<typeof ProblemResultSchema>
+
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
   maxPenalty: z.number(),
@@ -390,21 +397,7 @@ export const UserContestScoreboard = UserContestModel.extend({
     role: true,
     rating: true,
   }),
-  submissions: z.array(
-    SubmissionModel.pick({
-      id: true,
-      problemId: true,
-      status: true,
-      userId: true,
-    }).extend({
-      submissionResult: SubmissionResultModel.pick({
-        id: true,
-        timeUsed: true,
-        score: true,
-        memUsed: true,
-      }).nullable(),
-    })
-  ),
+  problemResults: z.array(ProblemResultSchema),
 })
 export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
 

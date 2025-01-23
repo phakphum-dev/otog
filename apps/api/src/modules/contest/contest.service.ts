@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { Role } from 'src/core/constants'
 import { PrismaService } from 'src/core/database/prisma.service'
+import { number, z } from 'zod'
 
-import { UserContestScoreboard } from '@otog/contract'
+import { ProblemResultSchema, UserContestScoreboard } from '@otog/contract'
 import { Prisma } from '@otog/database'
 
 @Injectable()
@@ -67,60 +68,168 @@ export class ContestService {
     if (!contest) {
       return null
     }
-    const lastSubmissions = await this.prisma.submission.groupBy({
-      _max: {
-        id: true,
-      },
-      by: ['userId', 'problemId'],
-      where: {
-        user: { role: Role.User },
-        contestId,
-      },
-    })
-    const submissionIds = lastSubmissions
-      .map((submission) => submission._max.id)
-      .filter((id): id is number => id !== null)
-    const submissions = await this.prisma.submission.findMany({
-      where: { id: { in: submissionIds } },
-      select: {
-        id: true,
-        problemId: true,
-        status: true,
-        userId: true,
-        creationDate: true,
-        submissionResult: {
+
+    const userIdToProblemResults = new Map<number, ProblemResultSchema[]>()
+    switch (contest.gradingMode) {
+      case 'bestSubmission':
+        const bestSubmissions = await this.prisma.$queryRaw(Prisma.sql`
+          WITH "RankedSubmissions" AS (
+            SELECT
+              s."userId", s."problemId", s."creationDate", sr.score,
+              ROW_NUMBER() OVER (
+                PARTITION BY s."userId", s."problemId"
+                ORDER BY sr.score DESC, s.id ASC
+              ) AS rank
+            FROM submission s
+            JOIN "submissionResult" sr ON s.id = sr."submissionId"
+            WHERE s."contestId" = ${contestId}
+          )
+          SELECT "userId", "problemId", "creationDate", score
+          FROM "RankedSubmissions"
+          WHERE rank = 1;
+        `)
+        const bestSubmissionsSchema = z.array(
+          z.object({
+            userId: number(),
+            problemId: number(),
+            score: number(),
+            creationDate: z.coerce.date(),
+          })
+        )
+        bestSubmissionsSchema.parse(bestSubmissions).forEach((submission) => {
+          const problemResult = ProblemResultSchema.parse({
+            problemId: submission.problemId,
+            score: submission.score,
+            penalty:
+              submission.score > 0
+                ? Math.floor(
+                    (submission.creationDate.getTime() -
+                      contest.timeStart.getTime()) /
+                      1000
+                  )
+                : 0,
+          })
+          if (userIdToProblemResults.has(submission.userId)) {
+            userIdToProblemResults.get(submission.userId)!.push(problemResult)
+          } else {
+            userIdToProblemResults.set(submission.userId, [problemResult])
+          }
+        })
+        break
+      case 'bestSubtask':
+        const bestSubtasks = await this.prisma.$queryRaw(Prisma.sql`
+          WITH "RankedSubtasks" AS (
+            SELECT
+              s."userId", s."problemId", s."creationDate", st.score,
+              ROW_NUMBER() OVER (
+                PARTITION BY s."userId", s."problemId", st."subtaskIndex"
+                ORDER BY st.score DESC, s.id ASC
+              ) AS rank
+            FROM submission s
+            JOIN "submissionResult" sr ON s.id = sr."submissionId"
+            JOIN "subtaskResult" st ON sr.id = st."submissionResultId"
+            WHERE s."contestId" = ${contestId}
+          )
+          SELECT
+            "userId", "problemId", MAX("creationDate") AS "creationDate", SUM("score") AS "score"
+          FROM "RankedSubtasks"
+          WHERE rank = 1
+          GROUP BY "userId", "problemId"
+        `)
+        const bestSubtasksSchema = z.array(
+          z.object({
+            userId: number(),
+            problemId: number(),
+            score: number(),
+            creationDate: z.coerce.date(),
+          })
+        )
+        bestSubtasksSchema.parse(bestSubtasks).forEach((submission) => {
+          const problemResult = ProblemResultSchema.parse({
+            problemId: submission.problemId,
+            score: submission.score,
+            penalty:
+              submission.score > 0
+                ? Math.floor(
+                    (submission.creationDate.getTime() -
+                      contest.timeStart.getTime()) /
+                      1000
+                  )
+                : 0,
+          })
+          if (userIdToProblemResults.has(submission.userId)) {
+            userIdToProblemResults.get(submission.userId)!.push(problemResult)
+          } else {
+            userIdToProblemResults.set(submission.userId, [problemResult])
+          }
+        })
+        break
+      default:
+        const lastSubmissions = await this.prisma.submission.groupBy({
+          _max: {
+            id: true,
+          },
+          by: ['userId', 'problemId'],
+          where: {
+            user: { role: Role.User },
+            contestId,
+          },
+        })
+        const submissionIds = lastSubmissions
+          .map((submission) => submission._max.id)
+          .filter((id): id is number => id !== null)
+        const submissions = await this.prisma.submission.findMany({
+          where: { id: { in: submissionIds } },
           select: {
             id: true,
-            score: true,
-            timeUsed: true,
-            memUsed: true,
+            problemId: true,
+            status: true,
+            userId: true,
+            creationDate: true,
+            submissionResult: {
+              select: {
+                id: true,
+                score: true,
+                timeUsed: true,
+                memUsed: true,
+              },
+            },
           },
-        },
-      },
-    })
+        })
+        submissions.forEach((submission) => {
+          const problemResult = ProblemResultSchema.parse({
+            problemId: submission.problemId,
+            score: submission.submissionResult?.score ?? 0,
+            penalty:
+              (submission.submissionResult?.score ?? 0) > 0
+                ? Math.floor(
+                    (submission.creationDate.getTime() -
+                      contest.timeStart.getTime()) /
+                      1000
+                  )
+                : 0,
+          })
+          if (userIdToProblemResults.has(submission.userId)) {
+            userIdToProblemResults.get(submission.userId)!.push(problemResult)
+          } else {
+            userIdToProblemResults.set(submission.userId, [problemResult])
+          }
+        })
+    }
 
-    const userIdToSubmissions = new Map<number, typeof submissions>()
-    submissions.forEach((submission) => {
-      if (userIdToSubmissions.has(submission.userId)) {
-        userIdToSubmissions.get(submission.userId)!.push(submission)
-      } else {
-        userIdToSubmissions.set(submission.userId, [submission])
-      }
-    })
     const userContestScoreboards: UserContestScoreboard[] =
       contest.userContest.map((userContest) => {
-        const submissions = userIdToSubmissions.get(userContest.userId) ?? []
-        const totalScore = submissions
-          .map((s) => s.submissionResult?.score ?? 0)
+        const problemResults =
+          userIdToProblemResults.get(userContest.userId) ?? []
+        const totalScore = problemResults
+          .map((problemResult) => problemResult.score)
           .reduce((acc, val) => acc + val, 0)
-        const maxPenalty = Math.floor(
-          submissions
-            .map((s) => s.creationDate.getTime() - contest.timeStart.getTime())
-            .reduce((acc, val) => Math.max(acc, val), 0) / 1000
-        )
+        const maxPenalty = problemResults
+          .map((problemResult) => problemResult.penalty)
+          .reduce((acc, val) => Math.max(acc, val), 0)
         return {
           ...userContest,
-          submissions,
+          problemResults,
           totalScore,
           maxPenalty,
         }
