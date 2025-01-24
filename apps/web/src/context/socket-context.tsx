@@ -23,14 +23,13 @@ export const SocketProvider = ({ children }: { children?: ReactNode }) => {
   const { isAuthenticated } = useUserContext()
   const { data: session } = useSession()
   useEffect(() => {
-    if (!environment.OFFLINE_MODE && isAuthenticated) {
-      const socketClient = socketIOClient(environment.SOCKET_HOST, {
-        auth: { token: session?.accessToken },
-      })
-      setSocket(socketClient)
-      return () => {
-        socketClient.disconnect()
-      }
+    if (environment.OFFLINE_MODE || !isAuthenticated) return
+    const socketClient = socketIOClient(environment.SOCKET_HOST, {
+      auth: { token: session?.accessToken },
+    })
+    setSocket(socketClient)
+    return () => {
+      socketClient.disconnect()
     }
   }, [session?.accessToken, isAuthenticated])
 
