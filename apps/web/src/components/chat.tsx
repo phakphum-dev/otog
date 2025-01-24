@@ -83,7 +83,6 @@ export function Chat() {
   const isIntersecting = entry?.isIntersecting
   useEffect(() => {
     if (isIntersecting) {
-      console.log('fetchNextPage()')
       fetchNextPage()
     }
   }, [isIntersecting])
@@ -577,23 +576,21 @@ const useChat = (isOpen: boolean) => {
   const { socket } = useSocketContext()
   const { isAuthenticated } = useUserContext()
   useEffect(() => {
-    if (socket) {
-      if (isAuthenticated) {
-        dispatch({ type: 'start' })
-      } else {
-        dispatch({ type: 'clear' })
-      }
+    if (!socket) return
+    if (isAuthenticated) {
+      dispatch({ type: 'start' })
+    } else {
+      dispatch({ type: 'clear' })
     }
   }, [socket, dispatch, isAuthenticated])
 
   useEffect(() => {
-    if (socket) {
-      socket.on('chat', (message: SocketMessage) => {
-        dispatch({ type: 'new-message', payload: { message, isOpen } })
-      })
-      return () => {
-        socket.off('chat')
-      }
+    if (!socket) return
+    socket.on('chat', (message: SocketMessage) => {
+      dispatch({ type: 'new-message', payload: { message, isOpen } })
+    })
+    return () => {
+      socket.off('chat')
     }
   }, [socket, isOpen, dispatch])
 

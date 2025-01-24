@@ -1,4 +1,4 @@
-import { Controller, Res, UseGuards } from '@nestjs/common'
+import { Controller, Post, Res, UseGuards } from '@nestjs/common'
 import {
   TsRestHandler,
   nestControllerContract,
@@ -36,7 +36,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @OfflineAccess(AccessState.Public)
-  @TsRestHandler(c.login)
+  @Post('/auth/login')
   async login(@User() userData: UserDTO, @Res() res: Response) {
     const { token, user } = await this.authService.login(userData)
     const authResDTO = new AuthResDTO()
