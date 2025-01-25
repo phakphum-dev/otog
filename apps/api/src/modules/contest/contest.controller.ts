@@ -51,6 +51,19 @@ export class ContestController {
     })
   }
 
+  @TsRestHandler(c.getContestDetail)
+  @OfflineAccess(AccessState.Authenticated)
+  getContestDetail() {
+    return tsRestHandler(
+      c.getContestDetail,
+      async ({ params: { contestId } }) => {
+        const id = z.coerce.number().parse(contestId)
+        const contest = await this.contestService.getContestDetail(id)
+        return { status: 200, body: contest }
+      }
+    )
+  }
+
   @TsRestHandler(c.getContestScoreboard)
   getContestScoreboard(@User() user?: UserDTO) {
     return tsRestHandler(

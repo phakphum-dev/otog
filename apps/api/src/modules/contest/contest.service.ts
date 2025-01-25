@@ -59,7 +59,41 @@ export class ContestService {
   findOneById(contestId: number) {
     return this.prisma.contest.findUnique({
       where: { id: contestId },
-      include: { contestProblem: true },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        timeStart: true,
+        timeEnd: true,
+        announce: true,
+      }
+    })
+  }
+
+  getContestDetail(contestId: number) {
+    return this.prisma.contest.findUnique({
+      where: { id: contestId },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        timeStart: true,
+        timeEnd: true,
+        contestProblem: {
+          select: {
+            problem: {
+              select: {
+                id: true,
+                name: true,
+                score: true,
+              },
+            },
+          },
+        },
+        announce: true,
+      },
     })
   }
 

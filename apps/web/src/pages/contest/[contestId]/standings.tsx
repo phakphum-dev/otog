@@ -19,9 +19,9 @@ import { Link } from '@otog/ui/link'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
-import { withQuery } from '../../api/server'
-import { TableComponent } from '../../components/table-component'
-import { UserAvatar } from '../../components/user-avatar'
+import { withQuery } from '../../../api/server'
+import { TableComponent } from '../../../components/table-component'
+import { UserAvatar } from '../../../components/user-avatar'
 
 interface ContestHistoryProps {
   contestScoreboard: ContestScoreboard

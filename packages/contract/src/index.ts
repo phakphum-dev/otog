@@ -453,6 +453,14 @@ export const contestRouter = contract.router(
       },
       summary: 'Get a contest',
     },
+    getContestDetail: {
+      method: 'GET',
+      path: '/:contestId/detail',
+      responses: {
+        200: ContestModel.nullable(),
+      },
+      summary: 'Get a contest with detail',
+    },
     getContestScoreboard: {
       method: 'GET',
       path: '/:contestId/scoreboard',
