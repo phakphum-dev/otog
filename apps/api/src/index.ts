@@ -1,5 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { DocumentBuilder } from '@nestjs/swagger'
+import { apiReference } from '@scalar/nestjs-api-reference'
 import { generateOpenApi } from '@ts-rest/open-api'
 import cookieParser from 'cookie-parser'
 
@@ -32,8 +33,15 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .build()
-    const document = generateOpenApi(router, config)
-    SwaggerModule.setup('doc', app, document)
+    const OpenApiSpecification = generateOpenApi(router, config)
+    app.use(
+      '/doc',
+      apiReference({
+        spec: {
+          content: OpenApiSpecification,
+        },
+      })
+    )
   }
 
   await app.listen(environment.PORT)
