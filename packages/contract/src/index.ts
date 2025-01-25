@@ -94,7 +94,12 @@ export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
 const ListPaginationQuerySchema = z.object({
   limit: z.coerce.number(),
   skip: z.coerce.number(),
+  search: z.string().optional(),
 })
+
+export type ListPaginationQuerySchema = z.infer<
+  typeof ListPaginationQuerySchema
+>
 
 export const ChatMessage = ChatModel.pick({
   id: true,
@@ -499,6 +504,18 @@ export const contestRouter = contract.router(
       },
       summary: 'Sign up for a contest',
     },
+    getAdminContests: {
+      method: 'GET',
+      path: '/admin/list',
+      query: ListPaginationQuerySchema,
+      responses: {
+        200: z.object({
+          data: z.array(ContestModel),
+          total: z.number(),
+        }),
+      },
+      summary: 'List paginated contests for admin',
+    },
   },
   { pathPrefix: '/contest' }
 )
@@ -583,9 +600,7 @@ export const problemRouter = contract.router(
           data: z.array(AdminProblemSchema),
         }),
       },
-      query: ListPaginationQuerySchema.extend({
-        search: z.string().optional(),
-      }),
+      query: ListPaginationQuerySchema,
       summary: 'Get paginated problems for admin',
     },
     getPassedUsers: {

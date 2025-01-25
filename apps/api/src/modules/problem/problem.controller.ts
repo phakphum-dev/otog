@@ -241,7 +241,7 @@ export class ProblemController {
 
   @TsRestHandler(c.getAdminProblems, { jsonQuery: true })
   @Roles(Role.Admin)
-  getProblems(@User() user?: UserDTO) {
+  getAdminProblems(@User() user?: UserDTO) {
     return tsRestHandler(
       c.getAdminProblems,
       async ({ query: { skip = 0, limit = 10, search } }) => {

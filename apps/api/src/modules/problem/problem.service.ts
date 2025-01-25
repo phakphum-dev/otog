@@ -16,6 +16,7 @@ import {
   updateProblemDoc,
   updateProblemTestCase,
 } from 'src/utils/file.util'
+import { searchId } from 'src/utils/search'
 
 import { PassedUserSchema, ProblemTableRowSchema } from '@otog/contract'
 import { Prisma, SubmissionStatus, User, UserRole } from '@otog/database'
@@ -374,12 +375,4 @@ export class ProblemService {
         : undefined,
     })
   }
-}
-
-function searchId(search: string | undefined) {
-  const searchAsNumber = parseInt(search ?? '')
-  if (Number.isNaN(searchAsNumber)) {
-    return {} as {}
-  }
-  return { id: { equals: searchAsNumber } }
 }

@@ -156,4 +156,25 @@ export class ContestController {
   }
 
   //  TODO who have join the contest?
+
+  @TsRestHandler(c.getAdminContests, { jsonQuery: true })
+  @Roles(Role.Admin)
+  getAdminContests() {
+    return tsRestHandler(
+      c.getAdminContests,
+      async ({ query: { limit = 10, skip = 0, search } }) => {
+        const [contests, total] = await Promise.all([
+          this.contestService.getAdminContests({
+            limit,
+            skip,
+            search,
+          }),
+          this.contestService.getAdminContestCount({
+            search,
+          }),
+        ])
+        return { status: 200, body: { data: contests, total } }
+      }
+    )
+  }
 }
