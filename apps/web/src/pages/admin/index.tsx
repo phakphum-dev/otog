@@ -370,6 +370,7 @@ const columnHelper = createColumnHelper<AdminProblemSchema>()
 const columns = [
   columnHelper.accessor('id', {
     header: '#',
+    enableSorting: false, // TODO: sort by id
   }),
   columnHelper.accessor('name', {
     header: 'ขื่อ',
@@ -382,13 +383,16 @@ const columns = [
         {getValue()}
       </Link>
     ),
+    enableSorting: false,
   }),
   columnHelper.accessor('sname', {
     header: 'ขื่อเล่น',
     cell: ({ getValue }) => getValue() ?? '-',
+    enableSorting: false,
   }),
   columnHelper.accessor('score', {
     header: 'คะแนน',
+    enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end',
@@ -397,6 +401,7 @@ const columns = [
   columnHelper.accessor('timeLimit', {
     header: 'เวลา',
     cell: ({ getValue }) => getValue() / 1000,
+    enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end',
@@ -405,6 +410,7 @@ const columns = [
 
   columnHelper.accessor('memoryLimit', {
     header: 'หน่วยความจำ',
+    enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end',
@@ -412,6 +418,7 @@ const columns = [
   }),
   columnHelper.accessor('case', {
     header: 'จำนวนเคส',
+    enableSorting: false,
     meta: {
       headClassName: 'text-end',
       cellClassName: 'text-end',
