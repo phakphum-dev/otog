@@ -12,41 +12,57 @@ import NextLink from 'next/link'
 
 import {
   ContestPrize,
+  ContestSchema,
   ContestScoreboard,
   UserContestScoreboard,
 } from '@otog/contract'
 import { Link } from '@otog/ui/link'
+import { SidebarInset, SidebarProvider } from '@otog/ui/sidebar'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../../api/server'
+import { ContestSidebar } from '../../../components/contest-sidebar'
 import { TableComponent } from '../../../components/table-component'
 import { UserAvatar } from '../../../components/user-avatar'
 
-interface ContestHistoryProps {
+interface ContestScoreboardProps {
+  contest: ContestSchema
   contestScoreboard: ContestScoreboard
   contestPrize: ContestPrize
 }
 
-export const getServerSideProps = withQuery<ContestHistoryProps>(
+export const getServerSideProps = withQuery<ContestScoreboardProps>(
   async ({ context, query }) => {
     const contestId = context.query.contestId as string
     if (Number.isNaN(parseInt(contestId))) {
       return { notFound: true }
     }
-    const [getContestScoreboard, getContestPrize] = await Promise.all([
-      query.contest.getContestScoreboard.query({
-        params: { contestId: contestId },
-      }),
-      query.contest.getContestPrize.query({
-        params: { contestId: contestId },
-      }),
-    ])
-    if (getContestScoreboard.status !== 200 || getContestPrize.status !== 200) {
+    const [getContest, getContestScoreboard, getContestPrize] =
+      await Promise.all([
+        query.contest.getContest.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestScoreboard.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestPrize.query({
+          params: { contestId: contestId },
+        }),
+      ])
+    if (
+      getContest.status !== 200 ||
+      getContestScoreboard.status !== 200 ||
+      getContestPrize.status !== 200
+    ) {
+      return { notFound: true }
+    }
+    if (getContest.body === null) {
       return { notFound: true }
     }
     return {
       props: {
+        contest: getContest.body,
         contestScoreboard: getContestScoreboard.body,
         contestPrize: getContestPrize.body,
       },
@@ -54,10 +70,28 @@ export const getServerSideProps = withQuery<ContestHistoryProps>(
   }
 )
 
-export default function ContestHistory({
+export default function ContestScoreboardPage(props: ContestScoreboardProps) {
+  return (
+    <>
+      <Head>
+        <title>Contest Scoreboard {props.contest.id} | OTOG</title>
+      </Head>
+      <SidebarProvider>
+        <ContestSidebar contest={props.contest} />
+        <SidebarInset>
+          <Scoreboard {...props} />
+        </SidebarInset>
+      </SidebarProvider>
+    </>
+  )
+}
+ContestScoreboardPage.footer = false
+
+export function Scoreboard({
+  contest,
   contestScoreboard,
   contestPrize,
-}: ContestHistoryProps) {
+}: ContestScoreboardProps) {
   const columnHelper = createColumnHelper<UserContestScoreboard>()
   const columns = useMemo(
     () => [
@@ -204,23 +238,23 @@ export default function ContestHistory({
     }
   }, [expanded])
   return (
-    <main id="#content" className="container flex flex-1 flex-col gap-6 py-8">
-      <Head>
-        <title>Contest History {contestScoreboard.contest.id} | OTOG</title>
-      </Head>
-      <section>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="font-heading text-2xl font-semibold">
-            {contestScoreboard.contest.name}
-          </h1>
-          <Toggle
-            pressed={!expanded}
-            onPressedChange={() => setExpanded((expanded) => !expanded)}
-          >
-            <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
-          </Toggle>
-        </div>
-        <TableComponent
+    <section
+      id="#content"
+      className="flex flex-1 flex-col gap-6 py-8 max-w-fit"
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="font-heading text-2xl font-semibold">
+          {contestScoreboard.contest.name}
+        </h1>
+        <Toggle
+          pressed={!expanded}
+          onPressedChange={() => setExpanded((expanded) => !expanded)}
+        >
+          <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
+        </Toggle>
+      </div>
+      <div className="w-[1000px] bg-red-500 h-10">
+        {/* <TableComponent
           table={table}
           classNames={{
             container: 'border-transparent',
@@ -229,13 +263,14 @@ export default function ContestHistory({
             head: clsx(expanded ? 'text-right' : 'text-center'),
             cell: clsx(expanded ? 'text-right' : 'text-center'),
           }}
-        />
-      </section>
-      <Prize
+        /> */}
+      </div>
+      {/* <Prize
+        contest={contest}
         contestScoreboard={contestScoreboard}
         contestPrize={contestPrize}
-      />
-    </main>
+      /> */}
+    </section>
   )
 }
 
@@ -247,7 +282,7 @@ const fontSize: Record<number, string> = {
   5: 'text-lg',
 }
 
-export function Prize(props: ContestHistoryProps) {
+export function Prize(props: ContestScoreboardProps) {
   const data = useMemo(
     () =>
       Object.entries(props.contestPrize).map(([prizeName, users]) => ({

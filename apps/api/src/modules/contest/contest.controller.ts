@@ -47,6 +47,9 @@ export class ContestController {
     return tsRestHandler(c.getContest, async ({ params: { contestId } }) => {
       const id = z.coerce.number().parse(contestId)
       const contest = await this.contestService.findOneById(id)
+      if (!contest) {
+        return { status: 404, body: { message: 'Not Found' } }
+      }
       return { status: 200, body: contest }
     })
   }
@@ -59,6 +62,13 @@ export class ContestController {
       async ({ params: { contestId } }) => {
         const id = z.coerce.number().parse(contestId)
         const contest = await this.contestService.getContestDetail(id)
+        const time = Date.now()
+        if (!contest) {
+          return { status: 404, body: { message: 'Not Found' } }
+        }
+        if (contest.timeStart.getTime() < time) {
+          return  {status: 403, body: {message: 'Forbidden'}}
+        }
         return { status: 200, body: contest }
       }
     )

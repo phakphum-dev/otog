@@ -112,7 +112,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                       <Navbar />
                       <Component {...props} />
                       <Chat />
-                      <Footer />
+                      {((Component as any).footer ?? true) && <Footer />}
                     </div>
                     <Toaster
                       position="bottom-center"

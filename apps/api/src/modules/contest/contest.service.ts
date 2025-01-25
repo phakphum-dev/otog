@@ -3,7 +3,12 @@ import * as R from 'remeda'
 import { Role } from 'src/core/constants'
 import { PrismaService } from 'src/core/database/prisma.service'
 
-import { ProblemResultSchema, UserContestScoreboard } from '@otog/contract'
+import {
+  ContestDetailSchema,
+  ContestSchema,
+  ProblemResultSchema,
+  UserContestScoreboard,
+} from '@otog/contract'
 import { Prisma } from '@otog/database'
 
 const WITHOUT_SUBTASK = {
@@ -56,7 +61,7 @@ export class ContestService {
     })
   }
 
-  findOneById(contestId: number) {
+  findOneById(contestId: number): Promise<ContestSchema | null> {
     return this.prisma.contest.findUnique({
       where: { id: contestId },
       select: {
@@ -67,11 +72,13 @@ export class ContestService {
         timeStart: true,
         timeEnd: true,
         announce: true,
-      }
+      },
     })
   }
 
-  getContestDetail(contestId: number) {
+  async getContestDetail(
+    contestId: number
+  ): Promise<ContestDetailSchema | null> {
     return this.prisma.contest.findUnique({
       where: { id: contestId },
       select: {

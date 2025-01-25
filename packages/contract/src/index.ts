@@ -375,6 +375,30 @@ export const userRouter = contract.router(
   { pathPrefix: '/user' }
 )
 
+export const ContestSchema = ContestModel.pick({
+  id: true,
+  name: true,
+  mode: true,
+  gradingMode: true,
+  timeStart: true,
+  timeEnd: true,
+  announce: true,
+})
+export type ContestSchema = z.infer<typeof ContestSchema>
+
+export const ContestDetailSchema = ContestSchema.extend({
+  contestProblem: z.array(
+    z.object({
+      problem: ProblemModel.pick({
+        id: true,
+        name: true,
+        score: true,
+      }),
+    })
+  ),
+})
+export type ContestDetailSchema = z.infer<typeof ContestDetailSchema>
+
 const PrizeSchema = z.object({
   id: z.number(),
   problem: ProblemModel.pick({ id: true }).nullable(),
@@ -449,7 +473,7 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId',
       responses: {
-        200: ContestModel.nullable(),
+        200: ContestSchema.nullable(),
       },
       summary: 'Get a contest',
     },
@@ -457,7 +481,7 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId/detail',
       responses: {
-        200: ContestModel.nullable(),
+        200: ContestDetailSchema.nullable(),
       },
       summary: 'Get a contest with detail',
     },
