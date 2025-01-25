@@ -9,7 +9,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
-import { SubmissionWithSourceCodeSchema } from '@otog/contract'
+import { SubmissionDetailSchema } from '@otog/contract'
 import { Problem } from '@otog/database'
 import { Button } from '@otog/ui/button'
 import {
@@ -35,7 +35,7 @@ import { Language, LanguageName } from '../../enums'
 import { SubmitCode } from '../../modules/problem/submit-code'
 
 interface WriteSolutionPageProps {
-  submission: SubmissionWithSourceCodeSchema | null
+  submission: SubmissionDetailSchema | null
   problem: Problem
 }
 

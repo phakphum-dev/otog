@@ -4,32 +4,65 @@ import { Multer } from 'multer'
 import { PrismaService } from 'src/core/database/prisma.service'
 import { scodeFileFilter, scodeFileSizeLimit } from 'src/utils'
 
-import { SubmissionStatus, UserRole } from '@otog/database'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { WITHOUT_PASSWORD } from '../user/user.service'
 
-export const WITHOUT_SOURCECODE = {
+export const WITHOUT_DETAIL = {
   id: true,
-  result: true,
-  score: true,
-  timeUsed: true,
   status: true,
-  errmsg: true,
   contestId: true,
   language: true,
   creationDate: true,
   public: true,
   userId: true,
   problem: {
-    select: { id: true, name: true, timeLimit: true, memoryLimit: true },
+    select: {
+      id: true,
+      name: true,
+      timeLimit: true,
+      memoryLimit: true,
+      score: true,
+    },
   },
   user: { select: WITHOUT_PASSWORD },
-} as const
+  submissionResult: {
+    select: {
+      id: true,
+      score: true,
+      timeUsed: true,
+      memUsed: true,
+      result: true,
+      errmsg: true,
+    },
+  },
+} satisfies Prisma.SubmissionSelect
 
-const WITH_SOURCECODE = {
-  ...WITHOUT_SOURCECODE,
+const WITH_DETAIL = {
+  ...WITHOUT_DETAIL,
   sourceCode: true,
-}
+  submissionResult: {
+    select: {
+      id: true,
+      score: true,
+      timeUsed: true,
+      memUsed: true,
+      result: true,
+      errmsg: true,
+      subtaskResults: {
+        select: {
+          score: true,
+          fullScore: true,
+          subtaskIndex: true,
+          verdicts: {
+            orderBy: { testcaseIndex: 'asc' },
+          },
+        },
+        orderBy: { subtaskIndex: 'asc' },
+      },
+    },
+  },
+} satisfies Prisma.SubmissionSelect
 
 @Injectable()
 export class SubmissionService {
@@ -51,7 +84,7 @@ export class SubmissionService {
           : undefined,
       },
       take: args.limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -73,7 +106,7 @@ export class SubmissionService {
           : undefined,
       },
       take: args.limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -85,7 +118,7 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -93,14 +126,14 @@ export class SubmissionService {
   async findOneByResultId(resultId: number) {
     return this.prisma.submission.findUnique({
       where: { id: resultId },
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
     })
   }
 
   async findOneByResultIdWithCode(resultId: number) {
     return this.prisma.submission.findUnique({
       where: { id: resultId },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
@@ -141,7 +174,7 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -153,7 +186,7 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -162,7 +195,7 @@ export class SubmissionService {
     return this.prisma.submission.findFirst({
       where: { userId },
       orderBy: { id: 'desc' },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
@@ -170,7 +203,7 @@ export class SubmissionService {
     return this.prisma.submission.findFirst({
       where: { userId, problemId },
       orderBy: { id: 'desc' },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
@@ -184,7 +217,7 @@ export class SubmissionService {
       .map((group) => group._max.id)
       .filter((id): id is number => id !== null)
     return this.prisma.submission.findMany({
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       where: {
         id: { in: ids },
         user: { role: { not: UserRole.admin } },
@@ -220,20 +253,27 @@ export class SubmissionService {
     })
   }
 
-  async setSubmissionStatusToWaiting(submissionId: number) {
-    return this.prisma.submission.update({
-      where: { id: submissionId },
-      data: { status: SubmissionStatus.waiting, result: 'Rejudging' },
-      select: WITHOUT_SOURCECODE,
-    })
+  async rejudgeSubmission(submissionId: number) {
+    const [_, submission] = await this.prisma.$transaction([
+      this.prisma.submissionResult.delete({ where: { submissionId } }),
+      this.prisma.submission.update({
+        where: { id: submissionId },
+        data: { status: SubmissionStatus.waiting },
+        select: WITHOUT_DETAIL,
+      }),
+    ])
+    return submission
   }
 
-  async setAllLatestSubmissionStatusToWaiting(problemId: number) {
-    const submissionIds = await this.findLatestSubmissionIds(problemId)
-    const ids = submissionIds.filter((id): id is number => id !== null)
-    return this.prisma.submission.updateMany({
-      where: { id: { in: ids } },
-      data: { status: SubmissionStatus.waiting, result: 'Rejudging' },
-    })
+  async rejudgeProblem(problemId: number) {
+    const [_, submission] = await this.prisma.$transaction([
+      this.prisma.submissionResult.deleteMany({
+        where: { submission: { problemId } },
+      }),
+      this.prisma.submission.updateMany({
+        where: { problemId },
+        data: { status: SubmissionStatus.waiting },
+      }),
+    ])
   }
 }
