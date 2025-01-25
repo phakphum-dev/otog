@@ -37,6 +37,15 @@ import { z } from 'zod'
 
 import { AdminProblemSchema } from '@otog/contract'
 import { UserRole } from '@otog/database'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from '@otog/ui/alert-dialog'
 import { Button } from '@otog/ui/button'
 import {
   Dialog,
@@ -425,6 +434,7 @@ const columns = [
 
 const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
   const [openEditProblem, setOpenEditProblem] = useState(false)
+  const [openRejudgeProblem, setOpenRejudgeProblem] = useState(false)
   const rejudgeProblem = submissionQuery.rejudgeProblem.useMutation()
   return (
     <>
@@ -439,22 +449,7 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
             <PencilIcon />
             แก้ไขโจทย์
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              const toastId = toast.loading('กำลังส่งการตรวจใหม่...')
-              rejudgeProblem.mutateAsync(
-                { params: { problemId: row.original.id.toString() } },
-                {
-                  onSuccess: () => {
-                    toast.success('ส่งการตรวจใหม่แล้ว', { id: toastId })
-                  },
-                  onError: () => {
-                    toast.error('ไม่สามารถส่งตรวจได้', { id: toastId })
-                  },
-                }
-              )
-            }}
-          >
+          <DropdownMenuItem onClick={() => setOpenRejudgeProblem(true)}>
             <ArrowPathIcon className="size-4" />
             ตรวจข้อนี้ใหม่
           </DropdownMenuItem>
@@ -465,6 +460,39 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
         open={openEditProblem}
         setOpen={setOpenEditProblem}
       />
+      <AlertDialog
+        open={openRejudgeProblem}
+        onOpenChange={setOpenRejudgeProblem}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>ยืนยันการตรวจข้อนี้ใหม่</AlertDialogTitle>
+          <AlertDialogDescription>
+            การตรวจข้อนี้ใหม่จะส่งการตรวจทั้งหมด และจะไม่สามารถยกเลิกได้
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const toastId = toast.loading('กำลังส่งการตรวจใหม่...')
+                rejudgeProblem.mutateAsync(
+                  { params: { problemId: row.original.id.toString() } },
+                  {
+                    onSuccess: () => {
+                      toast.success('ส่งการตรวจใหม่แล้ว', { id: toastId })
+                      setOpenRejudgeProblem(false)
+                    },
+                    onError: () => {
+                      toast.error('ไม่สามารถส่งตรวจได้', { id: toastId })
+                    },
+                  }
+                )
+              }}
+            >
+              ยืนยัน
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
@@ -709,7 +737,7 @@ const EditProblemForm = ({
             </FormItem>
           )}
         />
-        <div className="flex gap-4 justify-end col-span-full">
+        <div className="flex gap-2 justify-end col-span-full">
           <DialogClose asChild>
             <Button variant="secondary">ยกเลิก</Button>
           </DialogClose>

@@ -72,7 +72,7 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex flex-col-reverse sm:flex-row-reverse gap-2', className)}
+    className={cn('flex flex-col sm:flex-row-reverse gap-2', className)}
     {...props}
   />
 )
