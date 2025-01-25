@@ -94,6 +94,7 @@ export class ProblemService {
       const problem = await this.prisma.problem.update({
         data: {
           name: problemData.name,
+          sname: problemData.sname,
           score: problemData.score,
           timeLimit: problemData.timeLimit,
           memoryLimit: problemData.memoryLimit,
@@ -102,7 +103,7 @@ export class ProblemService {
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
       })
-      if (files.pdf) {
+      if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
@@ -110,16 +111,17 @@ export class ProblemService {
           this.fileManager
         )
       }
-      if (files.zip) {
+      if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
-          files.pdf?.[0]?.path as string,
+          files.zip[0]?.path as string,
           this.fileManager
         )
       }
       return problem
     } catch (err) {
+      console.error(err)
       throw new BadRequestException()
     }
   }
@@ -327,4 +329,57 @@ export class ProblemService {
       throw new BadRequestException()
     }
   }
+
+  async getAdminProblems(args: {
+    skip: number
+    limit: number
+    search?: string
+  }) {
+    return await this.prisma.problem.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+        show: true,
+        case: true,
+        memoryLimit: true,
+        timeLimit: true,
+        recentShowTime: true,
+        score: true,
+      },
+      orderBy: { id: 'desc' },
+    })
+  }
+  async getAdminProblemCount(args: { search?: string }) {
+    return await this.prisma.problem.count({
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+    })
+  }
+}
+
+function searchId(search: string | undefined) {
+  const searchAsNumber = parseInt(search ?? '')
+  if (Number.isNaN(searchAsNumber)) {
+    return {} as {}
+  }
+  return { id: { equals: searchAsNumber } }
 }

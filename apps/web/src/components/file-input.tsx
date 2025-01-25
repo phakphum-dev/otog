@@ -1,12 +1,16 @@
 import { forwardRef, useId } from 'react'
 
-import { FileUpload, useFileUpload } from '@ark-ui/react/file-upload'
+import {
+  FileUpload,
+  UseFileUploadProps,
+  useFileUpload,
+} from '@ark-ui/react/file-upload'
 
 import { Button } from '@otog/ui/button'
 import { inputStyles } from '@otog/ui/input'
-import { cn } from '@otog/ui/utils'
+import { clsx } from '@otog/ui/utils'
 
-export interface FileInputProps {
+export interface FileInputProps extends UseFileUploadProps {
   onChange: (file: File | undefined) => void
 }
 export const FileInput = forwardRef<HTMLDivElement, FileInputProps>(
@@ -19,6 +23,7 @@ export const FileInput = forwardRef<HTMLDivElement, FileInputProps>(
         const file = details.acceptedFiles[0]
         props.onChange(file)
       },
+      ...props,
     })
 
     const file = fileUpload.acceptedFiles[0]
@@ -27,7 +32,7 @@ export const FileInput = forwardRef<HTMLDivElement, FileInputProps>(
       <FileUpload.RootProvider value={fileUpload} ref={ref}>
         <FileUpload.HiddenInput />
         <FileUpload.Dropzone tabIndex={-1}>
-          <div className={cn(inputStyles({ focus: 'within' }), 'relative')}>
+          <div className={clsx(inputStyles({ focus: 'within' }), 'relative')}>
             {fileUpload.dragging ? (
               <span>วางไฟล์ที่นี่</span>
             ) : file ? (

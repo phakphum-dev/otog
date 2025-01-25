@@ -7,6 +7,7 @@ import {
   ChatModel,
   ContestModel,
   ContestProblemModel,
+  Problem,
   ProblemModel,
   SubmissionModel,
   UserContestModel,
@@ -87,6 +88,12 @@ export const announcementRouter = contract.router(
 const PaginationQuerySchema = z.object({
   offset: z.coerce.number().optional(),
   limit: z.coerce.number().optional(),
+})
+export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
+
+const ListPaginationQuerySchema = z.object({
+  limit: z.coerce.number(),
+  skip: z.coerce.number(),
 })
 
 export const ChatMessage = ChatModel.pick({
@@ -520,6 +527,33 @@ export const PassedUserSchema = UserModel.pick({
 })
 export type PassedUserSchema = z.infer<typeof PassedUserSchema>
 
+const AdminProblemSchema = ProblemModel.pick({
+  id: true,
+  name: true,
+  sname: true,
+  show: true,
+  case: true,
+  memoryLimit: true,
+  timeLimit: true,
+  recentShowTime: true,
+  score: true,
+})
+export type AdminProblemSchema = z.infer<typeof AdminProblemSchema>
+
+export const UpdateProblemSchema = z.object({
+  name: z.string().min(1, 'Required'),
+  sname: z.string(),
+  score: z.string().min(1, 'Required').pipe(z.coerce.number()),
+  timeLimit: z
+    .string()
+    .min(1, 'Required')
+    .pipe(z.coerce.number())
+    .transform((v) => v * 1000),
+  memoryLimit: z.string().min(1, 'Required').pipe(z.coerce.number()),
+  case: z.string(),
+  // pdf: z.instanceof(File).optional(),
+  // zip: z.instanceof(File).optional(),
+})
 export const problemRouter = contract.router(
   {
     getProblemTable: {
@@ -539,6 +573,20 @@ export const problemRouter = contract.router(
         // 404: z.object({ message: z.string() }),
       },
       summary: 'Get a problem',
+    },
+    getAdminProblems: {
+      method: 'GET',
+      path: '/admin/list',
+      responses: {
+        200: z.object({
+          total: z.number(),
+          data: z.array(AdminProblemSchema),
+        }),
+      },
+      query: ListPaginationQuerySchema.extend({
+        search: z.string().optional(),
+      }),
+      summary: 'Get paginated problems for admin',
     },
     getPassedUsers: {
       method: 'GET',
@@ -579,7 +627,17 @@ export const problemRouter = contract.router(
       responses: {
         200: ProblemWithoutExampleSchema,
       },
-      body: ProblemModel.omit({ id: true }),
+      contentType: 'multipart/form-data',
+      body: contract.type<{
+        name: string
+        sname: string
+        score: string
+        timeLimit: string
+        memoryLimit: string
+        case: string
+        pdf?: FileSchema
+        zip?: FileSchema
+      }>(),
       summary: 'Update a problem',
     },
     deleteProblem: {
