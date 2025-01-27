@@ -375,36 +375,56 @@ export const userRouter = contract.router(
   { pathPrefix: '/user' }
 )
 
+export const ContestSchema = ContestModel.pick({
+  id: true,
+  name: true,
+  mode: true,
+  gradingMode: true,
+  timeStart: true,
+  timeEnd: true,
+  announce: true,
+})
+export type ContestSchema = z.infer<typeof ContestSchema>
+
+export const ContestDetailSchema = ContestSchema.extend({
+  contestProblem: z.array(
+    z.object({
+      problem: ProblemModel.pick({
+        id: true,
+        name: true,
+        score: true,
+      }),
+    })
+  ),
+})
+export type ContestDetailSchema = z.infer<typeof ContestDetailSchema>
+
+export const ContestStatusEnum = z.enum(['PENDING', 'RUNNING', 'FINISHED'])
+export type ContestStatusEnum = z.infer<typeof ContestStatusEnum>
+
 const PrizeSchema = z.object({
   id: z.number(),
   problem: ProblemModel.pick({ id: true }).nullable(),
   user: UserModel.pick({ id: true, showName: true }).nullable(),
 })
 
+export const ProblemResultSchema = z.object({
+  problemId: z.number(),
+  score: z.number(),
+  penalty: z.number(),
+})
+export type ProblemResultSchema = z.infer<typeof ProblemResultSchema>
+
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
-  totalTimeUsed: z.number(),
+  maxPenalty: z.number(),
   user: UserModel.pick({
     id: true,
     showName: true,
     role: true,
     rating: true,
   }),
-  submissions: z.array(
-    SubmissionModel.pick({
-      id: true,
-      problemId: true,
-      status: true,
-      userId: true,
-    }).extend({
-      submissionResult: SubmissionResultModel.pick({
-        id: true,
-        timeUsed: true,
-        score: true,
-        memUsed: true,
-      }).nullable(),
-    })
-  ),
+  problemResults: z.array(ProblemResultSchema),
 })
 export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
 
@@ -427,38 +447,60 @@ export const ContestPrize = z.object({
 })
 export type ContestPrize = z.infer<typeof ContestPrize>
 
-export const CurrentContest = ContestModel.extend({
-  contestProblem: ContestProblemModel.extend({
-    problem: ProblemModel,
-  }).array(),
-})
-export type CurrentContest = z.infer<typeof CurrentContest>
-
 export const contestRouter = contract.router(
   {
     getContests: {
       method: 'GET',
       path: '',
       responses: {
-        200: z.array(ContestModel),
+        200: z.array(ContestSchema),
       },
       summary: 'Get all contests',
     },
-    getCurrentContest: {
+    getCurrentContests: {
       method: 'GET',
       path: '/now',
       responses: {
-        200: z.object({ currentContest: CurrentContest.nullable() }),
+        200: z.array(ContestSchema),
       },
-      summary: 'Get the current contest',
+      summary: 'Get the current contests',
     },
     getContest: {
       method: 'GET',
       path: '/:contestId',
       responses: {
-        200: ContestModel.nullable(),
+        200: ContestSchema,
+        404: z.object({ message: z.string() }),
       },
       summary: 'Get a contest',
+    },
+    getContestDetail: {
+      method: 'GET',
+      path: '/:contestId/detail',
+      responses: {
+        200: ContestDetailSchema,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      summary: 'Get a contest with detail',
+    },
+    getContestProblem: {
+      method: 'GET',
+      path: '/:contestId/problem/:problemId',
+      responses: {
+        200: ProblemModel,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      summary: 'Get a problem in contest',
+    },
+    getUserContestScores: {
+      method: 'GET',
+      path: '/:contestId/score',
+      responses: {
+        200: z.array(ProblemResultSchema),
+      },
+      summary: 'Get a problem in contest',
     },
     getContestScoreboard: {
       method: 'GET',

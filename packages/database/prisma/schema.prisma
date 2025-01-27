@@ -182,6 +182,8 @@ model UserContest {
 enum ContestGradingMode {
   acm
   classic
+  bestSubmission
+  bestSubtask
 
   @@map("enum_contest_gradingMode")
 }

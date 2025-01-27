@@ -37,6 +37,15 @@
     --error: colorToHsl(theme(colors.purple.100));
     --error-foreground: colorToHsl(theme(colors.purple.950));
 
+    --sidebar-background: colorToHsl(theme(colors.white));
+    --sidebar-foreground: colorToHsl(theme(colors.gray.950));
+    --sidebar-primary: colorToHsl(theme(colors.orange.400));
+    --sidebar-primary-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-accent: colorToHsl(theme(colors.gray.100));
+    --sidebar-accent-foreground: colorToHsl(theme(colors.gray.900));
+    --sidebar-border: colorToHsl(theme(colors.gray.200));
+    --sidebar-ring: colorToHsl(theme(colors.orange.400));
+
     --radius: 0.75rem;
     --navbar: 64px;
   }
@@ -74,6 +83,16 @@
     --info-foreground: colorToHsl(theme(colors.sky.500));
     --error: colorToHsl(theme(colors.purple.500));
     --error-foreground: colorToHsl(theme(colors.purple.500));
+
+
+    --sidebar-background: colorToHsl(theme(colors.gray.900));
+    --sidebar-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-primary: colorToHsl(theme(colors.orange.500));
+    --sidebar-primary-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-accent: colorToHsl(theme(colors.gray.700));
+    --sidebar-accent-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-border: colorToHsl(theme(colors.gray.700));
+    --sidebar-ring: colorToHsl(theme(colors.orange.500));
   }
 }
 
