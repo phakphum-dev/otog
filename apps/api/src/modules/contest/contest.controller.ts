@@ -31,13 +31,13 @@ export class ContestController {
     })
   }
 
-  @TsRestHandler(c.getCurrentContest)
+  @TsRestHandler(c.getCurrentContests)
   @OfflineAccess(AccessState.Authenticated)
-  getCurrentContest() {
-    return tsRestHandler(c.getCurrentContest, async () => {
+  getCurrentContests() {
+    return tsRestHandler(c.getCurrentContests, async () => {
       // TODO not private
-      const currentContest = await this.contestService.currentContest()
-      return { status: 200, body: { currentContest } }
+      const currentContests = await this.contestService.getCurrentContests()
+      return { status: 200, body: currentContests }
     })
   }
 
@@ -66,10 +66,55 @@ export class ContestController {
         if (!contest) {
           return { status: 404, body: { message: 'Not Found' } }
         }
-        if (contest.timeStart.getTime() < time) {
-          return  {status: 403, body: {message: 'Forbidden'}}
+        if (contest.timeStart.getTime() > time) {
+          return { status: 403, body: { message: 'Forbidden' } }
         }
         return { status: 200, body: contest }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getContestProblem)
+  getContestProblem() {
+    return tsRestHandler(
+      c.getContestProblem,
+      async ({ params: { contestId, problemId } }) => {
+        const parsedContestId = z.coerce.number().parse(contestId)
+        const parsedProblemId = z.coerce.number().parse(problemId)
+        const contest = await this.contestService.findOneById(parsedContestId)
+        const time = Date.now()
+        if (!contest) {
+          return { status: 404, body: { message: 'Not Found' } }
+        }
+        if (contest.timeStart.getTime() > time) {
+          return { status: 403, body: { message: 'Forbidden' } }
+        }
+        const problem = await this.contestService.getContestProblem(
+          parsedContestId,
+          parsedProblemId
+        )
+        if (!problem) {
+          return { status: 404, body: { message: 'Not Found' } }
+        }
+        return { status: 200, body: problem }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getUserContestScores)
+  getUserContestScores(@User() user?: UserDTO) {
+    return tsRestHandler(
+      c.getUserContestScores,
+      async ({ params: { contestId } }) => {
+        const id = z.coerce.number().parse(contestId)
+        if (!user) {
+          return { status: 200, body: [] }
+        }
+        const scores = await this.contestService.getUserContestScores(
+          id,
+          user.id
+        )
+        return { status: 200, body: scores ?? [] }
       }
     )
   }

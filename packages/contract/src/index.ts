@@ -399,6 +399,9 @@ export const ContestDetailSchema = ContestSchema.extend({
 })
 export type ContestDetailSchema = z.infer<typeof ContestDetailSchema>
 
+export const ContestStatusEnum = z.enum(['PENDING', 'RUNNING', 'FINISHED'])
+export type ContestStatusEnum = z.infer<typeof ContestStatusEnum>
+
 const PrizeSchema = z.object({
   id: z.number(),
   problem: ProblemModel.pick({ id: true }).nullable(),
@@ -444,36 +447,30 @@ export const ContestPrize = z.object({
 })
 export type ContestPrize = z.infer<typeof ContestPrize>
 
-export const CurrentContest = ContestModel.extend({
-  contestProblem: ContestProblemModel.extend({
-    problem: ProblemModel,
-  }).array(),
-})
-export type CurrentContest = z.infer<typeof CurrentContest>
-
 export const contestRouter = contract.router(
   {
     getContests: {
       method: 'GET',
       path: '',
       responses: {
-        200: z.array(ContestModel),
+        200: z.array(ContestSchema),
       },
       summary: 'Get all contests',
     },
-    getCurrentContest: {
+    getCurrentContests: {
       method: 'GET',
       path: '/now',
       responses: {
-        200: z.object({ currentContest: CurrentContest.nullable() }),
+        200: z.array(ContestSchema),
       },
-      summary: 'Get the current contest',
+      summary: 'Get the current contests',
     },
     getContest: {
       method: 'GET',
       path: '/:contestId',
       responses: {
-        200: ContestSchema.nullable(),
+        200: ContestSchema,
+        404: z.object({ message: z.string() }),
       },
       summary: 'Get a contest',
     },
@@ -481,9 +478,29 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId/detail',
       responses: {
-        200: ContestDetailSchema.nullable(),
+        200: ContestDetailSchema,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
       },
       summary: 'Get a contest with detail',
+    },
+    getContestProblem: {
+      method: 'GET',
+      path: '/:contestId/problem/:problemId',
+      responses: {
+        200: ProblemModel,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      summary: 'Get a problem in contest',
+    },
+    getUserContestScores: {
+      method: 'GET',
+      path: '/:contestId/score',
+      responses: {
+        200: z.array(ProblemResultSchema),
+      },
+      summary: 'Get a problem in contest',
     },
     getContestScoreboard: {
       method: 'GET',

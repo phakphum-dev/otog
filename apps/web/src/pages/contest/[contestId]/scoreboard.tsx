@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { ListBulletIcon } from '@heroicons/react/24/outline'
 import { useReactTable } from '@tanstack/react-table'
@@ -16,30 +16,46 @@ import {
   ContestScoreboard,
   UserContestScoreboard,
 } from '@otog/contract'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@otog/ui/breadcrumb'
 import { Link } from '@otog/ui/link'
-import { SidebarInset, SidebarProvider } from '@otog/ui/sidebar'
+import { Separator } from '@otog/ui/separator'
+import { SidebarTrigger } from '@otog/ui/sidebar'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../../api/server'
-import { ContestSidebar } from '../../../components/contest-sidebar'
 import { TableComponent } from '../../../components/table-component'
 import { UserAvatar } from '../../../components/user-avatar'
+import { ContestLayout } from '../../../modules/contest/sidebar'
 
-interface ContestScoreboardProps {
+interface ContestScoreboardPageProps {
+  contestId: string
   contest: ContestSchema
+  serverTime: string
   contestScoreboard: ContestScoreboard
   contestPrize: ContestPrize
 }
 
-export const getServerSideProps = withQuery<ContestScoreboardProps>(
+interface ContestScoreboardProps {
+  contestScoreboard: ContestScoreboard
+  contestPrize: ContestPrize
+}
+
+export const getServerSideProps = withQuery<ContestScoreboardPageProps>(
   async ({ context, query }) => {
     const contestId = context.query.contestId as string
     if (Number.isNaN(parseInt(contestId))) {
       return { notFound: true }
     }
-    const [getContest, getContestScoreboard, getContestPrize] =
+    const [getTime, getContest, getContestScoreboard, getContestPrize] =
       await Promise.all([
+        query.app.time.query(),
         query.contest.getContest.query({
           params: { contestId: contestId },
         }),
@@ -51,18 +67,18 @@ export const getServerSideProps = withQuery<ContestScoreboardProps>(
         }),
       ])
     if (
+      getTime.status !== 200 ||
       getContest.status !== 200 ||
       getContestScoreboard.status !== 200 ||
       getContestPrize.status !== 200
     ) {
       return { notFound: true }
     }
-    if (getContest.body === null) {
-      return { notFound: true }
-    }
     return {
       props: {
+        contestId,
         contest: getContest.body,
+        serverTime: getTime.body.toString(),
         contestScoreboard: getContestScoreboard.body,
         contestPrize: getContestPrize.body,
       },
@@ -70,25 +86,21 @@ export const getServerSideProps = withQuery<ContestScoreboardProps>(
   }
 )
 
-export default function ContestScoreboardPage(props: ContestScoreboardProps) {
+export default function ContestScoreboardPage(
+  props: ContestScoreboardPageProps
+) {
   return (
-    <>
+    <ContestLayout {...props}>
       <Head>
-        <title>Contest Scoreboard {props.contest.id} | OTOG</title>
+        <title>Scoreboard | {props.contest.id} | OTOG</title>
       </Head>
-      <SidebarProvider>
-        <ContestSidebar contest={props.contest} />
-        <SidebarInset>
-          <Scoreboard {...props} />
-        </SidebarInset>
-      </SidebarProvider>
-    </>
+      <Scoreboard {...props} />
+    </ContestLayout>
   )
 }
 ContestScoreboardPage.footer = false
 
 export function Scoreboard({
-  contest,
   contestScoreboard,
   contestPrize,
 }: ContestScoreboardProps) {
@@ -238,14 +250,25 @@ export function Scoreboard({
     }
   }, [expanded])
   return (
-    <section
-      id="#content"
-      className="flex flex-1 flex-col gap-6 py-8 max-w-fit"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="font-heading text-2xl font-semibold">
-          {contestScoreboard.contest.name}
-        </h1>
+    <section id="#content" className="flex flex-1 flex-col gap-4 py-4 w-0 px-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
+                <Breadcrumb>{contestScoreboard.contest.name}</Breadcrumb>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-heading text-lg font-semibold">
+                  Scoreboard
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <Toggle
           pressed={!expanded}
           onPressedChange={() => setExpanded((expanded) => !expanded)}
@@ -253,18 +276,17 @@ export function Scoreboard({
           <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
         </Toggle>
       </div>
-      <div className="w-[1000px] bg-red-500 h-10">
-        {/* <TableComponent
-          table={table}
-          classNames={{
-            container: 'border-transparent',
-            bodyRow: 'border-transparent',
-            headRow: 'border-transparent',
-            head: clsx(expanded ? 'text-right' : 'text-center'),
-            cell: clsx(expanded ? 'text-right' : 'text-center'),
-          }}
-        /> */}
-      </div>
+
+      <TableComponent
+        table={table}
+        classNames={{
+          container: 'border-transparent',
+          bodyRow: 'border-transparent',
+          headRow: 'border-transparent',
+          head: clsx(expanded ? 'text-right' : 'text-center'),
+          cell: clsx(expanded ? 'text-right' : 'text-center'),
+        }}
+      />
       {/* <Prize
         contest={contest}
         contestScoreboard={contestScoreboard}
