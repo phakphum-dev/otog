@@ -78,6 +78,9 @@ export const Navbar = () => {
               <li>
                 <NavButton href="/contest">แข่งขัน</NavButton>
               </li>
+              <li>
+                <NavButton href="/shelf">ชั้นหนังสือ</NavButton>
+              </li>
             </ul>
           </div>
           <div className="flex gap-2 max-lg:hidden">
