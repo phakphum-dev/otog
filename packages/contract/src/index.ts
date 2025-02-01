@@ -125,16 +125,14 @@ export const chatRouter = contract.router({
   },
 })
 
-export const UserWithourPasswordSchema = UserModel.pick({
+export const UserSchema = UserModel.pick({
   id: true,
   username: true,
   showName: true,
   role: true,
   rating: true,
 })
-export type UserWithourPasswordSchema = z.infer<
-  typeof UserWithourPasswordSchema
->
+export type UserSchema = z.infer<typeof UserSchema>
 
 const SubmissionSchema = SubmissionModel.pick({
   id: true,
@@ -158,7 +156,7 @@ const SubmissionSchema = SubmissionModel.pick({
     }).nullable(),
   })
   .extend({
-    user: UserWithourPasswordSchema.nullable(),
+    user: UserSchema.nullable(),
   })
 export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
@@ -296,7 +294,7 @@ export const submissionRouter = contract.router(
   { pathPrefix: '/submission' }
 )
 
-export const UserProfile = UserWithourPasswordSchema.extend({
+export const UserProfile = UserSchema.extend({
   userContest: z.array(
     UserContestModel.pick({
       ratingAfterUpdate: true,
@@ -314,19 +312,23 @@ export type UserProfile = z.infer<typeof UserProfile>
 
 export const userRouter = contract.router(
   {
-    getUsers: {
+    getUsersForAdmin: {
       method: 'GET',
-      path: '/list',
+      path: '/admin/list',
+      query: ListPaginationQuerySchema,
       responses: {
-        200: z.array(UserWithourPasswordSchema),
+        200: z.object({
+          data: z.array(UserSchema),
+          total: z.number(),
+        }),
       },
-      summary: 'Get all users',
+      summary: 'Get paginated users for admin',
     },
     getOnlineUsers: {
       method: 'GET',
       path: '/online',
       responses: {
-        200: z.array(UserWithourPasswordSchema),
+        200: z.array(UserSchema),
       },
       summary: 'Get online users',
     },
@@ -343,9 +345,14 @@ export const userRouter = contract.router(
       method: 'PUT',
       path: '/:userId',
       responses: {
-        200: UserWithourPasswordSchema,
+        200: UserSchema,
       },
-      body: UserModel.pick({ id: true, showName: true, role: true }),
+      body: UserModel.pick({
+        username: true,
+        showName: true,
+        role: true,
+        password: true,
+      }),
       summary: 'Update user data',
     },
     updateShowName: {
@@ -725,7 +732,7 @@ export const problemRouter = contract.router(
 export const LoginBody = UserModel.pick({ username: true, password: true })
 export type LoginBody = z.infer<typeof LoginBody>
 export const LoginResponse = z.object({
-  user: UserWithourPasswordSchema,
+  user: UserSchema,
   accessToken: z.string(),
 })
 export type LoginResponse = z.infer<typeof LoginResponse>

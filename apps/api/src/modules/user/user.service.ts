@@ -7,7 +7,9 @@ import { sha256 } from 'js-sha256'
 import { Role } from 'src/core/constants'
 import { PrismaService } from 'src/core/database/prisma.service'
 import { userList } from 'src/utils'
+import { searchId } from 'src/utils/search'
 
+import { ListPaginationQuerySchema } from '@otog/contract'
 import { ContestMode, Prisma, User } from '@otog/database'
 
 export const WITHOUT_PASSWORD = {
@@ -48,10 +50,40 @@ export class UserService {
     return { message: 'Create user complete.', status: true }
   }
 
-  async findAll() {
+  async getUsersForAdmin(args: ListPaginationQuerySchema) {
     return this.prisma.user.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { showName: { contains: args.search, mode: 'insensitive' } },
+              { username: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        username: true,
+        showName: true,
+        role: true,
+        rating: true,
+      },
       orderBy: { id: 'desc' },
-      select: WITHOUT_PASSWORD,
+    })
+  }
+  async getUsersCountForAdmin(args: ListPaginationQuerySchema) {
+    return this.prisma.user.count({
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { showName: { contains: args.search, mode: 'insensitive' } },
+              { username: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
     })
   }
 
