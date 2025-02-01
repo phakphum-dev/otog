@@ -6,7 +6,7 @@ import { createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
 import Head from 'next/head'
 import NextLink from 'next/link'
 
-import { ContestSchema, CurrentContest } from '@otog/contract'
+import { ContestSchema } from '@otog/contract'
 import { Button } from '@otog/ui/button'
 import { Link } from '@otog/ui/link'
 

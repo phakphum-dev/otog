@@ -100,10 +100,7 @@ export default function ContestScoreboardPage(
 }
 ContestScoreboardPage.footer = false
 
-export function Scoreboard({
-  contestScoreboard,
-  contestPrize,
-}: ContestScoreboardProps) {
+export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
   const columnHelper = createColumnHelper<UserContestScoreboard>()
   const columns = useMemo(
     () => [

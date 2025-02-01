@@ -91,6 +91,17 @@ const PaginationQuerySchema = z.object({
   offset: z.coerce.number().optional(),
   limit: z.coerce.number().optional(),
 })
+export type PaginationQuery = z.infer<typeof PaginationQuerySchema>
+
+const ListPaginationQuerySchema = z.object({
+  limit: z.coerce.number(),
+  skip: z.coerce.number(),
+  search: z.string().optional(),
+})
+
+export type ListPaginationQuerySchema = z.infer<
+  typeof ListPaginationQuerySchema
+>
 
 export const ChatMessage = ChatModel.pick({
   id: true,
@@ -447,6 +458,20 @@ export const ContestPrize = z.object({
 })
 export type ContestPrize = z.infer<typeof ContestPrize>
 
+export const CurrentContest = ContestModel.extend({
+  contestProblem: ContestProblemModel.extend({
+    problem: ProblemModel,
+  }).array(),
+})
+export type CurrentContest = z.infer<typeof CurrentContest>
+
+export const AdminContestWithProblems = ContestModel.extend({
+  contestProblem: ContestProblemModel.extend({
+    problem: ProblemModel,
+  }).array(),
+})
+export type AdminContestWithProblems = z.infer<typeof AdminContestWithProblems>
+
 export const contestRouter = contract.router(
   {
     getContests: {
@@ -536,6 +561,13 @@ export const contestRouter = contract.router(
       body: z.object({ show: z.boolean(), problemId: z.coerce.number() }),
       summary: 'Toggle problem to a contest',
     },
+    putProblemToContest: {
+      method: 'PUT',
+      path: '/:contestId',
+      responses: { 200: z.object({}) },
+      body: z.array(z.object({ problemId: z.coerce.number() })),
+      summary: 'Put problems to a contest',
+    },
     updateContest: {
       method: 'PUT',
       path: '/:contestId',
@@ -562,6 +594,26 @@ export const contestRouter = contract.router(
         200: UserContestModel,
       },
       summary: 'Sign up for a contest',
+    },
+    getAdminContests: {
+      method: 'GET',
+      path: '/admin/list',
+      query: ListPaginationQuerySchema,
+      responses: {
+        200: z.object({
+          data: z.array(ContestModel),
+          total: z.number(),
+        }),
+      },
+      summary: 'List paginated contests for admin',
+    },
+    getAdminContest: {
+      method: 'GET',
+      path: '/admin/:contestId',
+      responses: {
+        200: AdminContestWithProblems,
+      },
+      summary: 'List paginated contests for admin',
     },
   },
   { pathPrefix: '/contest' }
@@ -591,6 +643,35 @@ export const PassedUserSchema = UserModel.pick({
 })
 export type PassedUserSchema = z.infer<typeof PassedUserSchema>
 
+const AdminProblemSchema = ProblemModel.pick({
+  id: true,
+  name: true,
+  sname: true,
+  show: true,
+  case: true,
+  memoryLimit: true,
+  timeLimit: true,
+  recentShowTime: true,
+  score: true,
+})
+export type AdminProblemSchema = z.infer<typeof AdminProblemSchema>
+
+export const ProblemFormSchema = z.object({
+  name: z.string().min(1, 'Required'),
+  sname: z.string().min(1, 'Required'),
+  score: z.string().min(1, 'Required').pipe(z.coerce.number()),
+  timeLimit: z
+    .string()
+    .min(1, 'Required')
+    .pipe(z.coerce.number())
+    .transform((v) => v * 1000),
+  memoryLimit: z.string().min(1, 'Required').pipe(z.coerce.number()),
+  case: z.string(),
+  // pdf: z.instanceof(File).optional(),
+  // zip: z.instanceof(File).optional(),
+})
+export type ProblemFormSchema = z.infer<typeof ProblemFormSchema>
+
 export const problemRouter = contract.router(
   {
     getProblemTable: {
@@ -610,6 +691,31 @@ export const problemRouter = contract.router(
         // 404: z.object({ message: z.string() }),
       },
       summary: 'Get a problem',
+    },
+    searchProblem: {
+      method: 'GET',
+      path: '/admin/search',
+      query: z.object({
+        search: z.string().optional(),
+        limit: z.coerce.number().optional(),
+        skip: z.coerce.number().optional(),
+      }),
+      responses: {
+        200: z.array(ProblemModel.pick({ id: true, name: true, sname: true })),
+      },
+      summary: 'Search problems',
+    },
+    getAdminProblems: {
+      method: 'GET',
+      path: '/admin/list',
+      responses: {
+        200: z.object({
+          total: z.number(),
+          data: z.array(AdminProblemSchema),
+        }),
+      },
+      query: ListPaginationQuerySchema,
+      summary: 'Get paginated problems for admin',
     },
     getPassedUsers: {
       method: 'GET',
@@ -641,7 +747,16 @@ export const problemRouter = contract.router(
       responses: {
         201: ProblemWithoutExampleSchema,
       },
-      body: ProblemModel.omit({ id: true }),
+      body: contract.type<{
+        name: string
+        sname: string
+        score: string
+        timeLimit: string
+        memoryLimit: string
+        case: string
+        pdf?: FileSchema
+        zip?: FileSchema
+      }>(),
       summary: 'Create a problem',
     },
     updateProblem: {
@@ -650,7 +765,17 @@ export const problemRouter = contract.router(
       responses: {
         200: ProblemWithoutExampleSchema,
       },
-      body: ProblemModel.omit({ id: true }),
+      contentType: 'multipart/form-data',
+      body: contract.type<{
+        name: string
+        sname: string
+        score: string
+        timeLimit: string
+        memoryLimit: string
+        case: string
+        pdf?: FileSchema
+        zip?: FileSchema
+      }>(),
       summary: 'Update a problem',
     },
     deleteProblem: {
@@ -670,17 +795,6 @@ export const problemRouter = contract.router(
       },
       body: z.any(),
       summary: 'Update problem example testcases',
-    },
-    listProblem: {
-      method: 'GET',
-      path: '/list',
-      responses: {
-        200: z.array(ProblemModel.pick({ id: true, name: true })),
-      },
-      query: PaginationQuerySchema.extend({
-        search: z.string().optional(),
-      }),
-      summary: 'List problems',
     },
   },
   { pathPrefix: '/problem' }

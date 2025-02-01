@@ -27,7 +27,7 @@ import { RolesGuard } from 'src/core/guards/roles.guard'
 import { UPLOAD_DIR } from 'src/utils/file.util'
 import { z } from 'zod'
 
-import { problemRouter } from '@otog/contract'
+import { ProblemFormSchema, problemRouter } from '@otog/contract'
 
 import { AuthService } from '../auth/auth.service'
 import { ContestService } from '../contest/contest.service'
@@ -173,12 +173,12 @@ export class ProblemController {
     )
   )
   createProblem(@UploadedFiles() files: UploadedFilesObject) {
-    return tsRestHandler(c.createProblem, async ({ body }) => {
-      const problem = await this.problemService.create(
-        // TODO: fix me
-        body as any,
-        files
-      )
+    return tsRestHandler(c.createProblem, async ({ body: bodyRaw }) => {
+      const result = ProblemFormSchema.safeParse(bodyRaw)
+      if (!result.success) {
+        return { status: 400, body: { message: 'Bad Request' } }
+      }
+      const problem = await this.problemService.create(result.data, files)
       return { status: 201, body: problem }
     })
   }
@@ -199,12 +199,15 @@ export class ProblemController {
   updateProblem(@UploadedFiles() files: UploadedFilesObject) {
     return tsRestHandler(
       c.updateProblem,
-      async ({ body, params: { problemId } }) => {
+      async ({ body: bodyRaw, params: { problemId } }) => {
         const id = z.coerce.number().parse(problemId)
+        const result = ProblemFormSchema.safeParse(bodyRaw)
+        if (!result.success) {
+          return { status: 400, body: { message: 'Bad Request' } }
+        }
         const problem = await this.problemService.replaceByProblemId(
           id,
-          // TODO: fix me
-          body as any,
+          result.data,
           files
         )
         return { status: 200, body: problem }
@@ -234,6 +237,47 @@ export class ProblemController {
           body
         )
         return { status: 200, body: problem }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getAdminProblems, { jsonQuery: true })
+  @Roles(Role.Admin)
+  getAdminProblems(@User() user?: UserDTO) {
+    return tsRestHandler(
+      c.getAdminProblems,
+      async ({ query: { skip = 0, limit = 10, search } }) => {
+        if (user?.role !== Role.Admin) {
+          return { status: 403, body: { message: 'Forbidden' } }
+        }
+        const [problems, total] = await Promise.all([
+          this.problemService.getAdminProblems({
+            limit,
+            skip,
+            search,
+          }),
+          this.problemService.getAdminProblemCount({ search }),
+        ])
+        return { status: 200, body: { data: problems, total } }
+      }
+    )
+  }
+
+  @TsRestHandler(c.searchProblem, { jsonQuery: true })
+  @Roles(Role.Admin)
+  searchProblem(@User() user?: UserDTO) {
+    return tsRestHandler(
+      c.searchProblem,
+      async ({ query: { skip = 0, limit = 10, search } }) => {
+        if (user?.role !== Role.Admin) {
+          return { status: 403, body: { message: 'Forbidden' } }
+        }
+        const problems = await this.problemService.searchProblem({
+          limit,
+          skip,
+          search,
+        })
+        return { status: 200, body: problems }
       }
     )
   }

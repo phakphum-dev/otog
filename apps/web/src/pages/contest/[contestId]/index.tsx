@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import Head from 'next/head'
 import NextLink from 'next/link'
 
@@ -20,7 +20,6 @@ import { appKey, contestKey } from '../../../api/query'
 import { withQuery } from '../../../api/server'
 import { environment } from '../../../env'
 import { ContestLayout, useContest } from '../../../modules/contest/sidebar'
-import { initialDataSuccess } from '../../../utils/initial-data-success'
 import { toThaiDuration } from '../../../utils/time'
 import { useTimer } from '../../../utils/use-timer'
 

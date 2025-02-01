@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
@@ -15,13 +17,11 @@ import { Separator } from '@otog/ui/separator'
 import { SidebarTrigger } from '@otog/ui/sidebar'
 
 import { withQuery } from '../../../../api/server'
-import { AnnouncementCarousel } from '../../../../modules/announcement'
 import {
   ContestLayout,
   useContestProps,
 } from '../../../../modules/contest/sidebar'
 import { TaskCard } from '../../../../modules/contest/task-card'
-import { useEffect } from 'react'
 
 type ProblemModel = z.infer<typeof ProblemModel>
 
@@ -82,7 +82,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
     if (contestStatus !== 'RUNNING') {
       router.push(`/contest/${props.contestId}`)
     }
-  },[contestStatus])
+  }, [contestStatus])
   return (
     <ContestLayout {...contestProps}>
       <Head>
