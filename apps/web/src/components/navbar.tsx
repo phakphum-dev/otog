@@ -180,7 +180,7 @@ interface MenuProps {
   user: User['user']
 }
 const Menu = ({ user }: MenuProps) => {
-  const { logout } = useUserContext()
+  const { logout, isAdmin } = useUserContext()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -190,9 +190,17 @@ const Menu = ({ user }: MenuProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel className="max-w-60 truncate">
-          {user.showName}
-        </DropdownMenuLabel>
+        {isAdmin ? (
+          <DropdownMenuItem asChild>
+            <NextLink href="/admin" className="max-w-60 truncate font-semibold">
+              {user.showName}
+            </NextLink>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuLabel className="max-w-60 truncate">
+            {user.showName}
+          </DropdownMenuLabel>
+        )}
         <DropdownMenuItem asChild>
           <NextLink href={`/user/${user.id}`}>
             <UserIcon />

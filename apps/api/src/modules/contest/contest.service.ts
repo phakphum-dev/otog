@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { Role } from 'src/core/constants'
 import { PrismaService } from 'src/core/database/prisma.service'
+import { searchId } from 'src/utils/search'
 
-import { UserContestScoreboard } from '@otog/contract'
-import { Prisma } from '@otog/database'
+import {
+  AdminContestWithProblems,
+  ListPaginationQuerySchema,
+  UserContestScoreboard,
+} from '@otog/contract'
+import { Contest, Prisma } from '@otog/database'
 
 @Injectable()
 export class ContestService {
@@ -305,6 +310,19 @@ export class ContestService {
     }
   }
 
+  async putProblemToContest(args: {
+    contestId: number
+    data: Array<{ problemId: number }>
+  }) {
+    await this.prisma.contestProblem.createMany({
+      data: args.data.map((problemId) => ({
+        contestId: args.contestId,
+        problemId: problemId.problemId,
+      })),
+      skipDuplicates: true,
+    })
+  }
+
   async addUserToContest(contestId: number, userId: number) {
     return this.prisma.userContest.upsert({
       where: { userId_contestId: { userId, contestId } },
@@ -325,5 +343,49 @@ export class ContestService {
 
   async deleteContest(contestId: number) {
     return this.prisma.contest.delete({ where: { id: contestId } })
+  }
+
+  async getAdminContests(args: ListPaginationQuerySchema): Promise<Contest[]> {
+    return await this.prisma.contest.findMany({
+      skip: args.skip,
+      take: args.limit,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      orderBy: { id: 'desc' },
+    })
+  }
+  async getAdminContestCount(args: { search?: string }): Promise<number> {
+    return await this.prisma.contest.count({
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+    })
+  }
+
+  async getAdminContest(args: {
+    id: number
+  }): Promise<AdminContestWithProblems | null> {
+    return await this.prisma.contest.findUnique({
+      where: { id: args.id },
+      include: {
+        contestProblem: {
+          include: {
+            problem: true,
+          },
+          orderBy: { problemId: 'desc' },
+        },
+      },
+    })
   }
 }

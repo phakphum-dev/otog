@@ -40,6 +40,7 @@
     "is-hotkey": "^0.2.0",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.344.0",
     "match-sorter": "^8.0.0",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@~5.1.1",
     "monaco-editor-wrapper": "~5.1.1",

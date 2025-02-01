@@ -521,7 +521,7 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             <EllipsisHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
             <NextLink href={`/problem/${row.original.id}`}>
               <PencilSquareIcon />
@@ -622,7 +622,11 @@ const PassedUserDialog = ({
   )
 }
 
-const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
+const ToggleShowProblem = ({
+  row,
+}: {
+  row: Row<Pick<ProblemTableRowSchema, 'id' | 'show'>>
+}) => {
   const { user } = useUserContext()
   const problem = row.original
   const toggleShowProblem = problemQuery.toggleShowProblem.useMutation()

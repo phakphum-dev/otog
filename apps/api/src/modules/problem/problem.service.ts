@@ -16,8 +16,13 @@ import {
   updateProblemDoc,
   updateProblemTestCase,
 } from 'src/utils/file.util'
+import { searchId } from 'src/utils/search'
 
-import { PassedUserSchema, ProblemTableRowSchema } from '@otog/contract'
+import {
+  PassedUserSchema,
+  ProblemFormSchema,
+  ProblemTableRowSchema,
+} from '@otog/contract'
 import { Prisma, SubmissionStatus, User, UserRole } from '@otog/database'
 
 import { UploadedFilesObject } from './dto/problem.dto'
@@ -46,14 +51,12 @@ export class ProblemService {
       : new LocalFileManager()
   }
 
-  async create(
-    problemData: Prisma.ProblemCreateInput,
-    files: UploadedFilesObject
-  ) {
+  async create(problemData: ProblemFormSchema, files: UploadedFilesObject) {
     try {
       const problem = await this.prisma.problem.create({
         data: {
           name: problemData.name,
+          sname: problemData.sname,
           score: problemData.score,
           timeLimit: problemData.timeLimit,
           memoryLimit: problemData.memoryLimit,
@@ -62,7 +65,7 @@ export class ProblemService {
         },
         select: WITHOUT_EXAMPLE,
       })
-      if (files.pdf) {
+      if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
@@ -70,7 +73,7 @@ export class ProblemService {
           this.fileManager
         )
       }
-      if (files.zip) {
+      if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
@@ -94,6 +97,7 @@ export class ProblemService {
       const problem = await this.prisma.problem.update({
         data: {
           name: problemData.name,
+          sname: problemData.sname,
           score: problemData.score,
           timeLimit: problemData.timeLimit,
           memoryLimit: problemData.memoryLimit,
@@ -102,7 +106,7 @@ export class ProblemService {
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
       })
-      if (files.pdf) {
+      if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
@@ -110,16 +114,17 @@ export class ProblemService {
           this.fileManager
         )
       }
-      if (files.zip) {
+      if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
-          files.pdf?.[0]?.path as string,
+          files.zip[0]?.path as string,
           this.fileManager
         )
       }
       return problem
     } catch (err) {
+      console.error(err)
       throw new BadRequestException()
     }
   }
@@ -326,5 +331,72 @@ export class ProblemService {
       console.log(e)
       throw new BadRequestException()
     }
+  }
+
+  async getAdminProblems(args: {
+    skip: number
+    limit: number
+    search?: string
+  }) {
+    return await this.prisma.problem.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+        show: true,
+        case: true,
+        memoryLimit: true,
+        timeLimit: true,
+        recentShowTime: true,
+        score: true,
+      },
+      orderBy: { id: 'desc' },
+    })
+  }
+  async getAdminProblemCount(args: { search?: string }) {
+    return await this.prisma.problem.count({
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+    })
+  }
+
+  async searchProblem(args: { skip: number; limit: number; search?: string }) {
+    return await this.prisma.problem.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+      },
+      orderBy: { id: 'desc' },
+    })
   }
 }

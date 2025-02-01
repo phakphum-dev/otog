@@ -1,4 +1,6 @@
-import * as fs from 'fs-extra'
+import * as fs from 'fs'
+import * as fsExtra from 'fs-extra'
+import { readFile } from 'fs/promises'
 import * as mime from 'mime-types'
 import * as path from 'path'
 import { FileManager } from 'src/core/fileManager'
@@ -21,7 +23,7 @@ export async function updateProblemDoc(
   await fileManager.removeDirIfExist(uploadDocPath)
 
   // get pdf file buffer
-  const buffer = await fs.readFile(pdfFullPath)
+  const buffer = await readFile(pdfFullPath)
 
   // save pdf file
   await fileManager.putFile(uploadDocPath, buffer, {
@@ -29,7 +31,7 @@ export async function updateProblemDoc(
   })
 
   // remove pdf file
-  await fs.remove(pdfFullPath)
+  await fsExtra.remove(pdfFullPath)
 }
 
 export async function updateProblemTestCase(
@@ -58,6 +60,7 @@ export async function updateProblemTestCase(
         entry.autodrain()
       } else {
         const dest = path.join(problemTestCaseDir, fileName)
+        await fsExtra.ensureDir(path.dirname(dest))
         const buffer = await entry.buffer()
         const ext = path.extname(fileName)
         const contentType = ['.in', '.sol'].includes(ext)
@@ -71,7 +74,7 @@ export async function updateProblemTestCase(
     .promise()
 
   // remove zip file
-  await fs.remove(zipFullPath)
+  await fsExtra.remove(zipFullPath)
 }
 
 export async function removeProblemSource(

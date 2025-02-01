@@ -7,6 +7,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import * as fsExtra from 'fs-extra'
+import { mkdir, writeFile } from 'fs/promises'
 import fs from 'node:fs'
 import * as path from 'path'
 import { environment } from 'src/env'
@@ -49,7 +50,7 @@ class LocalFileManager extends FileManager {
     const fullPath = this._getFullPath(dirPath)
 
     if (!(await fsExtra.pathExists(fullPath))) {
-      await fsExtra.mkdir(fullPath)
+      await mkdir(fullPath)
     }
   }
 
@@ -62,7 +63,7 @@ class LocalFileManager extends FileManager {
   }
 
   async putFile(destDirPath: string, buffer: any) {
-    await fsExtra.writeFile(destDirPath, buffer)
+    await writeFile(destDirPath, buffer)
   }
 
   async getFileReadStream(filePath: string) {
