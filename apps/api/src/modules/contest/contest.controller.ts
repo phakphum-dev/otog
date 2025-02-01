@@ -173,19 +173,19 @@ export class ContestController {
 
   //  TODO who have join the contest?
 
-  @TsRestHandler(c.getAdminContests, { jsonQuery: true })
+  @TsRestHandler(c.getContestsForAdmin, { jsonQuery: true })
   @Roles(Role.Admin)
-  getAdminContests() {
+  getContestsForAdmin() {
     return tsRestHandler(
-      c.getAdminContests,
+      c.getContestsForAdmin,
       async ({ query: { limit = 10, skip = 0, search } }) => {
         const [contests, total] = await Promise.all([
-          this.contestService.getAdminContests({
+          this.contestService.getContestsForAdmin({
             limit,
             skip,
             search,
           }),
-          this.contestService.getAdminContestCount({
+          this.contestService.getContestCountForAdmin({
             search,
           }),
         ])
@@ -194,12 +194,12 @@ export class ContestController {
     )
   }
 
-  @TsRestHandler(c.getAdminContest, { jsonQuery: true })
+  @TsRestHandler(c.getContestForAdmin, { jsonQuery: true })
   @Roles(Role.Admin)
-  getAdminContest() {
-    return tsRestHandler(c.getAdminContest, async ({ params }) => {
+  getContestForAdmin() {
+    return tsRestHandler(c.getContestForAdmin, async ({ params }) => {
       const contestId = z.coerce.number().parse(params.contestId)
-      const contest = await this.contestService.getAdminContest({
+      const contest = await this.contestService.getContestForAdmin({
         id: contestId,
       })
       if (contest === null) {

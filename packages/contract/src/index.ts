@@ -340,7 +340,7 @@ export const userRouter = contract.router(
   {
     getUsers: {
       method: 'GET',
-      path: '',
+      path: '/list',
       responses: {
         200: z.array(UserWithourPasswordSchema),
       },
@@ -369,7 +369,7 @@ export const userRouter = contract.router(
       responses: {
         200: UserWithourPasswordSchema,
       },
-      body: UserModel.omit({ id: true }),
+      body: UserModel.pick({ id: true, showName: true, role: true }),
       summary: 'Update user data',
     },
     updateShowName: {
@@ -546,7 +546,7 @@ export const contestRouter = contract.router(
       },
       summary: 'Sign up for a contest',
     },
-    getAdminContests: {
+    getContestsForAdmin: {
       method: 'GET',
       path: '/admin/list',
       query: ListPaginationQuerySchema,
@@ -558,7 +558,7 @@ export const contestRouter = contract.router(
       },
       summary: 'List paginated contests for admin',
     },
-    getAdminContest: {
+    getContestForAdmin: {
       method: 'GET',
       path: '/admin/:contestId',
       responses: {
