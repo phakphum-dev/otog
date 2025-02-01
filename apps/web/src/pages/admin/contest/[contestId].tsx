@@ -72,19 +72,20 @@ export const getServerSideProps = withQuery<AdminContestPageProps>(
       return { notFound: true }
     }
     const contestId = z.coerce.number().parse(context.params?.contestId)
-    const getAdminContest = await query.contest.getAdminContest.query({
+    const getContestForAdmin = await query.contest.getContestForAdmin.query({
       params: { contestId: contestId.toString() },
     })
-    if (getAdminContest.status !== 200) {
+    if (getContestForAdmin.status !== 200) {
       return { notFound: true }
     }
     return {
       props: {
-        contest: getAdminContest.body,
+        contest: getContestForAdmin.body,
       },
     }
   }
 )
+
 export default function AdminContestPage(props: AdminContestPageProps) {
   return (
     <main className="container flex-1 py-8">
@@ -131,23 +132,23 @@ function ContestDataTable(props: AdminContestPageProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  const getAdminContest = useQuery({
-    ...contestKey.getAdminContest({
+  const getContestForAdmin = useQuery({
+    ...contestKey.getContestForAdmin({
       params: { contestId },
     }),
     initialData: initialDataSuccess(props.contest),
   })
-  const adminContest = getAdminContest.data?.body
+  const contest = getContestForAdmin.data?.body
   const problems = useMemo(
     () =>
-      getAdminContest.data?.status === 200
-        ? getAdminContest.data.body.contestProblem
+      getContestForAdmin.data?.status === 200
+        ? getContestForAdmin.data.body.contestProblem
         : [],
-    [getAdminContest.data]
+    [getContestForAdmin.data]
   )
   const rowCount = useMemo(
-    () => getAdminContest.data?.body.contestProblem.length ?? 0,
-    [getAdminContest.data]
+    () => getContestForAdmin.data?.body.contestProblem.length ?? 0,
+    [getContestForAdmin.data]
   )
   const table = useReactTable({
     columns,
@@ -179,13 +180,13 @@ function ContestDataTable(props: AdminContestPageProps) {
         >
           <ChevronLeft />
         </Button>
-        <h3 className="text-lg font-medium mr-auto">{adminContest.name}</h3>
-        <AddContestProblem contest={adminContest} />
+        <h3 className="text-lg font-medium mr-auto">{contest.name}</h3>
+        <AddContestProblem contest={contest} />
       </div>
       <TableComponent
         table={table}
-        isLoading={getAdminContest.isLoading}
-        isError={getAdminContest.isError}
+        isLoading={getContestForAdmin.isLoading}
+        isError={getContestForAdmin.isError}
       />
     </div>
   )
@@ -262,7 +263,7 @@ const ActionMenu = ({ row }: { row: Row<ContestProblem> }) => {
                     onSuccess: () => {
                       toast.success('ลบโจทย์แล้ว', { id: toastId })
                       queryClient.invalidateQueries({
-                        queryKey: contestKey.getAdminContest({
+                        queryKey: contestKey.getContestForAdmin({
                           params: {
                             contestId: row.original.contestId.toString(),
                           },
@@ -426,7 +427,7 @@ const AddContestProblem = (props: AdminContestPageProps) => {
                     toast.success('เพิ่มโจทย์แล้ว', { id: toastId })
                     setOpen(false)
                     queryClient.invalidateQueries({
-                      queryKey: contestKey.getAdminContest({
+                      queryKey: contestKey.getContestForAdmin({
                         params: { contestId: props.contest.id.toString() },
                       }).queryKey,
                     })

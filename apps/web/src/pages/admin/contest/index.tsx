@@ -123,7 +123,7 @@ function ContestDataTable() {
   const [search, setSearch] = useState('')
 
   const adminContests = useQuery({
-    ...contestKey.getAdminContests({
+    ...contestKey.getContestsForAdmin({
       query: {
         limit: pagination.pageSize,
         skip: pagination.pageIndex * pagination.pageSize,
@@ -358,7 +358,7 @@ const EditContestForm = ({
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: contestKey.getAdminContests._def,
+            queryKey: contestKey.getContestsForAdmin._def,
           })
           onSuccess()
         },
@@ -532,7 +532,7 @@ const AddContestForm = () => {
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: contestKey.getAdminContests._def,
+            queryKey: contestKey.getContestsForAdmin._def,
           })
         },
         onError: () => {
