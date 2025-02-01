@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { ListBulletIcon } from '@heroicons/react/24/outline'
 import { useReactTable } from '@tanstack/react-table'
@@ -12,41 +12,73 @@ import NextLink from 'next/link'
 
 import {
   ContestPrize,
+  ContestSchema,
   ContestScoreboard,
   UserContestScoreboard,
 } from '@otog/contract'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@otog/ui/breadcrumb'
 import { Link } from '@otog/ui/link'
+import { Separator } from '@otog/ui/separator'
+import { SidebarTrigger } from '@otog/ui/sidebar'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
-import { withQuery } from '../../api/server'
-import { TableComponent } from '../../components/table-component'
-import { UserAvatar } from '../../components/user-avatar'
+import { withQuery } from '../../../api/server'
+import { TableComponent } from '../../../components/table-component'
+import { UserAvatar } from '../../../components/user-avatar'
+import { ContestLayout } from '../../../modules/contest/sidebar'
 
-interface ContestHistoryProps {
+interface ContestScoreboardPageProps {
+  contestId: string
+  contest: ContestSchema
+  serverTime: string
   contestScoreboard: ContestScoreboard
   contestPrize: ContestPrize
 }
 
-export const getServerSideProps = withQuery<ContestHistoryProps>(
+interface ContestScoreboardProps {
+  contestScoreboard: ContestScoreboard
+  contestPrize: ContestPrize
+}
+
+export const getServerSideProps = withQuery<ContestScoreboardPageProps>(
   async ({ context, query }) => {
     const contestId = context.query.contestId as string
     if (Number.isNaN(parseInt(contestId))) {
       return { notFound: true }
     }
-    const [getContestScoreboard, getContestPrize] = await Promise.all([
-      query.contest.getContestScoreboard.query({
-        params: { contestId: contestId },
-      }),
-      query.contest.getContestPrize.query({
-        params: { contestId: contestId },
-      }),
-    ])
-    if (getContestScoreboard.status !== 200 || getContestPrize.status !== 200) {
+    const [getTime, getContest, getContestScoreboard, getContestPrize] =
+      await Promise.all([
+        query.app.time.query(),
+        query.contest.getContest.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestScoreboard.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestPrize.query({
+          params: { contestId: contestId },
+        }),
+      ])
+    if (
+      getTime.status !== 200 ||
+      getContest.status !== 200 ||
+      getContestScoreboard.status !== 200 ||
+      getContestPrize.status !== 200
+    ) {
       return { notFound: true }
     }
     return {
       props: {
+        contestId,
+        contest: getContest.body,
+        serverTime: getTime.body.toString(),
         contestScoreboard: getContestScoreboard.body,
         contestPrize: getContestPrize.body,
       },
@@ -54,10 +86,21 @@ export const getServerSideProps = withQuery<ContestHistoryProps>(
   }
 )
 
-export default function ContestHistory({
-  contestScoreboard,
-  contestPrize,
-}: ContestHistoryProps) {
+export default function ContestScoreboardPage(
+  props: ContestScoreboardPageProps
+) {
+  return (
+    <ContestLayout {...props}>
+      <Head>
+        <title>Scoreboard | {props.contest.id} | OTOG</title>
+      </Head>
+      <Scoreboard {...props} />
+    </ContestLayout>
+  )
+}
+ContestScoreboardPage.footer = false
+
+export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
   const columnHelper = createColumnHelper<UserContestScoreboard>()
   const columns = useMemo(
     () => [
@@ -131,28 +174,37 @@ export default function ContestHistory({
           </span>
         ),
       }),
-      columnHelper.accessor('totalTimeUsed', {
-        header: 'เวลาที่ใช้รวม',
-        cell: ({ getValue, row, table }) => (
-          <span
-            className={clsx(
-              'transition-[font-size]',
-              table.options.meta?.expanded
-                ? 'text-base tabular-nums'
-                : fontSize[row.original.rank!]
-            )}
-          >
-            {getValue().toFixed(3)}
-          </span>
-        ),
+      columnHelper.accessor('maxPenalty', {
+        header: 'ส่งล่าสุดเมื่อ',
+        cell: ({ getValue, row, table }) => {
+          const penalty = getValue()
+          const hour = Math.floor(penalty / 3600) % 60
+          const minute = Math.floor(penalty / 60) % 60
+          const second = penalty % 60
+          return (
+            <span
+              className={clsx(
+                'transition-[font-size]',
+                table.options.meta?.expanded
+                  ? 'text-base tabular-nums'
+                  : fontSize[row.original.rank!]
+              )}
+            >
+              {hour}:{minute.toString().padStart(2, '0')}:
+              {second.toString().padStart(2, '0')}
+            </span>
+          )
+        },
+        enableSorting: false,
       }),
       ...contestScoreboard.contest.contestProblem.map((contestProblem) =>
         columnHelper.accessor(
           (row) => {
-            const submission = row.submissions.find(
-              (submission) => submission.problemId === contestProblem.problemId
+            const problemResult = row.problemResults.find(
+              (problemResult) =>
+                problemResult.problemId === contestProblem.problemId
             )
-            return submission?.submissionResult?.score
+            return problemResult?.score
           },
           {
             id: `problem-${contestProblem.problemId.toString()}`,
@@ -195,38 +247,49 @@ export default function ContestHistory({
     }
   }, [expanded])
   return (
-    <main id="#content" className="container flex flex-1 flex-col gap-6 py-8">
-      <Head>
-        <title>Contest History {contestScoreboard.contest.id} | OTOG</title>
-      </Head>
-      <section>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="font-heading text-2xl font-semibold">
-            {contestScoreboard.contest.name}
-          </h1>
-          <Toggle
-            pressed={!expanded}
-            onPressedChange={() => setExpanded((expanded) => !expanded)}
-          >
-            <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
-          </Toggle>
+    <section id="#content" className="flex flex-1 flex-col gap-4 py-4 w-0 px-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
+                <Breadcrumb>{contestScoreboard.contest.name}</Breadcrumb>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-heading text-lg font-semibold">
+                  Scoreboard
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-        <TableComponent
-          table={table}
-          classNames={{
-            container: 'border-transparent',
-            bodyRow: 'border-transparent',
-            headRow: 'border-transparent',
-            head: clsx(expanded ? 'text-right' : 'text-center'),
-            cell: clsx(expanded ? 'text-right' : 'text-center'),
-          }}
-        />
-      </section>
-      <Prize
+        <Toggle
+          pressed={!expanded}
+          onPressedChange={() => setExpanded((expanded) => !expanded)}
+        >
+          <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
+        </Toggle>
+      </div>
+
+      <TableComponent
+        table={table}
+        classNames={{
+          container: 'border-transparent',
+          bodyRow: 'border-transparent',
+          headRow: 'border-transparent',
+          head: clsx(expanded ? 'text-right' : 'text-center'),
+          cell: clsx(expanded ? 'text-right' : 'text-center'),
+        }}
+      />
+      {/* <Prize
+        contest={contest}
         contestScoreboard={contestScoreboard}
         contestPrize={contestPrize}
-      />
-    </main>
+      /> */}
+    </section>
   )
 }
 
@@ -238,7 +301,7 @@ const fontSize: Record<number, string> = {
   5: 'text-lg',
 }
 
-export function Prize(props: ContestHistoryProps) {
+export function Prize(props: ContestScoreboardProps) {
   const data = useMemo(
     () =>
       Object.entries(props.contestPrize).map(([prizeName, users]) => ({

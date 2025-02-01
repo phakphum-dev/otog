@@ -219,6 +219,10 @@ const columns = [
           return 'ACM'
         case 'classic':
           return 'Classic'
+        case 'bestSubmission':
+          return 'Best Submission'
+        case 'bestSubtask':
+          return 'Best Subtask'
         default:
           exhaustiveGuard(gradingMode)
       }
