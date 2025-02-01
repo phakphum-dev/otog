@@ -4,6 +4,7 @@ import { PrismaService } from 'src/core/database/prisma.service'
 import { searchId } from 'src/utils/search'
 
 import {
+  AdminContestWithProblems,
   ListPaginationQuerySchema,
   UserContestScoreboard,
 } from '@otog/contract'
@@ -303,6 +304,19 @@ export class ContestService {
     }
   }
 
+  async putProblemToContest(args: {
+    contestId: number
+    data: Array<{ problemId: number }>
+  }) {
+    await this.prisma.contestProblem.createMany({
+      data: args.data.map((problemId) => ({
+        contestId: args.contestId,
+        problemId: problemId.problemId,
+      })),
+      skipDuplicates: true,
+    })
+  }
+
   async addUserToContest(contestId: number, userId: number) {
     return this.prisma.userContest.upsert({
       where: { userId_contestId: { userId, contestId } },
@@ -350,6 +364,22 @@ export class ContestService {
             ],
           }
         : undefined,
+    })
+  }
+
+  async getAdminContest(args: {
+    id: number
+  }): Promise<AdminContestWithProblems | null> {
+    return await this.prisma.contest.findUnique({
+      where: { id: args.id },
+      include: {
+        contestProblem: {
+          include: {
+            problem: true,
+          },
+          orderBy: { problemId: 'desc' },
+        },
+      },
     })
   }
 }

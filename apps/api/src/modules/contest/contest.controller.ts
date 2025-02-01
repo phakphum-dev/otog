@@ -116,6 +116,22 @@ export class ContestController {
     )
   }
 
+  @TsRestHandler(c.putProblemToContest)
+  @Roles(Role.Admin)
+  putProblemToContest() {
+    return tsRestHandler(
+      c.putProblemToContest,
+      async ({ body, params: { contestId } }) => {
+        const id = z.coerce.number().parse(contestId)
+        await this.contestService.putProblemToContest({
+          contestId: id,
+          data: body,
+        })
+        return { status: 200, body: {} }
+      }
+    )
+  }
+
   @TsRestHandler(c.updateContest)
   @Roles(Role.Admin)
   updateContest() {
@@ -176,5 +192,20 @@ export class ContestController {
         return { status: 200, body: { data: contests, total } }
       }
     )
+  }
+
+  @TsRestHandler(c.getAdminContest, { jsonQuery: true })
+  @Roles(Role.Admin)
+  getAdminContest() {
+    return tsRestHandler(c.getAdminContest, async ({ params }) => {
+      const contestId = z.coerce.number().parse(params.contestId)
+      const contest = await this.contestService.getAdminContest({
+        id: contestId,
+      })
+      if (contest === null) {
+        return { status: 404, body: { message: 'Not Found' } }
+      }
+      return { status: 200, body: contest }
+    })
   }
 }

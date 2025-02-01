@@ -7,7 +7,6 @@ import {
   ChatModel,
   ContestModel,
   ContestProblemModel,
-  Problem,
   ProblemModel,
   SubmissionModel,
   UserContestModel,
@@ -417,6 +416,13 @@ export const CurrentContest = ContestModel.extend({
 })
 export type CurrentContest = z.infer<typeof CurrentContest>
 
+export const AdminContestWithProblems = ContestModel.extend({
+  contestProblem: ContestProblemModel.extend({
+    problem: ProblemModel,
+  }).array(),
+})
+export type AdminContestWithProblems = z.infer<typeof AdminContestWithProblems>
+
 export const contestRouter = contract.router(
   {
     getContests: {
@@ -477,6 +483,13 @@ export const contestRouter = contract.router(
       body: z.object({ show: z.boolean(), problemId: z.coerce.number() }),
       summary: 'Toggle problem to a contest',
     },
+    putProblemToContest: {
+      method: 'PUT',
+      path: '/:contestId',
+      responses: { 200: z.object({}) },
+      body: z.array(z.object({ problemId: z.coerce.number() })),
+      summary: 'Put problems to a contest',
+    },
     updateContest: {
       method: 'PUT',
       path: '/:contestId',
@@ -513,6 +526,14 @@ export const contestRouter = contract.router(
           data: z.array(ContestModel),
           total: z.number(),
         }),
+      },
+      summary: 'List paginated contests for admin',
+    },
+    getAdminContest: {
+      method: 'GET',
+      path: '/admin/:contestId',
+      responses: {
+        200: AdminContestWithProblems,
       },
       summary: 'List paginated contests for admin',
     },
@@ -557,9 +578,9 @@ const AdminProblemSchema = ProblemModel.pick({
 })
 export type AdminProblemSchema = z.infer<typeof AdminProblemSchema>
 
-export const UpdateProblemSchema = z.object({
+export const ProblemFormSchema = z.object({
   name: z.string().min(1, 'Required'),
-  sname: z.string(),
+  sname: z.string().min(1, 'Required'),
   score: z.string().min(1, 'Required').pipe(z.coerce.number()),
   timeLimit: z
     .string()
@@ -571,6 +592,8 @@ export const UpdateProblemSchema = z.object({
   // pdf: z.instanceof(File).optional(),
   // zip: z.instanceof(File).optional(),
 })
+export type ProblemFormSchema = z.infer<typeof ProblemFormSchema>
+
 export const problemRouter = contract.router(
   {
     getProblemTable: {
@@ -590,6 +613,19 @@ export const problemRouter = contract.router(
         // 404: z.object({ message: z.string() }),
       },
       summary: 'Get a problem',
+    },
+    searchProblem: {
+      method: 'GET',
+      path: '/admin/search',
+      query: z.object({
+        search: z.string().optional(),
+        limit: z.coerce.number().optional(),
+        skip: z.coerce.number().optional(),
+      }),
+      responses: {
+        200: z.array(ProblemModel.pick({ id: true, name: true, sname: true })),
+      },
+      summary: 'Search problems',
     },
     getAdminProblems: {
       method: 'GET',
@@ -633,7 +669,16 @@ export const problemRouter = contract.router(
       responses: {
         201: ProblemWithoutExampleSchema,
       },
-      body: ProblemModel.omit({ id: true }),
+      body: contract.type<{
+        name: string
+        sname: string
+        score: string
+        timeLimit: string
+        memoryLimit: string
+        case: string
+        pdf?: FileSchema
+        zip?: FileSchema
+      }>(),
       summary: 'Create a problem',
     },
     updateProblem: {
@@ -672,17 +717,6 @@ export const problemRouter = contract.router(
       },
       body: z.any(),
       summary: 'Update problem example testcases',
-    },
-    listProblem: {
-      method: 'GET',
-      path: '/list',
-      responses: {
-        200: z.array(ProblemModel.pick({ id: true, name: true })),
-      },
-      query: PaginationQuerySchema.extend({
-        search: z.string().optional(),
-      }),
-      summary: 'List problems',
     },
   },
   { pathPrefix: '/problem' }

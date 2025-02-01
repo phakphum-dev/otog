@@ -18,7 +18,7 @@ import {
   getCoreRowModel,
 } from '@tanstack/table-core'
 import dayjs from 'dayjs'
-import { PencilIcon } from 'lucide-react'
+import { PencilIcon, Plus, PlusIcon } from 'lucide-react'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
@@ -30,6 +30,7 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
+  DialogTrigger,
 } from '@otog/ui/dialog'
 import {
   DropdownMenu,
@@ -118,13 +119,10 @@ function ContestDataTable() {
     pageSize: 10,
   })
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    recentShowTime: false,
-    passedCount: false,
-  })
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [search, setSearch] = useState('')
 
-  const adminProblems = useQuery({
+  const adminContests = useQuery({
     ...contestKey.getAdminContests({
       query: {
         limit: pagination.pageSize,
@@ -136,12 +134,12 @@ function ContestDataTable() {
   })
   const problems = useMemo(
     () =>
-      adminProblems.data?.status === 200 ? adminProblems.data.body.data : [],
-    [adminProblems.data]
+      adminContests.data?.status === 200 ? adminContests.data.body.data : [],
+    [adminContests.data]
   )
   const rowCount = useMemo(
-    () => adminProblems.data?.body.total ?? 0,
-    [adminProblems.data]
+    () => adminContests.data?.body.total ?? 0,
+    [adminContests.data]
   )
   const table = useReactTable({
     columns,
@@ -165,20 +163,22 @@ function ContestDataTable() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="sr-only">ตารางโจทย์</h2>
-      <div className="flex justify-between gap-4 flex-col sm:flex-row">
+      <h2 className="sr-only">ตารางการแข่งขัน</h2>
+      <div className="flex gap-2 flex-col sm:flex-row">
         <TableSearch table={table} />
+        <div className="flex-1"></div>
         <TablePaginationInfo
           table={table}
-          isLoading={adminProblems.isFetching}
+          isLoading={adminContests.isFetching}
         />
+        <AddContest />
       </div>
       <TableComponent
         table={table}
-        isLoading={adminProblems.isLoading}
-        isError={adminProblems.isError}
+        isLoading={adminContests.isLoading}
+        isError={adminContests.isError}
       />
-      <TablePagination table={table} isLoading={adminProblems.isFetching} />
+      <TablePagination table={table} isLoading={adminContests.isFetching} />
     </div>
   )
 }
@@ -192,12 +192,10 @@ const columns = [
   columnHelper.accessor('name', {
     header: 'ขื่อ',
     cell: ({ getValue, row }) => (
-      <Link
-        isExternal
-        href={`/admin/contest/${row.original.id}`}
-        className="text-sm"
-      >
-        {getValue()}
+      <Link className="text-sm" asChild>
+        <NextLink href={`/admin/contest/${row.original.id}`}>
+          {getValue()}
+        </NextLink>
       </Link>
     ),
     enableSorting: false,
@@ -267,6 +265,12 @@ const ActionMenu = ({ row }: { row: Row<Contest> }) => {
           <DropdownMenuItem onClick={() => setOpenEdit(true)}>
             <PencilIcon />
             แก้ไขการแข่งขัน
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <NextLink href={`/admin/contest/${row.original.id}`}>
+              <PlusIcon />
+              เพิ่มโจทย์
+            </NextLink>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -357,6 +361,179 @@ const EditContestForm = ({
             queryKey: contestKey.getAdminContests._def,
           })
           onSuccess()
+        },
+        onError: () => {
+          toast.error('ไม่สามารถบันทึกได้', { id: toastId })
+        },
+      }
+    )
+  })
+  return (
+    <Form {...form}>
+      <form className="grid sm:grid-cols-2 gap-4" onSubmit={onSubmit}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="col-span-full">
+              <FormLabel>ชื่อการแข่งขัน</FormLabel>
+              <FormControl>
+                <Input placeholder="ชื่อการแข่งขัน" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="timeStart"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>เวลาเริ่ม</FormLabel>
+              <FormControl>
+                <DateTimePicker {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="timeEnd"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>เวลาจบ</FormLabel>
+              <FormControl>
+                <DateTimePicker {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="gradingMode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>โหมด</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกโหมด" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ContestGradingMode.classic}>
+                    Classic
+                  </SelectItem>
+                  <SelectItem value={ContestGradingMode.acm}>ACM</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="mode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>เรท</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกเรท" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ContestMode.rated}>Rated</SelectItem>
+                  <SelectItem value={ContestMode.unrated}>Unrated</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex gap-2 justify-end col-span-full">
+          <DialogClose asChild>
+            <Button variant="secondary">ยกเลิก</Button>
+          </DialogClose>
+          <Button type="submit">บันทึก</Button>
+        </div>
+      </form>
+    </Form>
+  )
+}
+
+const AddContest = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="secondary">
+          <Plus />
+          เพิ่ม
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogTitle>เพิ่มการแข่งขัน</DialogTitle>
+        <AddContestForm />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const AddContestFormSchema = z
+  .object({
+    name: z.string(),
+    gradingMode: z.nativeEnum(ContestGradingMode),
+    mode: z.nativeEnum(ContestMode),
+    timeStart: z.string().datetime(),
+    timeEnd: z.string().datetime(),
+  })
+  .refine(
+    (data) => {
+      return new Date(data.timeEnd) > new Date(data.timeStart)
+    },
+    {
+      message: 'เวลาจบต้องมาหลังจากเวลาเริ่ม',
+      path: ['timeEnd'],
+    }
+  )
+type AddContestFormInput = z.input<typeof AddContestFormSchema>
+type AddContestFormOutput = z.output<typeof AddContestFormSchema>
+
+const AddContestForm = () => {
+  const form = useForm<AddContestFormInput, any, AddContestFormOutput>({
+    defaultValues: {
+      name: '',
+      gradingMode: 'classic',
+      mode: 'unrated',
+      timeStart: '',
+      timeEnd: '',
+    },
+    resolver: zodResolver(EditContestFormSchema),
+  })
+  const queryClient = useQueryClient()
+  const createContest = contestQuery.createContest.useMutation()
+  const onSubmit = form.handleSubmit(async (values) => {
+    const toastId = toast.loading('กำลังบันทึก...')
+    await createContest.mutateAsync(
+      {
+        body: {
+          name: values.name,
+          announce: null,
+          gradingMode: values.gradingMode,
+          mode: values.mode,
+          timeStart: new Date(values.timeStart),
+          timeEnd: new Date(values.timeEnd),
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('บันทึกสำเร็จ', { id: toastId })
+          queryClient.invalidateQueries({
+            queryKey: contestKey.getAdminContests._def,
+          })
         },
         onError: () => {
           toast.error('ไม่สามารถบันทึกได้', { id: toastId })

@@ -40,7 +40,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
             {value ? (
               dayjs(value).format('DD/MM/BBBB')
             ) : (
-              <span>Pick a date</span>
+              <span>เลือกวันที่</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -87,7 +87,7 @@ export const DateTimePicker = React.forwardRef<
           {value ? (
             dayjs(value).format('DD/MM/BBBB HH:mm')
           ) : (
-            <span>Pick a date</span>
+            <span>เลือกวันที่</span>
           )}
         </Button>
       </PopoverTrigger>

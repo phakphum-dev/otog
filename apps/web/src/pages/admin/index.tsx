@@ -23,7 +23,7 @@ import {
   getCoreRowModel,
 } from '@tanstack/table-core'
 import { File } from '@web-std/file'
-import { PencilIcon } from 'lucide-react'
+import { PencilIcon, Plus } from 'lucide-react'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
@@ -44,6 +44,7 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
+  DialogTrigger,
 } from '@otog/ui/dialog'
 import {
   DropdownMenu,
@@ -113,7 +114,7 @@ export default function AdminProblemPage() {
             <NextLink href="/admin/user">ผู้ใช้งาน</NextLink>
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="problem" className="mt-4">
+        <TabsContent value="problem" className="mt-4 flex flex-col gap-4">
           <ProblemDataTable />
         </TabsContent>
       </Tabs>
@@ -175,12 +176,14 @@ function ProblemDataTable() {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="sr-only">ตารางโจทย์</h2>
-      <div className="flex justify-between gap-4 flex-col sm:flex-row">
+      <div className="flex gap-2 flex-col sm:flex-row">
         <TableSearch table={table} />
+        <div className="flex-1"></div>
         <TablePaginationInfo
           table={table}
           isLoading={adminProblems.isFetching}
         />
+        <AddProblem />
       </div>
       <TableComponent
         table={table}
@@ -370,7 +373,7 @@ const ToggleShowProblem = ({
         )
       }}
     >
-      {row.original.show ? <EyeSlashIcon /> : <EyeIcon />}
+      {row.original.show ? <EyeIcon /> : <EyeSlashIcon />}
     </Button>
   )
 }
@@ -399,7 +402,7 @@ const EditProblemDialog = ({
 
 const EditProblemFormSchema = z.object({
   name: z.string().min(1, 'Required'),
-  sname: z.string(),
+  sname: z.string().min(1, 'Required'),
   score: z.string().min(1, 'Required'),
   timeLimit: z.string().min(1, 'Required'),
   memoryLimit: z.string().min(1, 'Required'),
@@ -453,6 +456,199 @@ const EditProblemForm = ({
             queryKey: problemKey.getAdminProblems._def,
           })
           onSuccess()
+        },
+        onError: () => {
+          toast.error('ไม่สามารถบันทึกได้', { id: toastId })
+        },
+      }
+    )
+  })
+  return (
+    <Form {...form}>
+      <form className="grid sm:grid-cols-2 gap-4" onSubmit={onSubmit}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ชื่อโจทย์</FormLabel>
+              <FormControl>
+                <Input placeholder="ชื่อโจทย์" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="sname"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ชื่อเล่น</FormLabel>
+              <FormControl>
+                <Input placeholder="ชื่อเล่น" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="score"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>คะแนน</FormLabel>
+              <FormControl>
+                <Input placeholder="คะแนน" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="timeLimit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>เวลา (s)</FormLabel>
+              <FormControl>
+                <Input placeholder="เวลา" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="memoryLimit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>หน่วยความจำ (MB)</FormLabel>
+              <FormControl>
+                <Input placeholder="หน่วยความจำ" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="case"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>จำนวนเคส</FormLabel>
+              <FormControl>
+                <Input placeholder="จำนวนเคส" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="pdf"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>โจทย์ (PDF)</FormLabel>
+              <FormControl>
+                <FileInput {...field} accept=".pdf" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="zip"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>เทสต์เคส (ZIP)</FormLabel>
+              <FormControl>
+                <FileInput {...field} accept=".zip,.zpi" />
+              </FormControl>
+              <FormMessage />
+              <FormDescription>
+                Testcase Files อยู่ในรูปแบบ 1.in, 1.sol, ...
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+        <div className="flex gap-2 justify-end col-span-full">
+          <DialogClose asChild>
+            <Button variant="secondary">ยกเลิก</Button>
+          </DialogClose>
+          <Button type="submit">บันทึก</Button>
+        </div>
+      </form>
+    </Form>
+  )
+}
+
+const AddProblem = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="secondary">
+          <Plus />
+          เพิ่ม
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogTitle>เพิ่มโจทย์</DialogTitle>
+        <AddProblemForm />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const AddProblemFormSchema = z.object({
+  name: z.string().min(1, 'Required'),
+  sname: z.string().min(1, 'Required'),
+  score: z.string().min(1, 'Required'),
+  timeLimit: z.string().min(1, 'Required'),
+  memoryLimit: z.string().min(1, 'Required'),
+  case: z.string(),
+  pdf: z.instanceof(File).optional(),
+  zip: z.instanceof(File).optional(),
+})
+type AddProblemFormInput = z.input<typeof AddProblemFormSchema>
+type AddProblemFormOutput = z.output<typeof AddProblemFormSchema>
+
+const AddProblemForm = () => {
+  const form = useForm<AddProblemFormInput, any, AddProblemFormOutput>({
+    defaultValues: {
+      name: '',
+      sname: '',
+      score: '',
+      timeLimit: '',
+      memoryLimit: '',
+      case: '',
+    },
+    resolver: zodResolver(AddProblemFormSchema),
+  })
+  const queryClient = useQueryClient()
+  const createProblem = problemQuery.createProblem.useMutation()
+  const onSubmit = form.handleSubmit(async (values) => {
+    const toastId = toast.loading('กำลังบันทึก...')
+    await createProblem.mutateAsync(
+      {
+        body: {
+          name: values.name,
+          sname: values.sname,
+          score: values.score,
+          timeLimit: values.timeLimit,
+          memoryLimit: values.memoryLimit,
+          case: values.case,
+          pdf: values.pdf,
+          zip: values.zip,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('บันทึกสำเร็จ', { id: toastId })
+          queryClient.invalidateQueries({
+            queryKey: problemKey.getAdminProblems._def,
+          })
         },
         onError: () => {
           toast.error('ไม่สามารถบันทึกได้', { id: toastId })
