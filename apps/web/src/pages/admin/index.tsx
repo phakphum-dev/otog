@@ -134,8 +134,8 @@ function ProblemDataTable() {
   })
   const [search, setSearch] = useState('')
 
-  const adminProblems = useQuery({
-    ...problemKey.getAdminProblems({
+  const getProblemsForAdmin = useQuery({
+    ...problemKey.getProblemsForAdmin({
       query: {
         limit: pagination.pageSize,
         skip: pagination.pageIndex * pagination.pageSize,
@@ -146,12 +146,14 @@ function ProblemDataTable() {
   })
   const problems = useMemo(
     () =>
-      adminProblems.data?.status === 200 ? adminProblems.data.body.data : [],
-    [adminProblems.data]
+      getProblemsForAdmin.data?.status === 200
+        ? getProblemsForAdmin.data.body.data
+        : [],
+    [getProblemsForAdmin.data]
   )
   const rowCount = useMemo(
-    () => adminProblems.data?.body.total ?? 0,
-    [adminProblems.data]
+    () => getProblemsForAdmin.data?.body.total ?? 0,
+    [getProblemsForAdmin.data]
   )
   const table = useReactTable({
     columns,
@@ -181,16 +183,19 @@ function ProblemDataTable() {
         <div className="flex-1"></div>
         <TablePaginationInfo
           table={table}
-          isLoading={adminProblems.isFetching}
+          isLoading={getProblemsForAdmin.isFetching}
         />
         <AddProblem />
       </div>
       <TableComponent
         table={table}
-        isLoading={adminProblems.isLoading}
-        isError={adminProblems.isError}
+        isLoading={getProblemsForAdmin.isLoading}
+        isError={getProblemsForAdmin.isError}
       />
-      <TablePagination table={table} isLoading={adminProblems.isFetching} />
+      <TablePagination
+        table={table}
+        isLoading={getProblemsForAdmin.isFetching}
+      />
     </div>
   )
 }
@@ -363,7 +368,7 @@ const ToggleShowProblem = ({
             onSuccess: () => {
               toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
               queryClient.invalidateQueries({
-                queryKey: problemKey.getAdminProblems._def,
+                queryKey: problemKey.getProblemsForAdmin._def,
               })
             },
             onError: () => {
@@ -453,7 +458,7 @@ const EditProblemForm = ({
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: problemKey.getAdminProblems._def,
+            queryKey: problemKey.getProblemsForAdmin._def,
           })
           onSuccess()
         },
@@ -647,7 +652,7 @@ const AddProblemForm = () => {
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: problemKey.getAdminProblems._def,
+            queryKey: problemKey.getProblemsForAdmin._def,
           })
         },
         onError: () => {

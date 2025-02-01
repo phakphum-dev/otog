@@ -656,7 +656,7 @@ export const problemRouter = contract.router(
       },
       summary: 'Search problems',
     },
-    getAdminProblems: {
+    getProblemsForAdmin: {
       method: 'GET',
       path: '/admin/list',
       responses: {

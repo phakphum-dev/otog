@@ -333,7 +333,7 @@ export class ProblemService {
     }
   }
 
-  async getAdminProblems(args: {
+  async getProblemsForAdmin(args: {
     skip: number
     limit: number
     search?: string
@@ -364,7 +364,7 @@ export class ProblemService {
       orderBy: { id: 'desc' },
     })
   }
-  async getAdminProblemCount(args: { search?: string }) {
+  async getProblemsCountForAdmin(args: { search?: string }) {
     return await this.prisma.problem.count({
       where: args.search
         ? {
