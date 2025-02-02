@@ -23,7 +23,7 @@ import {
   ProblemFormSchema,
   ProblemTableRowSchema,
 } from '@otog/contract'
-import { Prisma, SubmissionStatus, User, UserRole } from '@otog/database'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { UploadedFilesObject } from './dto/problem.dto'
 
@@ -134,90 +134,90 @@ export class ProblemService {
     userId?: number
   }): Promise<Array<ProblemTableRowSchema>> {
     const where = { show: args.show }
-    const [problems, problemsWithSubmissions, problemsWithSampleUsers] =
-      await Promise.all([
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            name: true,
-            sname: true,
-            score: true,
-            timeLimit: true,
-            memoryLimit: true,
-            show: true,
-            recentShowTime: true,
-            case: true,
-            rating: true,
-            submission: args.userId
-              ? {
-                  select: {
-                    id: true,
-                    status: true,
-                    userId: true,
-                  },
-                  orderBy: { creationDate: 'desc' },
-                  where: { userId: args.userId },
-                  take: 1,
-                }
-              : undefined,
-          },
-          orderBy: { id: 'desc' },
-        }),
-        // TODO: do simpler query by making problem to user connection in db
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            submission: {
-              where: {
-                status: SubmissionStatus.accept,
-                user: { NOT: { role: UserRole.admin } },
-              },
-              distinct: ['userId'],
-              select: { id: true },
-            },
-          },
-        }),
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            submission: {
-              take: 3,
-              distinct: ['userId'],
-              where: {
-                status: SubmissionStatus.accept,
-                user: { NOT: { role: UserRole.admin } },
-              },
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    showName: true,
-                  },
+    const [problems, problemsWithSubmissions] = await Promise.all([
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          name: true,
+          sname: true,
+          score: true,
+          timeLimit: true,
+          memoryLimit: true,
+          show: true,
+          recentShowTime: true,
+          case: true,
+          rating: true,
+          submission: args.userId
+            ? {
+                select: {
+                  id: true,
+                  status: true,
+                  userId: true,
+                  public: true,
                 },
-              },
+                orderBy: { creationDate: 'desc' },
+                where: { userId: args.userId },
+                take: 1,
+              }
+            : undefined,
+        },
+        orderBy: { id: 'desc' },
+      }),
+      // TODO: do simpler query by making problem to user connection in db
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          submission: {
+            where: {
+              status: SubmissionStatus.accept,
+              user: { NOT: { role: UserRole.admin } },
             },
+            distinct: ['userId'],
+            select: { id: true },
           },
-        }),
-      ])
+        },
+      }),
+      // this.prisma.problem.findMany({
+      //   where: where,
+      //   select: {
+      //     id: true,
+      //     submission: {
+      //       take: 3,
+      //       distinct: ['userId'],
+      //       where: {
+      //         status: SubmissionStatus.accept,
+      //         user: { NOT: { role: UserRole.admin } },
+      //       },
+      //       select: {
+      //         user: {
+      //           select: {
+      //             id: true,
+      //             showName: true,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      // }),
+    ])
 
     const problemIdToPassedCount = new Map<number, number>()
     problemsWithSubmissions.forEach((problem) => {
       problemIdToPassedCount.set(problem.id, problem.submission.length)
     })
 
-    const problemIdToSampleUsers = new Map<
-      number,
-      Array<Pick<User, 'id' | 'showName'>>
-    >()
-    problemsWithSampleUsers.forEach((problem) => {
-      problemIdToSampleUsers.set(
-        problem.id,
-        problem.submission.map((s) => s.user)
-      )
-    })
+    // const problemIdToSampleUsers = new Map<
+    //   number,
+    //   Array<Pick<User, 'id' | 'showName'>>
+    // >()
+    // problemsWithSampleUsers.forEach((problem) => {
+    //   problemIdToSampleUsers.set(
+    //     problem.id,
+    //     problem.submission.map((s) => s.user)
+    //   )
+    // })
 
     return problems.map((problem) => ({
       id: problem.id,
@@ -232,7 +232,7 @@ export class ProblemService {
       rating: problem.rating,
       latestSubmission: problem.submission?.[0] ?? null,
       passedCount: problemIdToPassedCount.get(problem.id) ?? 0,
-      samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
+      // samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
     }))
   }
 
@@ -279,7 +279,7 @@ export class ProblemService {
         showName: true,
         rating: true,
         submission: {
-          select: { id: true, status: true, userId: true },
+          select: { id: true, status: true, userId: true, public: true },
           where: { status: SubmissionStatus.accept, problemId: args.problemId },
           orderBy: { creationDate: 'desc' },
           take: 1,
