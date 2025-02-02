@@ -594,6 +594,7 @@ const LatestSubmissionModel = SubmissionModel.pick({
   id: true,
   status: true,
   userId: true,
+  public: true,
 })
 export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
   passedCount: z.number(),
