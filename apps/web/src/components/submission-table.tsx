@@ -141,7 +141,8 @@ const columns = [
     ),
     enableSorting: false,
     meta: {
-      cellClassName: 'max-w-[200px] whitespace-pre-wrap text-end tabular-nums',
+      cellClassName:
+        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
       headClassName: 'text-end',
     },
   }),
