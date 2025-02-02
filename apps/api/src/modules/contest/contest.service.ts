@@ -26,12 +26,17 @@ export class ContestService {
     })
   }
 
-  findAll() {
+  listContest(args: ListPaginationQuerySchema) {
     return this.prisma.contest.findMany({
+      skip: args.skip,
+      take: args.limit,
       orderBy: {
         id: 'desc',
       },
     })
+  }
+  countContest() {
+    return this.prisma.contest.count({})
   }
 
   findOneById(contestId: number) {

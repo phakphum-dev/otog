@@ -430,15 +430,27 @@ export const AdminContestWithProblems = ContestModel.extend({
 })
 export type AdminContestWithProblems = z.infer<typeof AdminContestWithProblems>
 
+export const CursorPaginationQuerySchema = z.object({
+  take: z.coerce.number(),
+  cursor: z.coerce.number().optional(),
+  search: z.string().optional(),
+})
+export type CursorPaginationQuerySchema = z.infer<
+  typeof CursorPaginationQuerySchema
+>
 export const contestRouter = contract.router(
   {
-    getContests: {
+    listContest: {
       method: 'GET',
-      path: '',
+      path: '/list',
+      query: ListPaginationQuerySchema,
       responses: {
-        200: z.array(ContestModel),
+        200: z.object({
+          data: z.array(ContestModel),
+          total: z.number(),
+        }),
       },
-      summary: 'Get all contests',
+      summary: 'List paginated contests',
     },
     getCurrentContest: {
       method: 'GET',

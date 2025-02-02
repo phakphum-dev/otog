@@ -23,11 +23,14 @@ const c = nestControllerContract(contestRouter)
 export class ContestController {
   constructor(private contestService: ContestService) {}
 
-  @TsRestHandler(c.getContests)
-  getContests() {
-    return tsRestHandler(c.getContests, async () => {
-      const contests = await this.contestService.findAll()
-      return { status: 200, body: contests }
+  @TsRestHandler(c.listContest, { jsonQuery: true })
+  listContest() {
+    return tsRestHandler(c.listContest, async ({ query }) => {
+      const [contests, total] = await Promise.all([
+        this.contestService.listContest(query),
+        this.contestService.countContest(),
+      ])
+      return { status: 200, body: { data: contests, total } }
     })
   }
 
