@@ -239,7 +239,7 @@ export class SubmissionController {
         }
         return {
           status: 200,
-          body: await this.submissionService.setSubmissionStatusToWaiting(id),
+          body: await this.submissionService.rejudgeSubmission(id),
         }
       }
     )
@@ -252,7 +252,7 @@ export class SubmissionController {
       c.rejudgeProblem,
       async ({ params: { problemId } }) => {
         const id = z.coerce.number().parse(problemId)
-        await this.submissionService.setAllLatestSubmissionStatusToWaiting(id)
+        await this.submissionService.rejudgeProblem(id)
         return { status: 200, body: undefined }
       }
     )

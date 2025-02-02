@@ -9,8 +9,11 @@ import {
   ContestProblemModel,
   ProblemModel,
   SubmissionModel,
+  SubmissionResultModel,
+  SubtaskResultModel,
   UserContestModel,
   UserModel,
+  VerdictModel,
 } from '@otog/database'
 
 // TODO: https://github.com/colinhacks/zod/discussions/2171
@@ -136,36 +139,57 @@ export type UserSchema = z.infer<typeof UserSchema>
 
 const SubmissionSchema = SubmissionModel.pick({
   id: true,
-  result: true,
-  score: true,
-  timeUsed: true,
   status: true,
-  errmsg: true,
   contestId: true,
   language: true,
   creationDate: true,
   public: true,
   userId: true,
+  memUsed: true,
+}).extend({
+  problem: ProblemModel.pick({
+    id: true,
+    name: true,
+    memoryLimit: true,
+    timeLimit: true,
+    score: true,
+  }),
+  submissionResult: SubmissionResultModel.pick({
+    id: true,
+    score: true,
+    result: true,
+    timeUsed: true,
+    memUsed: true,
+  }).nullable(),
+  user: UserSchema,
 })
-  .extend({
-    problem: ProblemModel.pick({
-      id: true,
-      name: true,
-      memoryLimit: true,
-      timeLimit: true,
-    }).nullable(),
-  })
-  .extend({
-    user: UserSchema.nullable(),
-  })
 export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
-export const SubmissionWithSourceCodeSchema = SubmissionSchema.merge(
+export const SubmissionDetailSchema = SubmissionSchema.merge(
   SubmissionModel.pick({ sourceCode: true })
-)
-export type SubmissionWithSourceCodeSchema = z.infer<
-  typeof SubmissionWithSourceCodeSchema
->
+).extend({
+  submissionResult: SubmissionResultModel.pick({
+    id: true,
+    score: true,
+    result: true,
+    timeUsed: true,
+    memUsed: true,
+    errmsg: true,
+  })
+    .extend({
+      subtaskResults: z.array(
+        SubtaskResultModel.pick({
+          score: true,
+          fullScore: true,
+          subtaskIndex: true,
+        }).extend({
+          verdicts: z.array(VerdictModel),
+        })
+      ),
+    })
+    .nullable(),
+})
+export type SubmissionDetailSchema = z.infer<typeof SubmissionDetailSchema>
 
 const FileSchema = z.instanceof(File)
 type FileSchema = z.infer<typeof FileSchema>
@@ -201,7 +225,7 @@ export const submissionRouter = contract.router(
       path: '/problem/:problemId/latest',
       responses: {
         200: z.object({
-          submission: SubmissionWithSourceCodeSchema.nullable(),
+          submission: SubmissionDetailSchema.nullable(),
         }),
       },
       summary: 'Get latest submission for a problem',
@@ -225,7 +249,7 @@ export const submissionRouter = contract.router(
       path: '/latest',
       responses: {
         200: z.object({
-          submission: SubmissionWithSourceCodeSchema.nullable(),
+          submission: SubmissionDetailSchema.nullable(),
         }),
       },
       summary: 'Get latest submission for a user',
@@ -253,7 +277,7 @@ export const submissionRouter = contract.router(
       method: 'GET',
       path: '/:submissionId/code',
       responses: {
-        200: SubmissionWithSourceCodeSchema,
+        200: SubmissionDetailSchema,
         403: z.object({ message: z.string() }),
         404: z.object({ message: z.string() }),
       },
@@ -388,10 +412,15 @@ export const UserContestScoreboard = UserContestModel.extend({
     SubmissionModel.pick({
       id: true,
       problemId: true,
-      score: true,
-      timeUsed: true,
       status: true,
       userId: true,
+    }).extend({
+      submissionResult: SubmissionResultModel.pick({
+        id: true,
+        timeUsed: true,
+        score: true,
+        memUsed: true,
+      }).nullable(),
     })
   ),
 })
@@ -410,7 +439,7 @@ export type ContestScoreboard = z.infer<typeof ContestScoreboard>
 
 export const ContestPrize = z.object({
   firstBlood: z.array(PrizeSchema),
-  fasterThanLight: z.array(PrizeSchema),
+  // fasterThanLight: z.array(PrizeSchema),
   // passedInOne: z.array(PrizeSchema),
   oneManSolve: z.array(PrizeSchema),
 })

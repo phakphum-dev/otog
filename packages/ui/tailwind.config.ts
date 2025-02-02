@@ -72,6 +72,26 @@ const config = {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))',
         },
+        accept: {
+          DEFAULT: 'hsl(var(--accept))',
+          foreground: 'hsl(var(--accept-foreground))',
+        },
+        reject: {
+          DEFAULT: 'hsl(var(--reject))',
+          foreground: 'hsl(var(--reject-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
+        error: {
+          DEFAULT: 'hsl(var(--error))',
+          foreground: 'hsl(var(--error-foreground))',
+        },
 
         otog: {
           orange: {

@@ -26,6 +26,17 @@
     --success: colorToHsl(theme(colors.green.500));
     --success-foreground: colorToHsl(theme(colors.gray.50));
 
+    --accept: colorToHsl(theme(colors.green.100));
+    --accept-foreground: colorToHsl(theme(colors.green.950));
+    --reject: colorToHsl(theme(colors.red.100));
+    --reject-foreground: colorToHsl(theme(colors.red.950));
+    --warning: colorToHsl(theme(colors.amber.100));
+    --warning-foreground: colorToHsl(theme(colors.amber.950));
+    --info: colorToHsl(theme(colors.sky.100));
+    --info-foreground: colorToHsl(theme(colors.sky.950));
+    --error: colorToHsl(theme(colors.purple.100));
+    --error-foreground: colorToHsl(theme(colors.purple.950));
+
     --radius: 0.75rem;
     --navbar: 64px;
   }
@@ -52,6 +63,17 @@
     --ring: colorToHsl(theme(colors.orange.500));
     --success: colorToHsl(theme(colors.green.600));
     --success-foreground: colorToHsl(theme(colors.gray.50));
+
+    --accept: colorToHsl(theme(colors.green.500));
+    --accept-foreground: colorToHsl(theme(colors.green.500));
+    --reject: colorToHsl(theme(colors.red.500));
+    --reject-foreground: colorToHsl(theme(colors.red.500));
+    --warning: colorToHsl(theme(colors.amber.500));
+    --warning-foreground: colorToHsl(theme(colors.amber.500));
+    --info: colorToHsl(theme(colors.sky.500));
+    --info-foreground: colorToHsl(theme(colors.sky.500));
+    --error: colorToHsl(theme(colors.purple.500));
+    --error-foreground: colorToHsl(theme(colors.purple.500));
   }
 }
 

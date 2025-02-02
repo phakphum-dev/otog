@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -15,6 +16,7 @@ import { SubmissionStatus } from '@otog/database'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
 import { TableCell, TableFooter, TableRow } from '@otog/ui/table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@otog/ui/tooltip'
 
 import { submissionKey } from '../api/query'
 import { InlineComponent } from './inline-component'
@@ -107,43 +109,62 @@ const columns = [
     ),
     enableSorting: false,
   }),
-  columnHelper.accessor('result', {
-    header: 'ผลลัพธ์',
+  columnHelper.display({
+    id: 'score',
+    header: 'คะแนน',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
           if (
-            submission.status === SubmissionStatus.waiting ||
-            submission.status === SubmissionStatus.grading
+            submission.status == SubmissionStatus.waiting ||
+            submission.status == SubmissionStatus.grading
           ) {
             return (
               <div className="inline-flex gap-2 items-center">
                 <Spinner size="sm" />
-                {submission.result}
+                <div>
+                  {submission.submissionResult?.score ?? 0} /{' '}
+                  {submission.problem.score}
+                </div>
               </div>
             )
           }
           return (
-            <code className="font-mono line-clamp-3 text-pretty">
-              {submission.result}
-            </code>
+            <div>
+              {submission.submissionResult?.score ?? 0} /{' '}
+              {submission.problem.score}
+            </div>
           )
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      cellClassName: 'max-w-[200px] whitespace-pre-wrap',
+      cellClassName: 'max-w-[200px] whitespace-pre-wrap text-end tabular-nums',
+      headClassName: 'text-end',
     },
   }),
-  columnHelper.accessor('timeUsed', {
-    header: 'เวลารวม (วินาที)',
+  columnHelper.display({
+    id: 'timeUsed',
+    header: () => (
+      <span className="inline-flex gap-2">
+        เวลาที่ใช้ (วินาที)
+        <Tooltip>
+          <TooltipTrigger>
+            <InformationCircleIcon className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent>เวลารวมถูกปรับเป็นเวลาสูงสุดที่ใช้</TooltipContent>
+        </Tooltip>
+      </span>
+    ),
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return ((submission.timeUsed ?? 0) / 1000).toFixed(3)
+          return ((submission.submissionResult?.timeUsed ?? 0) / 1000).toFixed(
+            3
+          )
         }}
       />
     ),
@@ -153,7 +174,6 @@ const columns = [
       cellClassName: 'text-end tabular-nums',
     },
   }),
-
   columnHelper.accessor('status', {
     header: 'สถานะ',
     cell: ({ row: { original } }) => (
