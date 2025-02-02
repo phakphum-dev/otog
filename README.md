@@ -8,7 +8,7 @@
 
 ### Become a god of competitive programming, code and create algorithms efficiently.
 
-### http://beta.otog.in.th/
+### http://otog.in.th/
 
 An online grader which was originally provided for POSN KKU center students but currently open for everybody.
 
