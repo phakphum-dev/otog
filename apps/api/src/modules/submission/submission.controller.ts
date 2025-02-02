@@ -134,13 +134,12 @@ export class SubmissionController {
   }
 
   @TsRestHandler(c.getSubmissionsByUserId)
-  @Roles(Role.User, Role.Admin)
-  getSubmissionsByUserId(@User() user: UserDTO) {
+  getSubmissionsByUserId(@User() user?: UserDTO) {
     return tsRestHandler(
       c.getSubmissionsByUserId,
       async ({ params: { userId }, query: { limit, offset } }) => {
         const id = z.coerce.number().parse(userId)
-        if (user.role === 'admin') {
+        if (user?.role === 'admin') {
           const submissions = await this.submissionService.findAllByUserId(
             id,
             offset,
@@ -148,16 +147,13 @@ export class SubmissionController {
           )
           return { status: 200, body: submissions }
         }
-        if (user.id === id) {
-          const submissions =
-            await this.submissionService.findAllByUserIdWithOutContest(
-              id,
-              offset,
-              limit
-            )
-          return { status: 200, body: submissions }
-        }
-        return { status: 400, body: { message: 'Bad request' } }
+        const submissions =
+          await this.submissionService.findAllByUserIdWithOutContest(
+            id,
+            offset,
+            limit
+          )
+        return { status: 200, body: submissions }
       }
     )
   }
