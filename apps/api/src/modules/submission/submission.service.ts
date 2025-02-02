@@ -3,9 +3,8 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { Multer } from 'multer'
 import { PrismaService } from 'src/core/database/prisma.service'
 import { scodeFileFilter, scodeFileSizeLimit } from 'src/utils'
-import { select } from 'ts-pattern/dist/patterns'
 
-import { SubmissionStatus, UserRole } from '@otog/database'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { WITHOUT_PASSWORD } from '../user/user.service'
 
@@ -37,7 +36,7 @@ export const WITHOUT_DETAIL = {
       errmsg: true,
     },
   },
-} as const
+} satisfies Prisma.SubmissionSelect
 
 const WITH_DETAIL = {
   ...WITHOUT_DETAIL,
@@ -55,12 +54,15 @@ const WITH_DETAIL = {
           score: true,
           fullScore: true,
           subtaskIndex: true,
-          verdicts: true,
+          verdicts: {
+            orderBy: { testcaseIndex: 'asc' },
+          },
         },
-      }
+        orderBy: { subtaskIndex: 'asc' },
+      },
     },
   },
-}
+} satisfies Prisma.SubmissionSelect
 
 @Injectable()
 export class SubmissionService {

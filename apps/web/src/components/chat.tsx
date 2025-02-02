@@ -83,7 +83,6 @@ export function Chat() {
   const isIntersecting = entry?.isIntersecting
   useEffect(() => {
     if (isIntersecting) {
-      console.log('fetchNextPage()')
       fetchNextPage()
     }
   }, [isIntersecting])
@@ -284,9 +283,12 @@ const OnlineUsersDialog = forwardRef<
               <Link
                 asChild
                 variant="hidden"
-                className="line-clamp-3 max-w-[275px]"
+                className="line-clamp-3 max-w-[275px] items-center flex gap-2"
               >
-                <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
+                <NextLink href={`/user/${user.id}`}>
+                  <UserAvatar user={user} />
+                  {user.showName}
+                </NextLink>
               </Link>
             </li>
           </ul>
@@ -577,23 +579,21 @@ const useChat = (isOpen: boolean) => {
   const { socket } = useSocketContext()
   const { isAuthenticated } = useUserContext()
   useEffect(() => {
-    if (socket) {
-      if (isAuthenticated) {
-        dispatch({ type: 'start' })
-      } else {
-        dispatch({ type: 'clear' })
-      }
+    if (!socket) return
+    if (isAuthenticated) {
+      dispatch({ type: 'start' })
+    } else {
+      dispatch({ type: 'clear' })
     }
   }, [socket, dispatch, isAuthenticated])
 
   useEffect(() => {
-    if (socket) {
-      socket.on('chat', (message: SocketMessage) => {
-        dispatch({ type: 'new-message', payload: { message, isOpen } })
-      })
-      return () => {
-        socket.off('chat')
-      }
+    if (!socket) return
+    socket.on('chat', (message: SocketMessage) => {
+      dispatch({ type: 'new-message', payload: { message, isOpen } })
+    })
+    return () => {
+      socket.off('chat')
     }
   }, [socket, isOpen, dispatch])
 

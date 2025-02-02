@@ -33,6 +33,7 @@ import { clsx } from '@otog/ui/utils'
 
 import Logo from '../../public/logo512.png'
 import { useUserContext } from '../context/user-context'
+import { Search } from './search'
 import { ThemeToggle } from './theme-provider'
 import { UserAvatar } from './user-avatar'
 
@@ -81,6 +82,7 @@ export const Navbar = () => {
             </ul>
           </div>
           <div className="flex gap-2 max-lg:hidden">
+            <Search />
             <ThemeToggle />
             {user ? (
               <Menu user={user} />
@@ -178,7 +180,7 @@ interface MenuProps {
   user: User['user']
 }
 const Menu = ({ user }: MenuProps) => {
-  const { logout } = useUserContext()
+  const { logout, isAdmin } = useUserContext()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -187,10 +189,18 @@ const Menu = ({ user }: MenuProps) => {
           <ChevronDownIcon className="size-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel className="max-w-60 truncate">
-          {user.showName}
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end">
+        {isAdmin ? (
+          <DropdownMenuItem asChild>
+            <NextLink href="/admin" className="max-w-60 truncate font-semibold">
+              {user.showName}
+            </NextLink>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuLabel className="max-w-60 truncate">
+            {user.showName}
+          </DropdownMenuLabel>
+        )}
         <DropdownMenuItem asChild>
           <NextLink href={`/user/${user.id}`}>
             <UserIcon />

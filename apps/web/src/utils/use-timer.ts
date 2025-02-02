@@ -4,11 +4,11 @@ import { ONE_SECOND } from './time'
 
 export function useTimer({ start, end }: { start: Date; end: Date }) {
   const [remaining, setRemaining] = useState(
-    () => start.getTime() - end.getTime()
+    () => end.getTime() - start.getTime()
   )
 
   useEffect(() => {
-    setRemaining(start.getTime() - end.getTime())
+    setRemaining(end.getTime() - start.getTime())
   }, [start, end])
 
   const enabled = remaining > 0
