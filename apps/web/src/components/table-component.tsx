@@ -422,12 +422,14 @@ export const TablePagination = ({
 export const TablePaginationInfo = ({
   table,
   isLoading,
+  className,
 }: {
   table: TanstackTable<any>
   isLoading: boolean
+  className?: string
 }) => {
   return (
-    <div className="flex items-center justify-between gap-8">
+    <div className={clsx('flex items-center justify-between gap-8', className)}>
       {/* Page number information */}
       <div className="flex grow justify-end whitespace-nowrap text-sm text-muted-foreground items-center gap-2">
         {isLoading && <Spinner size="sm" />}

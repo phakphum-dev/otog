@@ -178,14 +178,16 @@ function ProblemDataTable() {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="sr-only">ตารางโจทย์</h2>
-      <div className="flex gap-2 flex-col sm:flex-row">
+      <div className="flex gap-2 flex-col sm:flex-row justify-between">
         <TableSearch table={table} />
-        <div className="flex-1"></div>
-        <TablePaginationInfo
-          table={table}
-          isLoading={getProblemsForAdmin.isFetching}
-        />
-        <AddProblem />
+        <div className="flex gap-2 justify-end max-sm:flex-col">
+          <TablePaginationInfo
+            className="self-end"
+            table={table}
+            isLoading={getProblemsForAdmin.isFetching}
+          />
+          <AddProblem />
+        </div>
       </div>
       <TableComponent
         table={table}

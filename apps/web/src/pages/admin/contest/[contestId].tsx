@@ -171,7 +171,7 @@ function ContestDataTable(props: AdminContestPageProps) {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="sr-only">ตารางโจทย์</h2>
-      <div className="flex gap-2 flex-col sm:flex-row items-center">
+      <div className="flex gap-2 items-center">
         <Button
           size="icon"
           variant="ghost"
