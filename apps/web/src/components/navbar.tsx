@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react'
+import { RemoveScroll } from 'react-remove-scroll'
 
 import {
   ArrowRightStartOnRectangleIcon,
@@ -53,7 +54,12 @@ export const Navbar = () => {
   return (
     <>
       <div className="h-[--navbar] w-full" />
-      <nav className="fixed inset-x-0 top-0 z-20 h-[--navbar] border-b border-border bg-background shadow-sm">
+      <nav
+        className={clsx(
+          'fixed right-0 left-0 top-0 z-20 h-[--navbar] border-b border-border bg-background shadow-sm',
+          RemoveScroll.classNames.fullWidth
+        )}
+      >
         <div className="container flex h-full justify-between items-center">
           <div className="flex gap-2 items-center">
             <Link asChild className="p-1 rounded-full">
