@@ -30,6 +30,7 @@ import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../../api/server'
+import { Footer } from '../../../components/footer'
 import { TableComponent } from '../../../components/table-component'
 import { UserAvatar } from '../../../components/user-avatar'
 import { ContestLayout } from '../../../modules/contest/sidebar'
@@ -95,6 +96,7 @@ export default function ContestScoreboardPage(
         <title>Scoreboard | {props.contest.id} | OTOG</title>
       </Head>
       <Scoreboard {...props} />
+      <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }
@@ -247,8 +249,8 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
     }
   }, [expanded])
   return (
-    <section id="#content" className="flex flex-1 flex-col gap-4 py-4 w-0 px-4">
-      <div className="flex justify-between items-center">
+    <div className="flex-1 flex-col">
+      <div className="flex justify-between items-center p-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           <Separator orientation="vertical" className="mr-2 h-4" />
@@ -277,7 +279,7 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
       <TableComponent
         table={table}
         classNames={{
-          container: 'border-transparent',
+          container: 'border-transparent px-4',
           bodyRow: 'border-transparent',
           headRow: 'border-transparent',
           head: clsx(expanded ? 'text-right' : 'text-center'),
@@ -289,7 +291,7 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
         contestScoreboard={contestScoreboard}
         contestPrize={contestPrize}
       /> */}
-    </section>
+    </div>
   )
 }
 

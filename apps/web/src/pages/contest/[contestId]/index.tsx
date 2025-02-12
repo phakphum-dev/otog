@@ -18,6 +18,7 @@ import { Separator } from '@otog/ui/separator'
 import { SidebarTrigger } from '../../../../../../packages/ui/src/sidebar'
 import { appKey, contestKey } from '../../../api/query'
 import { withQuery } from '../../../api/server'
+import { Footer } from '../../../components/footer'
 import { environment } from '../../../env'
 import { ContestLayout, useContest } from '../../../modules/contest/sidebar'
 import { toThaiDuration } from '../../../utils/time'
@@ -60,31 +61,27 @@ export default function ContestPage(props: ContestPageProps) {
       <Head>
         <title>{props.contest.name} | OTOG</title>
       </Head>
-      <section
-        id="#content"
-        className="flex flex-1 flex-col gap-4 py-4 w-0 px-4"
-      >
-        <div className="flex items-center gap-2">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-                <Breadcrumb>{props.contest.name}</Breadcrumb>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="font-heading text-lg font-semibold">
-                  Home
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        <div className="container max-w-4xl flex flex-col flex-1 items-center justify-center">
-          <ContestDisplay />
-        </div>
+      <div className="flex items-center gap-2 p-4">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
+              <Breadcrumb>{props.contest.name}</Breadcrumb>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-heading text-lg font-semibold">
+                Home
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      <section className="container max-w-4xl flex flex-col flex-1 items-center justify-center">
+        <ContestDisplay />
       </section>
+      <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }

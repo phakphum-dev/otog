@@ -44,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 
 import { submissionKey, submissionQuery } from '../../../../api/query'
 import { withQuery } from '../../../../api/server'
+import { Footer } from '../../../../components/footer'
 import { MonacoEditor } from '../../../../components/monaco-editor'
 import { Language, LanguageName } from '../../../../enums'
 import {
@@ -120,84 +121,86 @@ export default function ContestPage(props: ContestProblemPageProps) {
           {problem.name} | {contest.name} | OTOG
         </title>
       </Head>
-      <section id="#content" className="flex flex-1 flex-col w-0">
-        <div className="flex items-center gap-2 border-b p-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-                <Breadcrumb>{contest.name}</Breadcrumb>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="font-heading text-lg font-semibold">
-                  {problem.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        {/* TODO: Make new layout (maybe CMS-like?) */}
-        {/* <AnnouncementCarousel contestId={contest.id} /> */}
-        {/* <TaskCard problem={problem} contestId={contest.id} /> */}
-        <div className="@container">
-          <Tabs defaultValue="problem">
-            <TabsList className="bg-transparent px-4 py-2 h-12">
-              <TabsTrigger
-                value="problem"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+      <div className="flex items-center gap-2 p-4">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
+              <Breadcrumb>{contest.name}</Breadcrumb>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-heading text-lg font-semibold">
+                {problem.name}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      {/* TODO: Make new layout (maybe CMS-like?) */}
+      {/* <AnnouncementCarousel contestId={contest.id} /> */}
+      {/* <TaskCard problem={problem} contestId={contest.id} /> */}
+      <section className="@container flex-1">
+        <Tabs defaultValue="problem">
+          <TabsList className="bg-transparent px-4">
+            <TabsTrigger
+              value="problem"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Problem
+            </TabsTrigger>
+            <TabsTrigger
+              value="editor"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
+            >
+              Editor
+            </TabsTrigger>
+            <TabsTrigger
+              value="submissions"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Submissions
+            </TabsTrigger>
+          </TabsList>
+          <div className="px-4">
+            <TabsContent value="problem">
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="w-full flex gap-2"
               >
-                Problem
-              </TabsTrigger>
-              <TabsTrigger
-                value="editor"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none xl:hidden"
-              >
-                Editor
-              </TabsTrigger>
-              <TabsTrigger
-                value="submissions"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-              >
-                Submissions
-              </TabsTrigger>
-            </TabsList>
-            <div className="px-4">
-              <TabsContent value="problem">
-                <ResizablePanelGroup
-                  direction="horizontal"
-                  className="w-full flex gap-2"
+                <ResizablePanel
+                  defaultSize={50}
+                  className="flex flex-col gap-2"
                 >
-                  <ResizablePanel defaultSize={50}>
-                    <embed
-                      src={`/api/problem/${problem.id}`}
-                      height="800px"
-                      className="w-full rounded-md border"
-                    ></embed>
-                  </ResizablePanel>
-                  <ResizableHandle className="hidden @[60rem]:block" />
-                  <ResizablePanel
-                    defaultSize={50}
-                    className="hidden @[60rem]:block"
-                  >
-                    <CodeEditorForm contestId={contest.id} problem={problem} />
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </TabsContent>
+                  <embed
+                    src={`/api/problem/${problem.id}`}
+                    height="800px"
+                    className="w-full rounded-md border"
+                  ></embed>
+                </ResizablePanel>
+                <ResizableHandle className="hidden @[60rem]:block" />
+                <ResizablePanel
+                  defaultSize={50}
+                  className="hidden @[60rem]:block"
+                >
+                  <CodeEditorForm contestId={contest.id} problem={problem} />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </TabsContent>
 
-              <TabsContent value="editor">
-                <CodeEditorForm contestId={contest.id} problem={problem} />
-              </TabsContent>
-              <TabsContent value="submissions">
-                <p className="p-4 text-center text-xs text-muted-foreground">
-                  Submissions
-                </p>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+            <TabsContent value="editor">
+              <CodeEditorForm contestId={contest.id} problem={problem} />
+            </TabsContent>
+            <TabsContent value="submissions">
+              <p className="p-4 text-center text-xs text-muted-foreground">
+                Submissions
+              </p>
+            </TabsContent>
+          </div>
+        </Tabs>
       </section>
+      <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }
