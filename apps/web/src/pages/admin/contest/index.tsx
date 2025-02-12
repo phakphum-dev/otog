@@ -478,8 +478,9 @@ const EditContestForm = ({
 }
 
 const AddContest = () => {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary">
           <Plus />
@@ -488,7 +489,7 @@ const AddContest = () => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogTitle>เพิ่มการแข่งขัน</DialogTitle>
-        <AddContestForm />
+        <AddContestForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )
@@ -514,7 +515,10 @@ const AddContestFormSchema = z
 type AddContestFormInput = z.input<typeof AddContestFormSchema>
 type AddContestFormOutput = z.output<typeof AddContestFormSchema>
 
-const AddContestForm = () => {
+interface AddContestFormProps {
+  onSuccess: () => void
+}
+const AddContestForm = (props: AddContestFormProps) => {
   const form = useForm<AddContestFormInput, any, AddContestFormOutput>({
     defaultValues: {
       name: '',
@@ -546,6 +550,7 @@ const AddContestForm = () => {
           queryClient.invalidateQueries({
             queryKey: contestKey.getContestsForAdmin._def,
           })
+          props.onSuccess()
         },
         onError: () => {
           toast.error('ไม่สามารถบันทึกได้', { id: toastId })
@@ -612,6 +617,12 @@ const AddContestForm = () => {
                     Classic
                   </SelectItem>
                   <SelectItem value={ContestGradingMode.acm}>ACM</SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubmission}>
+                    Best Submission
+                  </SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubtask}>
+                    Best Subtask
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
