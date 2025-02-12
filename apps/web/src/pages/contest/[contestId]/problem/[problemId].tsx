@@ -3,12 +3,12 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
-import { ContestSchema } from '@otog/contract'
+import { ContestSchema, SubmissionDetailSchema } from '@otog/contract'
 import { Problem, ProblemModel } from '@otog/database'
 import {
   Breadcrumb,
@@ -44,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 
 import { submissionKey, submissionQuery } from '../../../../api/query'
 import { withQuery } from '../../../../api/server'
+import { Footer } from '../../../../components/footer'
 import { MonacoEditor } from '../../../../components/monaco-editor'
 import { Language, LanguageName } from '../../../../enums'
 import {
@@ -59,6 +60,7 @@ interface ContestProblemPageProps {
   contest: ContestSchema
   serverTime: string
   problem: ProblemModel
+  latestSubmission: SubmissionDetailSchema | null
 }
 
 export const getServerSideProps = withQuery<ContestProblemPageProps>(
@@ -71,24 +73,34 @@ export const getServerSideProps = withQuery<ContestProblemPageProps>(
     if (Number.isNaN(Number(problemId))) {
       return { notFound: true }
     }
-    const [getTime, getContest] = await Promise.all([
-      query.app.time.query(),
-      query.contest.getContest.query({
-        params: { contestId: contestId },
-      }),
-    ])
-    if (getTime.status !== 200 || getContest.status !== 200) {
-      return { notFound: true }
+    const [getTime, getContest, getProblem, getLatestSubmission] =
+      await Promise.all([
+        query.app.time.query(),
+        query.contest.getContest.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestProblem.query({
+          params: { contestId, problemId },
+        }),
+        query.submission.getLatestSubmissionByProblemId.query({
+          params: { problemId },
+        }),
+      ])
+    if (getTime.status !== 200) {
+      throw getTime
+    }
+    if (getContest.status !== 200) {
+      throw getContest
+    }
+    if (getProblem.status !== 200) {
+      throw getProblem
+    }
+    if (getLatestSubmission.status !== 200) {
+      throw getLatestSubmission
     }
     const serverTime = getTime.body
     const contest = getContest.body
     if (contest.timeStart > serverTime) {
-      return { notFound: true }
-    }
-    const getProblem = await query.contest.getContestProblem.query({
-      params: { contestId, problemId },
-    })
-    if (getProblem.status !== 200) {
       return { notFound: true }
     }
     return {
@@ -97,6 +109,7 @@ export const getServerSideProps = withQuery<ContestProblemPageProps>(
         contest,
         serverTime: serverTime.toString(),
         problem: getProblem.body,
+        latestSubmission: getLatestSubmission.body.submission,
       },
     }
   }
@@ -113,6 +126,13 @@ export default function ContestPage(props: ContestProblemPageProps) {
     }
   }, [contestStatus])
   // TODO save instance
+  const codeEditorForm = (
+    <CodeEditorForm
+      contestId={contest.id}
+      problem={problem}
+      latestSubmission={props.latestSubmission}
+    />
+  )
   return (
     <ContestLayout {...contestProps}>
       <Head>
@@ -120,84 +140,98 @@ export default function ContestPage(props: ContestProblemPageProps) {
           {problem.name} | {contest.name} | OTOG
         </title>
       </Head>
-      <section id="#content" className="flex flex-1 flex-col w-0">
-        <div className="flex items-center gap-2 border-b p-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-                <Breadcrumb>{contest.name}</Breadcrumb>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="font-heading text-lg font-semibold">
-                  {problem.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        {/* TODO: Make new layout (maybe CMS-like?) */}
-        {/* <AnnouncementCarousel contestId={contest.id} /> */}
-        {/* <TaskCard problem={problem} contestId={contest.id} /> */}
-        <div className="@container">
-          <Tabs defaultValue="problem">
-            <TabsList className="bg-transparent px-4 py-2 h-12">
-              <TabsTrigger
-                value="problem"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+      <div className="flex items-center gap-2 p-4">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
+              <Breadcrumb>{contest.name}</Breadcrumb>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-heading text-lg font-semibold">
+                {problem.name}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      {/* TODO: Make new layout (maybe CMS-like?) */}
+      {/* <AnnouncementCarousel contestId={contest.id} /> */}
+      {/* <TaskCard problem={problem} contestId={contest.id} /> */}
+      <section className="@container flex-1">
+        <Tabs defaultValue="problem">
+          <TabsList className="bg-transparent px-4">
+            <TabsTrigger
+              value="problem"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Problem
+            </TabsTrigger>
+            <TabsTrigger
+              value="editor"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
+            >
+              Editor
+            </TabsTrigger>
+            <TabsTrigger
+              value="submissions"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Submissions
+            </TabsTrigger>
+          </TabsList>
+          <div className="px-4">
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="problem"
+            >
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="w-full flex gap-2"
               >
-                Problem
-              </TabsTrigger>
-              <TabsTrigger
-                value="editor"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none xl:hidden"
-              >
-                Editor
-              </TabsTrigger>
-              <TabsTrigger
-                value="submissions"
-                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-              >
-                Submissions
-              </TabsTrigger>
-            </TabsList>
-            <div className="px-4">
-              <TabsContent value="problem">
-                <ResizablePanelGroup
-                  direction="horizontal"
-                  className="w-full flex gap-2"
+                <ResizablePanel
+                  defaultSize={50}
+                  className="flex flex-col gap-2"
                 >
-                  <ResizablePanel defaultSize={50}>
-                    <embed
-                      src={`/api/problem/${problem.id}`}
-                      height="800px"
-                      className="w-full rounded-md border"
-                    ></embed>
-                  </ResizablePanel>
-                  <ResizableHandle className="hidden @[60rem]:block" />
-                  <ResizablePanel
-                    defaultSize={50}
-                    className="hidden @[60rem]:block"
-                  >
-                    <CodeEditorForm contestId={contest.id} problem={problem} />
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </TabsContent>
+                  <embed
+                    src={`/api/problem/${problem.id}`}
+                    height="800px"
+                    className="w-full rounded-md border"
+                  />
+                </ResizablePanel>
+                <ResizableHandle className="hidden @[60rem]:block" />
+                <ResizablePanel
+                  defaultSize={50}
+                  className="hidden @[60rem]:block"
+                >
+                  {codeEditorForm}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </TabsContent>
 
-              <TabsContent value="editor">
-                <CodeEditorForm contestId={contest.id} problem={problem} />
-              </TabsContent>
-              <TabsContent value="submissions">
-                <p className="p-4 text-center text-xs text-muted-foreground">
-                  Submissions
-                </p>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="editor"
+            >
+              {codeEditorForm}
+            </TabsContent>
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="submissions"
+            >
+              <p className="p-4 text-center text-xs text-muted-foreground">
+                Submissions
+              </p>
+            </TabsContent>
+          </div>
+        </Tabs>
       </section>
+      <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }
@@ -212,6 +246,7 @@ type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
 interface CodeEditorForm {
   problem: Problem
   contestId: number
+  latestSubmission: SubmissionDetailSchema | null
 }
 function CodeEditorForm(props: CodeEditorForm) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -219,16 +254,6 @@ function CodeEditorForm(props: CodeEditorForm) {
     defaultValues: { language: 'cpp' },
     resolver: zodResolver(CodeEditorFormSchema),
   })
-
-  const latestSubmissionQuery = useQuery(
-    submissionKey.getLatestSubmissionByProblemId({
-      params: { problemId: props.problem.id.toString() },
-    })
-  )
-  const submission =
-    latestSubmissionQuery.data?.status === 200
-      ? latestSubmissionQuery.data.body.submission
-      : undefined
 
   const queryClient = useQueryClient()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
@@ -263,60 +288,62 @@ function CodeEditorForm(props: CodeEditorForm) {
   }, console.error)
 
   return (
-    <div className="flex flex-col h-[800px] gap-2">
-      <Form {...form}>
-        <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <Form {...form}>
+      <form
+        ref={formRef}
+        onSubmit={onSubmit}
+        className="flex flex-col gap-4 h-[800px]"
+      >
+        <FormField
+          control={form.control}
+          name="sourceCode"
+          render={({ field }) => (
+            <FormItem className="space-y-0">
+              <FormLabel className="sr-only">โค้ด</FormLabel>
+              <MonacoEditor
+                height="744px"
+                language={form.watch('language')}
+                defaultValue={props.latestSubmission?.sourceCode}
+                onChange={field.onChange}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex gap-2 sm:gap-4">
           <FormField
             control={form.control}
-            name="sourceCode"
+            name="language"
             render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormLabel className="sr-only">โค้ด</FormLabel>
-                <MonacoEditor
-                  height="744px"
-                  language={form.watch('language')}
-                  defaultValue={submission?.sourceCode}
-                  onChange={field.onChange}
-                />
-                <FormMessage />
+              <FormItem className="flex-1 space-y-0">
+                <FormLabel className="sr-only">ภาษา</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger {...field}>
+                      <SelectValue placeholder="เลือกภาษา" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(LanguageName).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                  <FormMessage />
+                </Select>
               </FormItem>
             )}
           />
-          <div className="flex gap-2 sm:gap-4">
-            <FormField
-              control={form.control}
-              name="language"
-              render={({ field }) => (
-                <FormItem className="flex-1 space-y-0">
-                  <FormLabel className="sr-only">ภาษา</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger {...field}>
-                        <SelectValue placeholder="เลือกภาษา" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(LanguageName).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                    <FormMessage />
-                  </Select>
-                </FormItem>
-              )}
-            />
-            <div className="flex-1" />
-            <div className="flex gap-2 flex-1">
-              <Button className="flex-1" type="submit">
-                ส่ง
-              </Button>
-              <SubmitCode problem={props.problem} contestId={props.contestId} />
-            </div>
+          <div className="flex-1" />
+          <div className="flex gap-2 flex-1">
+            <Button className="flex-1" type="submit">
+              ส่ง
+            </Button>
+            <SubmitCode problem={props.problem} contestId={props.contestId} />
           </div>
-        </form>
-      </Form>
-    </div>
+        </div>
+      </form>
+    </Form>
   )
 }

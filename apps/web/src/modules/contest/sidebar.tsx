@@ -108,9 +108,9 @@ export function ContestLayout(
 ) {
   return (
     <ContestProvider value={props}>
-      <SidebarProvider>
+      <SidebarProvider className="max-w-screen-2xl mx-auto">
         <ContestSidebar />
-        <SidebarInset className="flex-row w-0">{props.children}</SidebarInset>
+        <SidebarInset id="content">{props.children}</SidebarInset>
       </SidebarProvider>
     </ContestProvider>
   )
@@ -323,10 +323,10 @@ function NavProblems() {
                   return 'warning'
                 }
                 return (
-                  <SidebarMenuSub className="mr-0 pr-0">
+                  <SidebarMenuSub className="mr-0 pr-0" key={problem.id}>
                     <SideBarButton
                       href={`/contest/${contest.id}/problem/${problem.id}`}
-                      className="h-14"
+                      className="h-10"
                     >
                       <div className="flex gap-2 justify-between items-center w-full">
                         <p>{problem.name}</p>

@@ -32,6 +32,14 @@ export const getServerSideProps = withQuery<ContestPageProps>(
     if (getTime.status !== 200) {
       throw getTime
     }
+    if (getCurrentContest.body.length === 1) {
+      return {
+        redirect: {
+          destination: `/contest/${getCurrentContest.body[0]!.id}`,
+          permanent: false,
+        },
+      }
+    }
     return {
       props: {
         currentContests: getCurrentContest.body,
