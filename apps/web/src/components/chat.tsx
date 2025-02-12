@@ -283,9 +283,12 @@ const OnlineUsersDialog = forwardRef<
               <Link
                 asChild
                 variant="hidden"
-                className="line-clamp-3 max-w-[275px]"
+                className="line-clamp-3 max-w-[275px] items-center flex gap-2"
               >
-                <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
+                <NextLink href={`/user/${user.id}`}>
+                  <UserAvatar user={user} />
+                  {user.showName}
+                </NextLink>
               </Link>
             </li>
           </ul>

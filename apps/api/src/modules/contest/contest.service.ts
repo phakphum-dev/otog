@@ -56,7 +56,7 @@ export class ContestService {
     })
   }
 
-  findAll() {
+  listContest(args: ListPaginationQuerySchema) {
     return this.prisma.contest.findMany({
       select: {
         id: true,
@@ -67,10 +67,15 @@ export class ContestService {
         timeEnd: true,
         announce: true,
       },
+      skip: args.skip,
+      take: args.limit,
       orderBy: {
         id: 'desc',
       },
     })
+  }
+  countContest() {
+    return this.prisma.contest.count({})
   }
 
   findOneById(contestId: number): Promise<ContestSchema | null> {
@@ -758,7 +763,9 @@ export class ContestService {
     return this.prisma.contest.delete({ where: { id: contestId } })
   }
 
-  async getAdminContests(args: ListPaginationQuerySchema): Promise<Contest[]> {
+  async getContestsForAdmin(
+    args: ListPaginationQuerySchema
+  ): Promise<Contest[]> {
     return await this.prisma.contest.findMany({
       skip: args.skip,
       take: args.limit,
@@ -773,7 +780,7 @@ export class ContestService {
       orderBy: { id: 'desc' },
     })
   }
-  async getAdminContestCount(args: { search?: string }): Promise<number> {
+  async getContestCountForAdmin(args: { search?: string }): Promise<number> {
     return await this.prisma.contest.count({
       where: args.search
         ? {
@@ -786,7 +793,7 @@ export class ContestService {
     })
   }
 
-  async getAdminContest(args: {
+  async getContestForAdmin(args: {
     id: number
   }): Promise<AdminContestWithProblems | null> {
     return await this.prisma.contest.findUnique({

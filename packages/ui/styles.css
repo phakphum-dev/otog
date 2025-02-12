@@ -101,14 +101,8 @@
     @apply border-border;
   }
   body {
-    @apply font-sans bg-background text-foreground;
+    @apply font-sans bg-background text-foreground antialiased overflow-y-scroll;
   }
-}
-
-body {
-  font-feature-settings: 'kern';
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 [type='search']::-webkit-search-decoration,

@@ -241,22 +241,22 @@ export class ProblemController {
     )
   }
 
-  @TsRestHandler(c.getAdminProblems, { jsonQuery: true })
+  @TsRestHandler(c.getProblemsForAdmin, { jsonQuery: true })
   @Roles(Role.Admin)
-  getAdminProblems(@User() user?: UserDTO) {
+  getProblemsForAdmin(@User() user?: UserDTO) {
     return tsRestHandler(
-      c.getAdminProblems,
+      c.getProblemsForAdmin,
       async ({ query: { skip = 0, limit = 10, search } }) => {
         if (user?.role !== Role.Admin) {
           return { status: 403, body: { message: 'Forbidden' } }
         }
         const [problems, total] = await Promise.all([
-          this.problemService.getAdminProblems({
+          this.problemService.getProblemsForAdmin({
             limit,
             skip,
             search,
           }),
-          this.problemService.getAdminProblemCount({ search }),
+          this.problemService.getProblemsCountForAdmin({ search }),
         ])
         return { status: 200, body: { data: problems, total } }
       }

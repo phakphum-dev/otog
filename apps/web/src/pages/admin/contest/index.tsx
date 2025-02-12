@@ -123,7 +123,7 @@ function ContestDataTable() {
   const [search, setSearch] = useState('')
 
   const adminContests = useQuery({
-    ...contestKey.getAdminContests({
+    ...contestKey.getContestsForAdmin({
       query: {
         limit: pagination.pageSize,
         skip: pagination.pageIndex * pagination.pageSize,
@@ -164,14 +164,16 @@ function ContestDataTable() {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="sr-only">ตารางการแข่งขัน</h2>
-      <div className="flex gap-2 flex-col sm:flex-row">
+      <div className="flex gap-2 flex-col sm:flex-row justify-between">
         <TableSearch table={table} />
-        <div className="flex-1"></div>
-        <TablePaginationInfo
-          table={table}
-          isLoading={adminContests.isFetching}
-        />
-        <AddContest />
+        <div className="flex gap-2 justify-end max-sm:flex-col">
+          <TablePaginationInfo
+            className="self-end"
+            table={table}
+            isLoading={adminContests.isFetching}
+          />
+          <AddContest />
+        </div>
       </div>
       <TableComponent
         table={table}
@@ -362,7 +364,7 @@ const EditContestForm = ({
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: contestKey.getAdminContests._def,
+            queryKey: contestKey.getContestsForAdmin._def,
           })
           onSuccess()
         },
@@ -536,7 +538,7 @@ const AddContestForm = () => {
         onSuccess: () => {
           toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
-            queryKey: contestKey.getAdminContests._def,
+            queryKey: contestKey.getContestsForAdmin._def,
           })
         },
         onError: () => {

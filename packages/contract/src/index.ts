@@ -128,16 +128,14 @@ export const chatRouter = contract.router({
   },
 })
 
-export const UserWithourPasswordSchema = UserModel.pick({
+export const UserSchema = UserModel.pick({
   id: true,
   username: true,
   showName: true,
   role: true,
   rating: true,
 })
-export type UserWithourPasswordSchema = z.infer<
-  typeof UserWithourPasswordSchema
->
+export type UserSchema = z.infer<typeof UserSchema>
 
 const SubmissionSchema = SubmissionModel.pick({
   id: true,
@@ -163,7 +161,7 @@ const SubmissionSchema = SubmissionModel.pick({
     timeUsed: true,
     memUsed: true,
   }).nullable(),
-  user: UserWithourPasswordSchema,
+  user: UserSchema,
 })
 export type SubmissionSchema = z.infer<typeof SubmissionSchema>
 
@@ -320,7 +318,7 @@ export const submissionRouter = contract.router(
   { pathPrefix: '/submission' }
 )
 
-export const UserProfile = UserWithourPasswordSchema.extend({
+export const UserProfile = UserSchema.extend({
   userContest: z.array(
     UserContestModel.pick({
       ratingAfterUpdate: true,
@@ -338,19 +336,23 @@ export type UserProfile = z.infer<typeof UserProfile>
 
 export const userRouter = contract.router(
   {
-    getUsers: {
+    getUsersForAdmin: {
       method: 'GET',
-      path: '',
+      path: '/admin/list',
+      query: ListPaginationQuerySchema,
       responses: {
-        200: z.array(UserWithourPasswordSchema),
+        200: z.object({
+          data: z.array(UserSchema),
+          total: z.number(),
+        }),
       },
-      summary: 'Get all users',
+      summary: 'Get paginated users for admin',
     },
     getOnlineUsers: {
       method: 'GET',
       path: '/online',
       responses: {
-        200: z.array(UserWithourPasswordSchema),
+        200: z.array(UserSchema),
       },
       summary: 'Get online users',
     },
@@ -367,9 +369,14 @@ export const userRouter = contract.router(
       method: 'PUT',
       path: '/:userId',
       responses: {
-        200: UserWithourPasswordSchema,
+        200: UserSchema,
       },
-      body: UserModel.omit({ id: true }),
+      body: UserModel.pick({
+        username: true,
+        showName: true,
+        role: true,
+        password: true,
+      }),
       summary: 'Update user data',
     },
     updateShowName: {
@@ -472,15 +479,27 @@ export const AdminContestWithProblems = ContestModel.extend({
 })
 export type AdminContestWithProblems = z.infer<typeof AdminContestWithProblems>
 
+export const CursorPaginationQuerySchema = z.object({
+  take: z.coerce.number(),
+  cursor: z.coerce.number().optional(),
+  search: z.string().optional(),
+})
+export type CursorPaginationQuerySchema = z.infer<
+  typeof CursorPaginationQuerySchema
+>
 export const contestRouter = contract.router(
   {
-    getContests: {
+    listContest: {
       method: 'GET',
-      path: '',
+      path: '/list',
+      query: ListPaginationQuerySchema,
       responses: {
-        200: z.array(ContestSchema),
+        200: z.object({
+          data: z.array(ContestSchema),
+          total: z.number(),
+        }),
       },
-      summary: 'Get all contests',
+      summary: 'List paginated contests',
     },
     getCurrentContests: {
       method: 'GET',
@@ -595,7 +614,7 @@ export const contestRouter = contract.router(
       },
       summary: 'Sign up for a contest',
     },
-    getAdminContests: {
+    getContestsForAdmin: {
       method: 'GET',
       path: '/admin/list',
       query: ListPaginationQuerySchema,
@@ -607,7 +626,7 @@ export const contestRouter = contract.router(
       },
       summary: 'List paginated contests for admin',
     },
-    getAdminContest: {
+    getContestForAdmin: {
       method: 'GET',
       path: '/admin/:contestId',
       responses: {
@@ -624,10 +643,11 @@ const LatestSubmissionModel = SubmissionModel.pick({
   id: true,
   status: true,
   userId: true,
+  public: true,
 })
 export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
   passedCount: z.number(),
-  samplePassedUsers: z.array(UserModel.pick({ id: true, showName: true })),
+  // samplePassedUsers: z.array(UserModel.pick({ id: true, showName: true })),
   latestSubmission: LatestSubmissionModel.nullable(),
 })
 export type ProblemTableRowSchema = z.infer<typeof ProblemTableRowSchema>
@@ -705,7 +725,7 @@ export const problemRouter = contract.router(
       },
       summary: 'Search problems',
     },
-    getAdminProblems: {
+    getProblemsForAdmin: {
       method: 'GET',
       path: '/admin/list',
       responses: {
@@ -803,7 +823,7 @@ export const problemRouter = contract.router(
 export const LoginBody = UserModel.pick({ username: true, password: true })
 export type LoginBody = z.infer<typeof LoginBody>
 export const LoginResponse = z.object({
-  user: UserWithourPasswordSchema,
+  user: UserSchema,
   accessToken: z.string(),
 })
 export type LoginResponse = z.infer<typeof LoginResponse>
