@@ -582,7 +582,7 @@ export const contestRouter = contract.router(
     },
     putProblemToContest: {
       method: 'PUT',
-      path: '/:contestId',
+      path: '/:contestId/problems',
       responses: { 200: z.object({}) },
       body: z.array(z.object({ problemId: z.coerce.number() })),
       summary: 'Put problems to a contest',

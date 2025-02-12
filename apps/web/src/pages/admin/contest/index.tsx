@@ -433,6 +433,12 @@ const EditContestForm = ({
                     Classic
                   </SelectItem>
                   <SelectItem value={ContestGradingMode.acm}>ACM</SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubmission}>
+                    Best Submission
+                  </SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubtask}>
+                    Best Subtask
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
