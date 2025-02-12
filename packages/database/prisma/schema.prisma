@@ -47,6 +47,8 @@ model Contest {
   contestProblem ContestProblem[]
   userContest    UserContest[]
   announcements  Announcement[]
+  submission     Submission[]
+  contestScore   ContestScore[]
 
   @@map("contest")
 }
@@ -75,6 +77,7 @@ model Problem {
   examples       Json?
   contestProblem ContestProblem[]
   submission     Submission[]
+  contestScore   ContestScore[]
 
   @@map("problem")
 }
@@ -92,19 +95,21 @@ model RefreshToken {
 }
 
 model Submission {
-  id               Int               @id @default(autoincrement())
-  userId           Int
-  problemId        Int
-  status           SubmissionStatus
-  contestId        Int?
-  sourceCode       String?
-  language         String            @db.VarChar(255)
-  creationDate     DateTime          @default(now()) @db.Timestamptz(6)
-  updateDate       DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
-  public           Boolean           @default(false)
-  problem          Problem           @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  submissionResult SubmissionResult?
+  id                  Int                   @id @default(autoincrement())
+  userId              Int
+  problemId           Int
+  status              SubmissionStatus
+  contestId           Int?
+  sourceCode          String?
+  language            String                @db.VarChar(255)
+  creationDate        DateTime              @default(now()) @db.Timestamptz(6)
+  updateDate          DateTime              @default(now()) @updatedAt @db.Timestamptz(6)
+  public              Boolean               @default(false)
+  problem             Problem               @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest             Contest?              @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  submissionResult    SubmissionResult?
+  ContestScoreHistory ContestScoreHistory[]
 
   @@map("submission")
 }
@@ -151,18 +156,19 @@ model Verdict {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  username     String        @unique @db.VarChar(255)
-  showName     String        @unique @db.VarChar(255)
-  email        String?       @unique @db.VarChar(255)
-  password     String        @db.VarChar(255)
+  id           Int            @id @default(autoincrement())
+  username     String         @unique @db.VarChar(255)
+  showName     String         @unique @db.VarChar(255)
+  email        String?        @unique @db.VarChar(255)
+  password     String         @db.VarChar(255)
   role         UserRole
   rating       Int?
-  creationDate DateTime      @default(now()) @db.Timestamptz(6)
-  updateDate   DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+  creationDate DateTime       @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
   chat         Chat[]
   submission   Submission[]
   userContest  UserContest[]
+  contestScore ContestScore[]
 
   @@map("user")
 }
@@ -177,6 +183,32 @@ model UserContest {
 
   @@id([userId, contestId])
   @@map("userContest")
+}
+
+model ContestScore {
+  id                  Int                   @id @default(autoincrement())
+  contestId           Int
+  userId              Int
+  problemId           Int
+  score               Int
+  contest             Contest               @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem             Problem               @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  contestScoreHistory ContestScoreHistory[]
+
+  @@unique([contestId, userId, problemId])
+  @@map("contestScore")
+}
+
+model ContestScoreHistory {
+  contestScoreId Int
+  submissionId   Int
+  score          Int
+  contestScore   ContestScore @relation(fields: [contestScoreId], references: [id], onDelete: Cascade)
+  submission     Submission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@id(submissionId)
+  @@map("contestScoreHistory")
 }
 
 enum ContestGradingMode {

@@ -239,6 +239,7 @@ function CodeEditorForm(props: CodeEditorForm) {
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId.toString() },
         body: {
           sourceCode: file,
           language: values.language,
