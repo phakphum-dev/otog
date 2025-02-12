@@ -22,6 +22,10 @@ export function MonacoEditor(props: MonacoEditorProps) {
       props.onChange?.(editor.getValue())
     })
   }, [editor])
+  useEffect(() => {
+    if (!editor) return
+    editor.setValue(props.defaultValue ?? DEFAULT_SOURCE_CODE)
+  }, [props.defaultValue, editor])
   return (
     <div role="application" aria-label="Code Editor">
       <MonacoReactEditor

@@ -164,7 +164,11 @@ export default function ContestPage(props: ContestProblemPageProps) {
             </TabsTrigger>
           </TabsList>
           <div className="px-4">
-            <TabsContent value="problem">
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="problem"
+            >
               <ResizablePanelGroup
                 direction="horizontal"
                 className="w-full flex gap-2"
@@ -177,22 +181,31 @@ export default function ContestPage(props: ContestProblemPageProps) {
                     src={`/api/problem/${problem.id}`}
                     height="800px"
                     className="w-full rounded-md border"
-                  ></embed>
+                  />
                 </ResizablePanel>
                 <ResizableHandle className="hidden @[60rem]:block" />
                 <ResizablePanel
                   defaultSize={50}
                   className="hidden @[60rem]:block"
                 >
+                  {/* TODO: share form instance */}
                   <CodeEditorForm contestId={contest.id} problem={problem} />
                 </ResizablePanel>
               </ResizablePanelGroup>
             </TabsContent>
 
-            <TabsContent value="editor">
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="editor"
+            >
               <CodeEditorForm contestId={contest.id} problem={problem} />
             </TabsContent>
-            <TabsContent value="submissions">
+            <TabsContent
+              className="data-[state=inactive]:hidden"
+              forceMount
+              value="submissions"
+            >
               <p className="p-4 text-center text-xs text-muted-foreground">
                 Submissions
               </p>
@@ -242,6 +255,7 @@ function CodeEditorForm(props: CodeEditorForm) {
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId.toString() },
         body: {
           sourceCode: file,
           language: values.language,
@@ -265,60 +279,62 @@ function CodeEditorForm(props: CodeEditorForm) {
   }, console.error)
 
   return (
-    <div className="flex flex-col h-[800px] gap-2">
-      <Form {...form}>
-        <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <Form {...form}>
+      <form
+        ref={formRef}
+        onSubmit={onSubmit}
+        className="flex flex-col gap-4 h-[800px]"
+      >
+        <FormField
+          control={form.control}
+          name="sourceCode"
+          render={({ field }) => (
+            <FormItem className="space-y-0">
+              <FormLabel className="sr-only">โค้ด</FormLabel>
+              <MonacoEditor
+                height="744px"
+                language={form.watch('language')}
+                defaultValue={submission?.sourceCode}
+                onChange={field.onChange}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex gap-2 sm:gap-4">
           <FormField
             control={form.control}
-            name="sourceCode"
+            name="language"
             render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormLabel className="sr-only">โค้ด</FormLabel>
-                <MonacoEditor
-                  height="744px"
-                  language={form.watch('language')}
-                  defaultValue={submission?.sourceCode}
-                  onChange={field.onChange}
-                />
-                <FormMessage />
+              <FormItem className="flex-1 space-y-0">
+                <FormLabel className="sr-only">ภาษา</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger {...field}>
+                      <SelectValue placeholder="เลือกภาษา" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(LanguageName).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                  <FormMessage />
+                </Select>
               </FormItem>
             )}
           />
-          <div className="flex gap-2 sm:gap-4">
-            <FormField
-              control={form.control}
-              name="language"
-              render={({ field }) => (
-                <FormItem className="flex-1 space-y-0">
-                  <FormLabel className="sr-only">ภาษา</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger {...field}>
-                        <SelectValue placeholder="เลือกภาษา" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(LanguageName).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                    <FormMessage />
-                  </Select>
-                </FormItem>
-              )}
-            />
-            <div className="flex-1" />
-            <div className="flex gap-2 flex-1">
-              <Button className="flex-1" type="submit">
-                ส่ง
-              </Button>
-              <SubmitCode problem={props.problem} contestId={props.contestId} />
-            </div>
+          <div className="flex-1" />
+          <div className="flex gap-2 flex-1">
+            <Button className="flex-1" type="submit">
+              ส่ง
+            </Button>
+            <SubmitCode problem={props.problem} contestId={props.contestId} />
           </div>
-        </form>
-      </Form>
-    </div>
+        </div>
+      </form>
+    </Form>
   )
 }
