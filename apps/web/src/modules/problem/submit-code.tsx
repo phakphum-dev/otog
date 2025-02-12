@@ -47,6 +47,7 @@ type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
 
 export const SubmitCode = (props: {
   problem: Pick<Problem, 'id' | 'name'>
+  contestId?: number
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -64,6 +65,7 @@ export const SubmitCode = (props: {
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId?.toString() },
         body: values,
       },
       {

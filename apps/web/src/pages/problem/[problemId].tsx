@@ -233,7 +233,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             control={form.control}
             name="sourceCode"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-0">
                 <FormLabel className="sr-only">โค้ด</FormLabel>
                 <MonacoEditor
                   height="800px"
@@ -253,7 +253,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             name="language"
             defaultValue={Language.cpp}
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-0">
                 <FormLabel className="sr-only">ภาษา</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>

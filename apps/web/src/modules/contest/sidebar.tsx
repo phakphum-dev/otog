@@ -67,7 +67,7 @@ export function useContestProps(props: ContestServerSideProps): ContestProps {
     ...contestKey.getContest({
       params: { contestId: props.contestId },
     }),
-    initialData: initialDataSuccess(props.contest),
+    initialData: initialDataSuccess(ContestSchema.parse(props.contest)),
   })
   // TODO: Handle status !== 200
   const serverTime = getServerTime.data.body
@@ -118,8 +118,6 @@ export function ContestLayout(
 
 function ContestSidebar() {
   const { contestStatus } = useContest()
-  console.log('mount')
-  console.log(contestStatus)
   if (contestStatus === 'PENDING') {
     return <PreContestSidebar />
   } else if (contestStatus === 'RUNNING') {
@@ -365,11 +363,6 @@ function Timer() {
       })
     }
   }, [remaining])
-  console.log({
-    remaining,
-    serverTime,
-    contestTimeEnd: contest.timeEnd,
-  })
   return <>{toTimerFormat(remaining)}</>
 }
 

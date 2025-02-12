@@ -1,3 +1,4 @@
+import tailwindContainerQueries from '@tailwindcss/container-queries'
 import type { Config } from 'tailwindcss'
 import tailwindAnimate from 'tailwindcss-animate'
 import defaultTheme from 'tailwindcss/defaultTheme'
@@ -205,6 +206,7 @@ const config = {
   },
   plugins: [
     tailwindAnimate,
+    tailwindContainerQueries,
     plugin(({ addUtilities }) => {
       addUtilities({
         '.word-break': {
