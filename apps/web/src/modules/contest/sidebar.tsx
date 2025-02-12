@@ -326,7 +326,7 @@ function NavProblems() {
                   <SidebarMenuSub className="mr-0 pr-0" key={problem.id}>
                     <SideBarButton
                       href={`/contest/${contest.id}/problem/${problem.id}`}
-                      className="h-14"
+                      className="h-10"
                     >
                       <div className="flex gap-2 justify-between items-center w-full">
                         <p>{problem.name}</p>
