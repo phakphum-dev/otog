@@ -199,28 +199,30 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
         },
         enableSorting: false,
       }),
-      ...contestScoreboard.contest.contestProblem.map((contestProblem) =>
-        columnHelper.accessor(
-          (row) => {
-            const problemResult = row.problemResults.find(
-              (problemResult) =>
-                problemResult.problemId === contestProblem.problemId
-            )
-            return problemResult?.score
-          },
-          {
-            id: `problem-${contestProblem.problemId.toString()}`,
-            header: contestProblem.problem.name!,
-            cell: ({ getValue }) => getValue() ?? '-',
-            meta: {
-              headClassName: 'text-pretty',
-              cellClassName: 'tabular-nums',
+      ...contestScoreboard.contest.contestProblem
+        .sort((a, b) => a.problemId - b.problemId)
+        .map((contestProblem) =>
+          columnHelper.accessor(
+            (row) => {
+              const contestScore = row.contestScores.find(
+                (contestScore) =>
+                  contestScore.problemId === contestProblem.problemId
+              )
+              return contestScore?.score
             },
-            sortUndefined: -1,
-            enableSorting: true,
-          }
-        )
-      ),
+            {
+              id: `problem-${contestProblem.problemId.toString()}`,
+              header: contestProblem.problem.name!,
+              cell: ({ getValue }) => getValue() ?? '-',
+              meta: {
+                headClassName: 'text-pretty',
+                cellClassName: 'tabular-nums',
+              },
+              sortUndefined: -1,
+              enableSorting: true,
+            }
+          )
+        ),
     ],
     [contestScoreboard]
   )

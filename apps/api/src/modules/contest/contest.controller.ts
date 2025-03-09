@@ -12,6 +12,7 @@ import { RolesGuard } from 'src/core/guards/roles.guard'
 import { z } from 'zod'
 
 import { contestRouter } from '@otog/contract'
+import { ScoreboardPolicy } from '@otog/database'
 
 import { UserDTO } from '../user/dto/user.dto'
 import { ContestService } from './contest.service'
@@ -85,11 +86,10 @@ export class ContestController {
         const parsedContestId = z.coerce.number().parse(contestId)
         const parsedProblemId = z.coerce.number().parse(problemId)
         const contest = await this.contestService.findOneById(parsedContestId)
-        const time = Date.now()
         if (!contest) {
           return { status: 404, body: { message: 'Not Found' } }
         }
-        if (contest.timeStart.getTime() > time) {
+        if (contest.timeStart.getTime() > Date.now()) {
           return { status: 403, body: { message: 'Forbidden' } }
         }
         const problem = await this.contestService.getContestProblem(
@@ -122,6 +122,38 @@ export class ContestController {
     )
   }
 
+  @TsRestHandler(c.getUserContestScoreHistory)
+  getUserContestScoreHistory(@User() user?: UserDTO) {
+    return tsRestHandler(
+      c.getUserContestScoreHistory,
+      async ({ params: { contestId, userId, problemId } }) => {
+        const parsedContestId = z.coerce.number().parse(contestId)
+        const parsedUserId = z.coerce.number().parse(userId)
+        const parsedProblemId = z.coerce.number().parse(problemId)
+        const contest = await this.contestService.findOneById(parsedContestId)
+        if (!contest) {
+          return { status: 404, body: { message: 'Not Found' } }
+        }
+        if (
+          user?.role === Role.Admin ||
+          (contest.scoreboardPolicy === ScoreboardPolicy.AFTER_CONTEST &&
+            Date.now() > contest.timeEnd.getTime()) ||
+          (contest.scoreboardPolicy === ScoreboardPolicy.DURING_CONTEST &&
+            Date.now() > contest.timeStart.getTime())
+        ) {
+          const scoreHistory =
+            await this.contestService.getUserContestScoreHistory(
+              parsedContestId,
+              parsedUserId,
+              parsedProblemId
+            )
+          return { status: 200, body: scoreHistory }
+        }
+        return { status: 403, body: { message: 'Forbidden' } }
+      }
+    )
+  }
+
   @TsRestHandler(c.getContestScoreboard)
   getContestScoreboard(@User() user?: UserDTO) {
     return tsRestHandler(
@@ -135,7 +167,12 @@ export class ContestController {
         // TODO validate user if contest is private
         if (
           user?.role === Role.Admin ||
-          new Date() > new Date(scoreboard.contest.timeEnd)
+          (scoreboard.contest.scoreboardPolicy ===
+            ScoreboardPolicy.AFTER_CONTEST &&
+            Date.now() > scoreboard.contest.timeEnd.getTime()) ||
+          (scoreboard.contest.scoreboardPolicy ===
+            ScoreboardPolicy.DURING_CONTEST &&
+            Date.now() > scoreboard.contest.timeStart.getTime())
         ) {
           return { status: 200, body: scoreboard }
         }

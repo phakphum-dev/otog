@@ -37,18 +37,19 @@ model Chat {
 }
 
 model Contest {
-  id             Int                @id @default(autoincrement())
-  name           String             @db.VarChar(255)
-  mode           ContestMode
-  gradingMode    ContestGradingMode
-  timeStart      DateTime           @db.Timestamptz(6)
-  timeEnd        DateTime           @db.Timestamptz(6)
-  announce       String?            @db.VarChar(255)
-  contestProblem ContestProblem[]
-  userContest    UserContest[]
-  announcements  Announcement[]
-  submission     Submission[]
-  contestScore   ContestScore[]
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(255)
+  mode             ContestMode
+  gradingMode      ContestGradingMode
+  scoreboardPolicy ScoreboardPolicy
+  timeStart        DateTime           @db.Timestamptz(6)
+  timeEnd          DateTime           @db.Timestamptz(6)
+  announce         String?
+  contestProblem   ContestProblem[]
+  userContest      UserContest[]
+  announcements    Announcement[]
+  submission       Submission[]
+  contestScore     ContestScore[]
 
   @@map("contest")
 }
@@ -191,6 +192,7 @@ model ContestScore {
   userId              Int
   problemId           Int
   score               Int
+  latestSubmission    DateTime?             @db.Timestamptz(6)
   contest             Contest               @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem             Problem               @relation(fields: [problemId], references: [id], onDelete: Cascade)
@@ -225,6 +227,14 @@ enum ContestMode {
   unrated
 
   @@map("enum_contest_mode")
+}
+
+enum ScoreboardPolicy {
+  DURING_CONTEST
+  AFTER_CONTEST
+  NOT_VISIBLE
+
+  @@map("enum_scoreboard_policy")
 }
 
 enum SubmissionStatus {

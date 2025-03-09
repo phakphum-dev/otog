@@ -22,7 +22,12 @@ import { PencilIcon, Plus, PlusIcon } from 'lucide-react'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
-import { Contest, ContestGradingMode, ContestMode } from '@otog/database'
+import {
+  Contest,
+  ContestGradingMode,
+  ContestMode,
+  ScoreboardPolicy,
+} from '@otog/database'
 import { Button } from '@otog/ui/button'
 import { DateTimePicker } from '@otog/ui/date-picker'
 import {
@@ -311,6 +316,7 @@ const EditContestFormSchema = z
   .object({
     name: z.string(),
     gradingMode: z.nativeEnum(ContestGradingMode),
+    scoreboardPolicy: z.nativeEnum(ScoreboardPolicy),
     mode: z.nativeEnum(ContestMode),
     timeStart: z.string().datetime(),
     timeEnd: z.string().datetime(),
@@ -338,6 +344,7 @@ const EditContestForm = ({
     defaultValues: {
       name: contest.name,
       gradingMode: contest.gradingMode,
+      scoreboardPolicy: contest.scoreboardPolicy,
       mode: contest.mode,
       timeStart: contest.timeStart.toISOString(),
       timeEnd: contest.timeEnd.toISOString(),
@@ -355,6 +362,7 @@ const EditContestForm = ({
           name: values.name,
           announce: contest.announce,
           gradingMode: values.gradingMode,
+          scoreboardPolicy: values.scoreboardPolicy,
           mode: values.mode,
           timeStart: new Date(values.timeStart),
           timeEnd: new Date(values.timeEnd),
@@ -466,6 +474,34 @@ const EditContestForm = ({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="scoreboardPolicy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ดูอันดับ</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกโหมด" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ScoreboardPolicy.AFTER_CONTEST}>
+                    After Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.DURING_CONTEST}>
+                    During Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.NOT_VISIBLE}>
+                    Not Visible
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex gap-2 justify-end col-span-full">
           <DialogClose asChild>
             <Button variant="secondary">ยกเลิก</Button>
@@ -499,6 +535,7 @@ const AddContestFormSchema = z
   .object({
     name: z.string(),
     gradingMode: z.nativeEnum(ContestGradingMode),
+    scoreboardPolicy: z.nativeEnum(ScoreboardPolicy),
     mode: z.nativeEnum(ContestMode),
     timeStart: z.string().datetime(),
     timeEnd: z.string().datetime(),
@@ -524,6 +561,7 @@ const AddContestForm = (props: AddContestFormProps) => {
       name: '',
       gradingMode: 'classic',
       mode: 'unrated',
+      scoreboardPolicy: 'AFTER_CONTEST',
       timeStart: '',
       timeEnd: '',
     },
@@ -539,6 +577,7 @@ const AddContestForm = (props: AddContestFormProps) => {
           name: values.name,
           announce: null,
           gradingMode: values.gradingMode,
+          scoreboardPolicy: values.scoreboardPolicy,
           mode: values.mode,
           timeStart: new Date(values.timeStart),
           timeEnd: new Date(values.timeEnd),
@@ -644,6 +683,34 @@ const AddContestForm = (props: AddContestFormProps) => {
                 <SelectContent>
                   <SelectItem value={ContestMode.rated}>Rated</SelectItem>
                   <SelectItem value={ContestMode.unrated}>Unrated</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="scoreboardPolicy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ดูอันดับ</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกโหมด" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ScoreboardPolicy.AFTER_CONTEST}>
+                    After Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.DURING_CONTEST}>
+                    During Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.NOT_VISIBLE}>
+                    Not Visible
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

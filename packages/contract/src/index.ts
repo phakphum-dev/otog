@@ -7,6 +7,8 @@ import {
   ChatModel,
   ContestModel,
   ContestProblemModel,
+  ContestScoreHistoryModel,
+  ContestScoreModel,
   ProblemModel,
   SubmissionModel,
   SubmissionResultModel,
@@ -398,6 +400,7 @@ export const ContestSchema = ContestModel.pick({
   name: true,
   mode: true,
   gradingMode: true,
+  scoreboardPolicy: true,
   timeStart: true,
   timeEnd: true,
   announce: true,
@@ -426,12 +429,35 @@ const PrizeSchema = z.object({
   user: UserModel.pick({ id: true, showName: true }).nullable(),
 })
 
-export const ProblemResultSchema = z.object({
+export const ContestScoreSchema = z.object({
   problemId: z.number(),
   score: z.number(),
   penalty: z.number(),
 })
-export type ProblemResultSchema = z.infer<typeof ProblemResultSchema>
+export type ContestScoreSchema = z.infer<typeof ContestScoreSchema>
+
+export const ContestScoreHistorySchema = ContestScoreModel.extend({
+  contestScoreHistory: z.array(
+    ContestScoreHistoryModel.extend({
+      submission: SubmissionModel.pick({
+        creationDate: true,
+      }).extend({
+        submissionResult: SubmissionResultModel.pick({
+          score: true,
+        })
+          .extend({
+            subtaskResults: z.array(
+              SubtaskResultModel.pick({
+                score: true,
+                subtaskIndex: true,
+              })
+            ),
+          })
+          .nullable(),
+      }),
+    })
+  ),
+})
 
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
@@ -442,7 +468,7 @@ export const UserContestScoreboard = UserContestModel.extend({
     role: true,
     rating: true,
   }),
-  problemResults: z.array(ProblemResultSchema),
+  contestScores: z.array(ContestScoreSchema),
 })
 export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
 
@@ -542,9 +568,17 @@ export const contestRouter = contract.router(
       method: 'GET',
       path: '/:contestId/score',
       responses: {
-        200: z.array(ProblemResultSchema),
+        200: z.array(ContestScoreSchema),
       },
       summary: 'Get a problem in contest',
+    },
+    getUserContestScoreHistory: {
+      method: 'GET',
+      path: '/:contestId/scoreHistory/:userId/:problemId',
+      responses: {
+        200: ContestScoreHistorySchema.nullable(),
+        404: z.object({ message: z.string() }),
+      },
     },
     getContestScoreboard: {
       method: 'GET',

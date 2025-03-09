@@ -167,12 +167,7 @@ function PostContestSidebar() {
                   </div>
                 </SideBarButton>
               </SidebarMenuItem>
-              <SidebarMenuItem key="Scoreboard">
-                <SideBarButton href={`/contest/${contest.id}/scoreboard`}>
-                  <TrophyIcon className="size-4" />
-                  Scoreboard
-                </SideBarButton>
-              </SidebarMenuItem>
+              <ScoreboardMenu />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -197,15 +192,7 @@ function MidContestSidebar() {
                   </div>
                 </SideBarButton>
               </SidebarMenuItem>
-              {/* TODO: Hide scoreboard for some contests */}
-              <SidebarMenuItem key="Scoreboard">
-                <SideBarButton href={`/contest/${contest.id}/scoreboard`}>
-                  <div className="flex items-center gap-2">
-                    <TrophyIcon className="size-4" />
-                    Scoreboard
-                  </div>
-                </SideBarButton>
-              </SidebarMenuItem>
+              <ScoreboardMenu />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -213,6 +200,31 @@ function MidContestSidebar() {
         <NavProblems />
       </SidebarContent>
     </Sidebar>
+  )
+}
+
+function ScoreboardMenu() {
+  const { contest, contestStatus } = useContest()
+  if (contest.scoreboardPolicy === 'NOT_VISIBLE') {
+    return null
+  }
+  if (
+    contest.scoreboardPolicy === 'AFTER_CONTEST' &&
+    contestStatus !== 'FINISHED'
+  ) {
+    return null
+  }
+  return (
+    <>
+      <SidebarMenuItem key="Scoreboard">
+        <SideBarButton href={`/contest/${contest.id}/scoreboard`}>
+          <div className="flex items-center gap-2">
+            <TrophyIcon className="size-4" />
+            Scoreboard
+          </div>
+        </SideBarButton>
+      </SidebarMenuItem>
+    </>
   )
 }
 
