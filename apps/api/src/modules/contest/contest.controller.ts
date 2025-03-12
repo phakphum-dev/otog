@@ -126,10 +126,9 @@ export class ContestController {
   getUserContestScoreHistory(@User() user?: UserDTO) {
     return tsRestHandler(
       c.getUserContestScoreHistory,
-      async ({ params: { contestId, userId, problemId } }) => {
+      async ({ params: { contestId, userId } }) => {
         const parsedContestId = z.coerce.number().parse(contestId)
         const parsedUserId = z.coerce.number().parse(userId)
-        const parsedProblemId = z.coerce.number().parse(problemId)
         const contest = await this.contestService.findOneById(parsedContestId)
         if (!contest) {
           return { status: 404, body: { message: 'Not Found' } }
@@ -144,8 +143,7 @@ export class ContestController {
           const scoreHistory =
             await this.contestService.getUserContestScoreHistory(
               parsedContestId,
-              parsedUserId,
-              parsedProblemId
+              parsedUserId
             )
           return { status: 200, body: scoreHistory }
         }

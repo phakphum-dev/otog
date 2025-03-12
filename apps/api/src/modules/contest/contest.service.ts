@@ -156,18 +156,11 @@ export class ContestService {
     )
   }
 
-  async getUserContestScoreHistory(
-    contestId: number,
-    userId: number,
-    problemId: number
-  ) {
-    return await this.prisma.contestScore.findUnique({
+  async getUserContestScoreHistory(contestId: number, userId: number) {
+    return await this.prisma.contestScore.findMany({
       where: {
-        contestId_userId_problemId: {
-          contestId,
-          userId,
-          problemId,
-        },
+        contestId,
+        userId,
       },
       include: {
         contestScoreHistory: {

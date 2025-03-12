@@ -285,7 +285,9 @@ function NavProblems() {
   ) {
     return null
   }
-  const contestProblems = getContestDetail.data.body.contestProblem
+  const contestProblems = getContestDetail.data.body.contestProblem.sort(
+    (a, b) => a.problem.id - b.problem.id
+  )
   if (getUserScores.data === undefined || getUserScores.data.status !== 200) {
     return null
   }

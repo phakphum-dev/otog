@@ -436,38 +436,45 @@ export const ContestScoreSchema = z.object({
 })
 export type ContestScoreSchema = z.infer<typeof ContestScoreSchema>
 
-export const ContestScoreHistorySchema = ContestScoreModel.extend({
-  contestScoreHistory: z.array(
-    ContestScoreHistoryModel.extend({
-      submission: SubmissionModel.pick({
-        creationDate: true,
-      }).extend({
-        submissionResult: SubmissionResultModel.pick({
-          score: true,
-        })
-          .extend({
-            subtaskResults: z.array(
-              SubtaskResultModel.pick({
-                score: true,
-                subtaskIndex: true,
-              })
-            ),
-          })
-          .nullable(),
-      }),
+export const ContestScoreHistorySchema = ContestScoreHistoryModel.extend({
+  submission: SubmissionModel.pick({
+    creationDate: true,
+  }).extend({
+    submissionResult: SubmissionResultModel.pick({
+      score: true,
     })
-  ),
+      .extend({
+        subtaskResults: z.array(
+          SubtaskResultModel.pick({
+            score: true,
+            subtaskIndex: true,
+          })
+        ),
+      })
+      .nullable(),
+  }),
 })
+export type ContestScoreHistorySchema = z.infer<
+  typeof ContestScoreHistorySchema
+>
+
+export const ScoreHistorySchema = ContestScoreModel.extend({
+  contestScoreHistory: z.array(ContestScoreHistorySchema),
+})
+export type ScoreHistorySchema = z.infer<typeof ScoreHistorySchema>
+
+export const UserDisplaySchema = UserModel.pick({
+  id: true,
+  showName: true,
+  role: true,
+  rating: true,
+})
+export type UserDisplaySchema = z.infer<typeof UserDisplaySchema>
 
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
   maxPenalty: z.number(),
-  user: UserModel.pick({
-    id: true,
-    showName: true,
-    role: true,
-    rating: true,
-  }),
+  user: UserDisplaySchema,
   contestScores: z.array(ContestScoreSchema),
 })
 export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
@@ -574,9 +581,9 @@ export const contestRouter = contract.router(
     },
     getUserContestScoreHistory: {
       method: 'GET',
-      path: '/:contestId/scoreHistory/:userId/:problemId',
+      path: '/:contestId/scoreHistory/:userId/',
       responses: {
-        200: ContestScoreHistorySchema.nullable(),
+        200: z.array(ScoreHistorySchema),
         404: z.object({ message: z.string() }),
       },
     },

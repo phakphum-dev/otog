@@ -15,6 +15,7 @@ import {
   ContestSchema,
   ContestScoreboard,
   UserContestScoreboard,
+  UserDisplaySchema,
 } from '@otog/contract'
 import {
   Breadcrumb,
@@ -23,6 +24,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@otog/ui/breadcrumb'
+import { Button } from '@otog/ui/button'
 import { Link } from '@otog/ui/link'
 import { Separator } from '@otog/ui/separator'
 import { SidebarTrigger } from '@otog/ui/sidebar'
@@ -31,6 +33,7 @@ import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../../api/server'
 import { Footer } from '../../../components/footer'
+import { ScoreHistoryDialog } from '../../../components/score-history-dialog'
 import { TableComponent } from '../../../components/table-component'
 import { UserAvatar } from '../../../components/user-avatar'
 import { ContestLayout } from '../../../modules/contest/sidebar'
@@ -164,23 +167,29 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
       columnHelper.accessor('totalScore', {
         header: 'คะแนนรวม',
         cell: ({ getValue, row }) => (
-          <span
-            className={clsx(
-              'transition-[font-size]',
-              table.options.meta?.expanded
-                ? 'text-base tabular-nums'
-                : ['text-center', fontSize[row.original.rank!]]
-            )}
+          <ScoreDetailButton
+            contestScoreboard={contestScoreboard}
+            user={row.original.user}
+            problemId={-1}
           >
-            {getValue()}
-          </span>
+            <span
+              className={clsx(
+                'transition-[font-size]',
+                table.options.meta?.expanded
+                  ? 'text-base tabular-nums'
+                  : ['text-center', fontSize[row.original.rank!]]
+              )}
+            >
+              {getValue()}
+            </span>
+          </ScoreDetailButton>
         ),
       }),
       columnHelper.accessor('maxPenalty', {
         header: 'ส่งล่าสุดเมื่อ',
         cell: ({ getValue, row, table }) => {
           const penalty = getValue()
-          const hour = Math.floor(penalty / 3600) % 60
+          const hour = Math.floor(penalty / 3600)
           const minute = Math.floor(penalty / 60) % 60
           const second = penalty % 60
           return (
@@ -213,9 +222,17 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
             {
               id: `problem-${contestProblem.problemId.toString()}`,
               header: contestProblem.problem.name!,
-              cell: ({ getValue }) => getValue() ?? '-',
+              cell: ({ getValue, row }) => (
+                <ScoreDetailButton
+                  contestScoreboard={contestScoreboard}
+                  user={row.original.user}
+                  problemId={contestProblem.problemId}
+                >
+                  {getValue() ?? '-'}
+                </ScoreDetailButton>
+              ),
               meta: {
-                headClassName: 'text-pretty',
+                headClassName: 'text-pretty truncate',
                 cellClassName: 'tabular-nums',
               },
               sortUndefined: -1,
@@ -294,6 +311,34 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
         contestPrize={contestPrize}
       /> */}
     </div>
+  )
+}
+
+const ScoreDetailButton = ({
+  contestScoreboard,
+  user,
+  problemId,
+  children,
+}: {
+  contestScoreboard: ContestScoreboard
+  user: UserDisplaySchema
+  problemId: number
+  children: React.ReactNode
+}) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button title="score details" onClick={() => setOpen(true)}>
+        {children}
+      </button>
+      <ScoreHistoryDialog
+        open={open}
+        setOpen={setOpen}
+        contestScoreboard={contestScoreboard}
+        user={user}
+        problemId={problemId}
+      />
+    </>
   )
 }
 
