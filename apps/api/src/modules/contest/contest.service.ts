@@ -174,6 +174,7 @@ export class ContestService {
                     subtaskResults: {
                       select: {
                         score: true,
+                        fullScore: true,
                         subtaskIndex: true,
                       },
                     },

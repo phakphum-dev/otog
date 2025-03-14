@@ -447,6 +447,7 @@ export const ContestScoreHistorySchema = ContestScoreHistoryModel.extend({
         subtaskResults: z.array(
           SubtaskResultModel.pick({
             score: true,
+            fullScore: true,
             subtaskIndex: true,
           })
         ),
