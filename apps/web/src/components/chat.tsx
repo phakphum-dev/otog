@@ -275,8 +275,8 @@ const OnlineUsersDialog = forwardRef<
         {children}
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-start max-w-sm">
-        <DialogTitle>ผู้ที่ออนไลน์</DialogTitle>
-        {onlineUsers.slice(0, MAX_LENGTH).map((user) => (
+        <DialogTitle>ผู้ที่ออนไลน์ ({onlineUsers.length})</DialogTitle>
+        {onlineUsers.map((user) => (
           <ul key={user.id} className="flex flex-col justify-start">
             <li className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-400" />
@@ -293,13 +293,6 @@ const OnlineUsersDialog = forwardRef<
             </li>
           </ul>
         ))}
-        {onlineUsers.length > MAX_LENGTH && (
-          <>
-            <div className="flex gap-2">
-              <div>...ทั้งหมด {onlineUsers.length} คน</div>
-            </div>
-          </>
-        )}
       </DialogContent>
     </Dialog>
   )
