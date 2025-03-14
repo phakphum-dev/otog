@@ -64,27 +64,29 @@ const LatestSubmissionSecion = ({
   const problem = latestSubmission.problem!
   return (
     <section
-      className="p-4 rounded-lg border flex gap-6 items-center"
+      className="p-4 rounded-lg border flex gap-6 flex-col items-start sm:flex-row sm:items-center"
       aria-labelledby="latest-submission"
     >
       <h2 id="latest-submission" className="font-semibold">
         ส่งข้อล่าสุด
       </h2>
-      <Link
-        isExternal
-        href={`/api/problem/${problem.id}`}
-        className="text-sm flex flex-col"
-      >
-        <span className="text-pretty font-semibold tracking-wide mb-0.5">
-          {problem.name}
-        </span>
-        <span>
-          ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
-        </span>
-      </Link>
-      <div className="ml-auto flex items-center gap-2">
-        <SubmitCode problem={problem} />
-        <SubmissionStatusButton submission={latestSubmission} />
+      <div className="flex gap-6 items-center max-sm:w-full sm:flex-1">
+        <Link
+          isExternal
+          href={`/api/problem/${problem.id}`}
+          className="text-sm flex flex-col"
+        >
+          <span className="text-pretty font-semibold tracking-wide mb-0.5">
+            {problem.name}
+          </span>
+          <span>
+            ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
+          </span>
+        </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <SubmitCode problem={problem} />
+          <SubmissionStatusButton submission={latestSubmission} />
+        </div>
       </div>
     </section>
   )
