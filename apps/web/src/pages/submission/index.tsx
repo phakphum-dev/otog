@@ -4,6 +4,7 @@ import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'
+import { parseAsBoolean, useQueryState } from 'nuqs'
 
 import { SubmissionSchema } from '@otog/contract'
 import { Input, InputGroup, InputLeftIcon } from '@otog/ui/input'
@@ -93,15 +94,19 @@ const LatestSubmissionSecion = ({
 }
 
 const SubmissionSection = () => {
-  const { user, isAuthenticated } = useUserContext()
-  const [onlyMe, setOnlyMe] = useState(isAuthenticated)
+  const { user, isAdmin, isAuthenticated } = useUserContext()
+
+  const [all, setAll] = useQueryState(
+    'all',
+    parseAsBoolean.withDefault(isAdmin)
+  )
 
   const [problemSearch, setProblemSearch] = useState<string>('')
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: submissionKey.getSubmissions({
         query: {
-          userId: onlyMe ? user?.id : undefined,
+          userId: all ? undefined : user?.id,
           problemSearch,
         },
       }).queryKey,
@@ -110,7 +115,7 @@ const SubmissionSection = () => {
         submissionQuery.getSubmissions.query({
           query: {
             offset: pageParam,
-            userId: onlyMe ? user?.id : undefined,
+            userId: all ? undefined : user?.id,
             problemSearch,
           },
         }),
@@ -133,8 +138,8 @@ const SubmissionSection = () => {
         <DebounceInput onChange={setProblemSearch} />
         {isAuthenticated && (
           <Toggle
-            onPressedChange={(pressed) => setOnlyMe(pressed)}
-            pressed={onlyMe}
+            onPressedChange={(pressed) => setAll(!pressed)}
+            pressed={!all}
           >
             <FunnelIcon className="me-2" /> เฉพาะคุณ
           </Toggle>
