@@ -62,19 +62,20 @@ model ContestProblem {
 }
 
 model Problem {
-  id             Int              @id @default(autoincrement())
-  name           String           @db.VarChar(255)
-  sname          String?          @db.VarChar(255)
+  id             Int                     @id @default(autoincrement())
+  name           String                  @db.VarChar(255)
+  sname          String?                 @db.VarChar(255)
   score          Int
   timeLimit      Int
   memoryLimit    Int
   show           Boolean
-  recentShowTime DateTime?        @db.Timestamptz(6)
-  case           String?          @db.VarChar(255)
+  recentShowTime DateTime?               @db.Timestamptz(6)
+  case           String?                 @db.VarChar(255)
   rating         Int?
   examples       Json?
   contestProblem ContestProblem[]
   submission     Submission[]
+  bookshelves    ProblemsOnBookshelves[]
 
   @@map("problem")
 }
@@ -177,6 +178,30 @@ model UserContest {
 
   @@id([userId, contestId])
   @@map("userContest")
+}
+
+model Bookshelf {
+  id           Int                     @id @default(autoincrement())
+  name         String                  @db.VarChar(255)
+  parentId     Int?
+  creationDate DateTime                @default(now()) @db.Timestamptz(6)
+  updateDate   DateTime                @default(now()) @updatedAt @db.Timestamptz(6)
+  parent       Bookshelf?              @relation("ParentChildren", fields: [parentId], references: [id])
+  children     Bookshelf[]             @relation("ParentChildren")
+  problems     ProblemsOnBookshelves[]
+
+  @@map("bookshelf")
+}
+
+model ProblemsOnBookshelves {
+  problem     Problem   @relation(fields: [problemId], references: [id])
+  problemId   Int
+  bookshelf   Bookshelf @relation(fields: [bookshelfId], references: [id])
+  bookshelfId Int
+  assignedAt  DateTime  @default(now())
+
+  @@id([problemId, bookshelfId])
+  @@map("problemsOnBookshelves")
 }
 
 enum ContestGradingMode {

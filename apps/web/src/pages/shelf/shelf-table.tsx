@@ -32,7 +32,10 @@ import dayjs from 'dayjs'
 import { produce } from 'immer'
 import NextLink from 'next/link'
 
-import { ProblemTableRowSchema } from '@otog/contract'
+import {
+  ProblemTableRowSchema,
+  ProblemWithoutExampleSchema,
+} from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
 import { Button, ButtonProps } from '@otog/ui/button'
 import {
@@ -60,7 +63,7 @@ import {
 import { Spinner } from '@otog/ui/spinner'
 import { VariantProps, clsx, cva } from '@otog/ui/utils'
 
-import { problemKey, problemQuery } from '../../api/query'
+import { bookshelfKey, problemKey, problemQuery } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
@@ -71,13 +74,20 @@ import { useUserContext } from '../../context/user-context'
 import { SubmitCode } from '../../modules/problem/submit-code'
 import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 
-export const ShelfTable = () => {
-  const { data, isLoading, isError } = useQuery(problemKey.getProblemTable())
-  const problems = useMemo(
-    () => (data?.status === 200 ? data.body : []),
-    [data]
+export const ShelfTable = ({ bookshelfId }: { bookshelfId: number }) => {
+  // const { data, isLoading, isError } = useQuery(problemKey.getProblemTable())
+  const getProblemsOnBookshelf = useQuery(
+    bookshelfKey.getProblemsOnBookshelf(bookshelfId)
   )
-
+  const problems = useMemo(
+    () =>
+      getProblemsOnBookshelf.data?.status === 200
+        ? getProblemsOnBookshelf.data.body.map((p) => p.problem)
+        : [],
+    [getProblemsOnBookshelf.data]
+  )
+  console.log(problems)
+  //.filter((problem) => problem.id)
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -107,8 +117,8 @@ export const ShelfTable = () => {
             bodyRow: 'border-transparent',
           }}
           table={table}
-          isLoading={isLoading}
-          isError={isError}
+          isLoading={getProblemsOnBookshelf.isLoading}
+          isError={getProblemsOnBookshelf.isError}
         />
       </section>
     </section>
@@ -150,7 +160,7 @@ function getRowStatusIcon(status: RowStatus) {
   }
 }
 
-const columnHelper = createColumnHelper<ProblemTableRowSchema>()
+const columnHelper = createColumnHelper<ProblemWithoutExampleSchema>()
 const columns = [
   columnHelper.accessor('id', {
     header: () => '#',
@@ -262,6 +272,7 @@ const columns = [
     },
   }),
 ]
+
 const NEW_PROBLEM = 'NEW_PROBLEM'
 type NewProblemValue = typeof NEW_PROBLEM
 function isNewProblem(problem: { recentShowTime: Date | null; show: boolean }) {

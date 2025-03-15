@@ -7,6 +7,7 @@ import {
   FunnelIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   createColumnHelper,
@@ -29,6 +30,7 @@ import { InputGroup, InputLeftIcon } from '@otog/ui/input'
 import { Progress } from '@otog/ui/progress'
 import { Select, SelectContent, SelectPrimitive } from '@otog/ui/select'
 
+import { bookshelfKey } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import {
   TableComponent,
@@ -37,7 +39,7 @@ import {
 import { ProblemTable } from '../../modules/problem/problem-table'
 import { ShelfTable } from './shelf-table'
 
-function Card() {
+function Card({ id, name }: { id: number; name: string }) {
   const progress = 50
   const [open, setOpen] = useState(false)
   const data = useMemo(() => {
@@ -66,7 +68,7 @@ function Card() {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">หัวข้อเล็ก</h2>
+                <h2 className="text-xl font-semibold">{name}</h2>
                 {!open && <LuBook className="text-xl" />}
                 {open && <LuBookOpen className="text-xl" />}
               </div>
@@ -97,7 +99,7 @@ function Card() {
         </CollapsibleTrigger>
         <CollapsibleContent>
           {/* <TableComponent table={table} /> */}
-          <ShelfTable />
+          <ShelfTable bookshelfId={id} />
         </CollapsibleContent>
       </section>
     </Collapsible>
@@ -118,8 +120,12 @@ function Card() {
 
 export default function Shelf() {
   const router = useRouter()
-  //   return router.query.shelfId
   const progress = 50
+  const getBookshelf = useQuery(bookshelfKey.getBookshelves())
+  const shelfId = Number(router.query.shelfId)
+  const currentBook = getBookshelf.data?.body.find(
+    (book) => book.id === shelfId
+  )
   return (
     <main className="container flex-1 py-8 flex flex-col gap-4">
       <div className="flex justify-between items-center m-4">
@@ -127,7 +133,7 @@ export default function Shelf() {
           <Link href="/shelf">
             <ChevronLeftIcon className="size-8 hover:text-primary" />
           </Link>
-          <h2 className="text-2xl font-semibold">หัวข้อ</h2>
+          <h2 className="text-2xl font-semibold">{currentBook?.name}</h2>
         </div>
         <div className="flex gap-8">
           <div className="flex flex-col gap-3">
@@ -173,8 +179,11 @@ export default function Shelf() {
           </Select>
         </div>
       </div>
-      <Card></Card>
-      <Card></Card>
+      {/* <Card></Card>
+      <Card></Card> */}
+      {getBookshelf.data?.body
+        .filter((book) => book.parentId === shelfId)
+        .map((book) => <Card id={book.id} name={book.name}></Card>)}
     </main>
   )
 }

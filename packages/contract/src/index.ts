@@ -4,10 +4,12 @@ import { z } from 'zod'
 
 import {
   AnnouncementModel,
+  BookshelfModel,
   ChatModel,
   ContestModel,
   ContestProblemModel,
   ProblemModel,
+  ProblemsOnBookshelvesModel,
   SubmissionModel,
   SubmissionResultModel,
   SubtaskResultModel,
@@ -525,7 +527,11 @@ export const contestRouter = contract.router(
   { pathPrefix: '/contest' }
 )
 
-const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
+export const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
+export type ProblemWithoutExampleSchema = z.infer<
+  typeof ProblemWithoutExampleSchema
+>
+
 const LatestSubmissionModel = SubmissionModel.pick({
   id: true,
   status: true,
@@ -711,6 +717,37 @@ export const appRouter = contract.router({
   },
 })
 
+export const bookshelfRouter = contract.router(
+  {
+    getBookshelves: {
+      method: 'GET',
+      path: '',
+
+      responses: {
+        200: z.array(BookshelfModel),
+        403: z.object({ message: z.string() }),
+      },
+      summary: 'Get all bookshelves',
+    },
+    getProblemsOnBookshelf: {
+      method: 'GET',
+      path: '',
+
+      responses: {
+        200: z.array(
+          ProblemsOnBookshelvesModel.extend({
+            problem: ProblemWithoutExampleSchema,
+          })
+        ),
+        403: z.object({ message: z.string() }),
+      },
+      summary: 'Get problems on this bookshelf',
+    },
+  },
+
+  { pathPrefix: '/bookshelf' }
+)
+
 export const router = contract.router({
   app: appRouter,
   auth: authRouter,
@@ -720,4 +757,5 @@ export const router = contract.router({
   contest: contestRouter,
   submission: submissionRouter,
   announcement: announcementRouter,
+  bookshelf: bookshelfRouter,
 })

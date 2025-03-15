@@ -6,6 +6,7 @@ import {
   announcementRouter,
   appRouter,
   authRouter,
+  bookshelfRouter,
   chatRouter,
   contestRouter,
   problemRouter,
@@ -64,6 +65,7 @@ export const problemQuery = initQueryClient(problemRouter, clientArgs)
 export const contestQuery = initQueryClient(contestRouter, clientArgs)
 export const submissionQuery = initQueryClient(submissionRouter, clientArgs)
 export const announcementQuery = initQueryClient(announcementRouter, clientArgs)
+export const bookshelfQuery = initQueryClient(bookshelfRouter, clientArgs)
 
 export const appKey = createQueryKey('app', appRouter)
 export const authKey = createQueryKey('auth', authRouter)
@@ -76,6 +78,7 @@ export const announcementKey = createQueryKey(
   'announcement',
   announcementRouter
 )
+export const bookshelfKey = createQueryKey('bookshelf', bookshelfRouter)
 export const avatarKey = createQueryKeys('avatar', {
   getUrl: (params: { userId: number; size: 'default' | 'small' }) => ({
     queryKey: ['default', params],

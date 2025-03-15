@@ -5,6 +5,7 @@ import { AppService } from './app.service'
 import { PrismaModule } from './core/database/prisma.module'
 import { AnnouncementModule } from './modules/announcement/announcement.module'
 import { AuthModule } from './modules/auth/auth.module'
+import { BookshelfModule } from './modules/bookshelf/bookshelf.module'
 import { ChatModule } from './modules/chat/chat.module'
 import { ContestModule } from './modules/contest/contest.module'
 import { ProblemModule } from './modules/problem/problem.module'
@@ -21,6 +22,7 @@ import { UserModule } from './modules/user/user.module'
     ContestModule,
     ChatModule,
     AnnouncementModule,
+    BookshelfModule,
   ],
   controllers: [AppController],
   providers: [AppService],

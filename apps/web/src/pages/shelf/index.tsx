@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { LuBookMarked, LuBookmark } from 'react-icons/lu'
 
 import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 
 import { Button } from '@otog/ui/button'
@@ -9,22 +10,18 @@ import { InputGroup, InputLeftIcon } from '@otog/ui/input'
 import { Progress } from '@otog/ui/progress'
 import { Select, SelectContent, SelectPrimitive } from '@otog/ui/select'
 
+import { bookshelfKey } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 
-function Card() {
+function Card({ id, name }: { id: number; name: string }) {
   const progress = 50
   const [marked, setMarked] = useState(false)
   return (
-    <Link href={'/shelf/1'}>
+    <Link href={'/shelf/' + id}>
       <section className="border p-6 rounded-lg flex flex-col gap-4">
         <div className="flex justify-between">
-          {/* <Link href="/shelf/1">
-          <h2 className="text-xl font-semibold underline underline-offset-2 hover:text-primary">
-          หัวข้อ
-          </h2>
-          </Link> */}
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">หัวข้อ</h2>
+            <h2 className="text-xl font-semibold">{name}</h2>
             <button
               onClick={(e) => {
                 setMarked(!marked)
@@ -34,11 +31,7 @@ function Card() {
             >
               {!marked && <LuBookmark className="text-xl" />}
               {marked && (
-                <LuBookmark
-                  className="text-xl fill-primary"
-                  // fill="#ff851b"
-                  strokeWidth={0}
-                />
+                <LuBookmark className="text-xl fill-primary" strokeWidth={0} />
               )}
             </button>
           </div>
@@ -58,7 +51,6 @@ function Card() {
                 <p>ความคืบหน้า</p>
                 <p>{progress}/99</p>
               </div>
-              {/* <div className="bg-primary w-auto h-5 rounded-full"></div> */}
               <Progress
                 className="w-auto h-5 [&>*]:bg-primary"
                 value={progress}
@@ -72,6 +64,7 @@ function Card() {
 }
 
 export default function BookShelf() {
+  const getBookshelf = useQuery(bookshelfKey.getBookshelves())
   return (
     <main className="container flex-1 py-8 flex gap-4 flex-col">
       <div className="flex gap-4 sticky py-2 -my-2 top-[calc(var(--navbar))] bg-background z-10">
@@ -148,10 +141,9 @@ export default function BookShelf() {
         </DropdownMenu> */}
         </div>
       </div>
-      <Card></Card>
-      <Card></Card>
-      <Card></Card>
-      <Card></Card>
+      {getBookshelf.data?.body
+        .filter((book) => book.parentId === null)
+        .map((book) => <Card id={book.id} name={book.name}></Card>)}
     </main>
   )
 }
