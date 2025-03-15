@@ -4,6 +4,7 @@ import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'
+import { parseAsBoolean, useQueryState } from 'nuqs'
 
 import { SubmissionSchema } from '@otog/contract'
 import { Input, InputGroup, InputLeftIcon } from '@otog/ui/input'
@@ -65,49 +66,55 @@ const LatestSubmissionSecion = ({
   const problem = latestSubmission.problem!
   return (
     <section
-      className="p-4 rounded-lg border flex gap-6 items-center"
+      className="p-4 rounded-lg border flex gap-6 flex-col items-start sm:flex-row sm:items-center"
       aria-labelledby="latest-submission"
     >
       <h2 id="latest-submission" className="font-semibold">
         ส่งข้อล่าสุด
       </h2>
-      <Link
-        isExternal
-        href={`/api/problem/${problem.id}`}
-        className="text-sm flex flex-col"
-      >
-        <span className="text-pretty font-semibold tracking-wide mb-0.5">
-          {problem.name}
-        </span>
-        <span>
-          ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
-        </span>
-      </Link>
-      <div className="ml-auto flex items-center gap-2">
-        <SubmitCode
-          problem={problem}
-          onSuccess={() =>
-            queryClient.invalidateQueries({
-              queryKey: submissionKey.getSubmissions._def,
-            })
-          }
-        />
-        <SubmissionStatusButton submission={latestSubmission} />
+      <div className="flex gap-6 items-center max-sm:w-full sm:flex-1">
+        <Link
+          isExternal
+          href={`/api/problem/${problem.id}`}
+          className="text-sm flex flex-col"
+        >
+          <span className="text-pretty font-semibold tracking-wide mb-0.5">
+            {problem.name}
+          </span>
+          <span>
+            ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
+          </span>
+        </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <SubmitCode
+            problem={problem}
+            onSuccess={() =>
+              queryClient.invalidateQueries({
+                queryKey: submissionKey.getSubmissions._def,
+              })
+            }
+          />
+          <SubmissionStatusButton submission={latestSubmission} />
+        </div>
       </div>
     </section>
   )
 }
 
 const SubmissionSection = () => {
-  const { user, isAuthenticated } = useUserContext()
-  const [onlyMe, setOnlyMe] = useState(isAuthenticated)
+  const { user, isAdmin, isAuthenticated } = useUserContext()
+
+  const [all, setAll] = useQueryState(
+    'all',
+    parseAsBoolean.withDefault(isAdmin)
+  )
 
   const [problemSearch, setProblemSearch] = useState<string>('')
   const { data, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: submissionKey.getSubmissions({
         query: {
-          userId: onlyMe ? user?.id : undefined,
+          userId: all ? undefined : user?.id,
           problemSearch,
         },
       }).queryKey,
@@ -116,7 +123,7 @@ const SubmissionSection = () => {
         submissionQuery.getSubmissions.query({
           query: {
             offset: pageParam,
-            userId: onlyMe ? user?.id : undefined,
+            userId: all ? undefined : user?.id,
             problemSearch,
           },
         }),
@@ -139,8 +146,8 @@ const SubmissionSection = () => {
         <DebounceInput onChange={setProblemSearch} />
         {isAuthenticated && (
           <Toggle
-            onPressedChange={(pressed) => setOnlyMe(pressed)}
-            pressed={onlyMe}
+            onPressedChange={(pressed) => setAll(!pressed)}
+            pressed={!all}
           >
             <FunnelIcon className="me-2" /> เฉพาะคุณ
           </Toggle>

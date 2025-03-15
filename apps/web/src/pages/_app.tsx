@@ -18,6 +18,7 @@ import { SessionProvider } from 'next-auth/react'
 import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
+import { NuqsAdapter } from 'nuqs/adapters/next/pages'
 
 import { Button } from '@otog/ui/button'
 import '@otog/ui/styles.css'
@@ -107,41 +108,42 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           --font-notosans: ${notosans.style.fontFamily};
         }
       `}</style>
-
-      <SessionProvider session={session}>
-        <TsRestQueryClientProvider client={tsRestQueryClient}>
-          <QueryClientProvider client={queryClient}>
-            <UserContextProvider session={session}>
-              <SocketProvider>
-                <TooltipProvider delayDuration={0}>
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    <div className="min-h-screen flex flex-col">
-                      <SkipToMainContent />
-                      <ProgressBar />
-                      <Navbar />
-                      {getLayout(<Component {...props} />)}
-                      <Chat />
-                      {(Component.footer ?? true) && <Footer />}
-                    </div>
-                    <Toaster
-                      position="bottom-center"
-                      toastOptions={{
-                        className: '!text-foreground !bg-background',
-                      }}
-                    />
-                    <ClickToComponent />
-                  </ThemeProvider>
-                </TooltipProvider>
-              </SocketProvider>
-            </UserContextProvider>
-          </QueryClientProvider>
-        </TsRestQueryClientProvider>
-      </SessionProvider>
+      <NuqsAdapter>
+        <SessionProvider session={session}>
+          <TsRestQueryClientProvider client={tsRestQueryClient}>
+            <QueryClientProvider client={queryClient}>
+              <UserContextProvider session={session}>
+                <SocketProvider>
+                  <TooltipProvider delayDuration={0}>
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      <div className="min-h-screen flex flex-col">
+                        <SkipToMainContent />
+                        <ProgressBar />
+                        <Navbar />
+                        {getLayout(<Component {...props} />)}
+                        <Chat />
+                        {(Component.footer ?? true) && <Footer />}
+                      </div>
+                      <Toaster
+                        position="bottom-center"
+                        toastOptions={{
+                          className: '!text-foreground !bg-background',
+                        }}
+                      />
+                      <ClickToComponent />
+                    </ThemeProvider>
+                  </TooltipProvider>
+                </SocketProvider>
+              </UserContextProvider>
+            </QueryClientProvider>
+          </TsRestQueryClientProvider>
+        </SessionProvider>
+      </NuqsAdapter>
     </>
   )
 }

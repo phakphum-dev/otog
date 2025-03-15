@@ -94,7 +94,9 @@ const columns = [
       <Link asChild variant="hidden" className="inline-flex gap-2 items-center">
         <NextLink href={`/user/${row.original.user!.id}`}>
           <UserAvatar user={row.original.user!} />
-          {getValue()}
+          <span className="max-w-60 overflow-hidden text-ellipsis">
+            {getValue()}
+          </span>
         </NextLink>
       </Link>
     ),
