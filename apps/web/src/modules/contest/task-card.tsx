@@ -262,6 +262,7 @@ export const ContestEditorForm = (props: TaskCardProps) => {
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId.toString() },
         body: {
           sourceCode: file,
           language: values.language,

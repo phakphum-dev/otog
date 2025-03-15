@@ -1,6 +1,6 @@
 // import { ConfirmModalProvider } from '@src/context/ConfirmContext'
 // import { useAnalytics } from '@src/hooks/useAnalytics'
-import { useState } from 'react'
+import { ReactElement, ReactNode, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ import { ClickToComponent } from 'click-to-react-component'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import buddhistEra from 'dayjs/plugin/buddhistEra'
+import { NextComponentType, NextPageContext } from 'next'
 import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
 import { AppProps } from 'next/app'
@@ -47,11 +48,22 @@ const ProgressBar = dynamic(() => import('./../components/progress-bar'), {
 //   })
 // }
 
+export type NextPageWithLayout = NextComponentType<
+  NextPageContext,
+  any,
+  any
+> & {
+  getLayout?: (page: ReactElement) => ReactNode
+  footer?: boolean
+}
+
 type MyAppProps = AppProps<{
   //   errorData: ErrorToastOptions
   //   fallback: { [key: string]: string }
   session: Session
-}>
+}> & {
+  Component: NextPageWithLayout
+}
 
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const { session, ...props } = pageProps
@@ -68,6 +80,8 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         defaultOptions: { mutations: { throwOnError: false } },
       })
   )
+
+  const getLayout = Component.getLayout ?? ((page) => page)
 
   //   useErrorToaster(errorData)
   //   useAnalytics()
@@ -111,9 +125,9 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
                         <SkipToMainContent />
                         <ProgressBar />
                         <Navbar />
-                        <Component {...props} />
+                        {getLayout(<Component {...props} />)}
                         <Chat />
-                        <Footer />
+                        {(Component.footer ?? true) && <Footer />}
                       </div>
                       <Toaster
                         position="bottom-center"

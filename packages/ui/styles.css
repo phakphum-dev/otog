@@ -37,8 +37,24 @@
     --error: colorToHsl(theme(colors.purple.100));
     --error-foreground: colorToHsl(theme(colors.purple.950));
 
+    --sidebar-background: colorToHsl(theme(colors.white));
+    --sidebar-foreground: colorToHsl(theme(colors.gray.950));
+    --sidebar-primary: colorToHsl(theme(colors.orange.400));
+    --sidebar-primary-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-accent: colorToHsl(theme(colors.gray.100));
+    --sidebar-accent-foreground: colorToHsl(theme(colors.gray.900));
+    --sidebar-border: colorToHsl(theme(colors.gray.200));
+    --sidebar-ring: colorToHsl(theme(colors.orange.400));
+
     --radius: 0.75rem;
     --navbar: 64px;
+
+
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -74,6 +90,23 @@
     --info-foreground: colorToHsl(theme(colors.sky.500));
     --error: colorToHsl(theme(colors.purple.500));
     --error-foreground: colorToHsl(theme(colors.purple.500));
+
+
+    --sidebar-background: colorToHsl(theme(colors.gray.900));
+    --sidebar-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-primary: colorToHsl(theme(colors.orange.500));
+    --sidebar-primary-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-accent: colorToHsl(theme(colors.gray.700));
+    --sidebar-accent-foreground: colorToHsl(theme(colors.gray.50));
+    --sidebar-border: colorToHsl(theme(colors.gray.700));
+    --sidebar-ring: colorToHsl(theme(colors.orange.500));
+
+    
+    --chart-1: 160 60% 45%;
+    --chart-2: 220 70% 50%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 

@@ -78,7 +78,7 @@ export const getServerSideProps = withSession<AdminUserPageProps>(
 export default function AdminUserPage() {
   return (
     <main className="container flex-1 py-8">
-      <h1 className="text-xl font-semibold mb-4">ระบบ GOTO</h1>
+      <h1 className="text-xl font-semibold mb-4 font-heading">ระบบ GOTO</h1>
       <Tabs value="user">
         <TabsList className="justify-start relative h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border">
           <TabsTrigger

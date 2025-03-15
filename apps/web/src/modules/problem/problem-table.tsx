@@ -31,6 +31,7 @@ import {
 import dayjs from 'dayjs'
 import { produce } from 'immer'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
@@ -60,7 +61,7 @@ import {
 import { Spinner } from '@otog/ui/spinner'
 import { VariantProps, clsx, cva } from '@otog/ui/utils'
 
-import { problemKey, problemQuery } from '../../api/query'
+import { problemKey, problemQuery, submissionKey } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
@@ -476,7 +477,25 @@ const columns = [
   columnHelper.display({
     id: 'submit',
     header: 'ส่ง',
-    cell: ({ row }) => <SubmitCode problem={row.original} />,
+    cell: ({ row }) => (
+      <InlineComponent
+        render={() => {
+          const router = useRouter()
+          const queryClient = useQueryClient()
+          return (
+            <SubmitCode
+              problem={row.original}
+              onSuccess={() => {
+                router.push('/submission?all=false')
+                queryClient.invalidateQueries({
+                  queryKey: submissionKey.getSubmissions._def,
+                })
+              }}
+            />
+          )
+        }}
+      />
+    ),
     meta: {
       cellClassName: 'text-center px-0',
     },

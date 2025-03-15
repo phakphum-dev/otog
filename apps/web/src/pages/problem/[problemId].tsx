@@ -20,6 +20,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   Cell,
@@ -53,7 +54,7 @@ import {
 } from '@otog/ui/select'
 import { Textarea } from '@otog/ui/textarea'
 
-import { problemQuery, submissionQuery } from '../../api/query'
+import { problemQuery, submissionKey, submissionQuery } from '../../api/query'
 import { withQuery } from '../../api/server'
 import { MonacoEditor } from '../../components/monaco-editor'
 import { TableComponent } from '../../components/table-component'
@@ -210,6 +211,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
   }, console.error)
 
   const [preferOldEditor] = useState(true)
+  const queryClient = useQueryClient()
 
   return (
     <Form {...form}>
@@ -233,7 +235,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             control={form.control}
             name="sourceCode"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-0">
                 <FormLabel className="sr-only">โค้ด</FormLabel>
                 <MonacoEditor
                   height="800px"
@@ -253,7 +255,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             name="language"
             defaultValue={Language.cpp}
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-0">
                 <FormLabel className="sr-only">ภาษา</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
@@ -275,7 +277,15 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
             <Button type="submit" className="flex-1">
               ส่ง
             </Button>
-            <SubmitCode problem={props.problem} />
+            <SubmitCode
+              problem={props.problem}
+              onSuccess={() => {
+                router.push('/submission?all=false')
+                queryClient.invalidateQueries({
+                  queryKey: submissionKey.getSubmissions._def,
+                })
+              }}
+            />
           </div>
         </div>
       </form>
