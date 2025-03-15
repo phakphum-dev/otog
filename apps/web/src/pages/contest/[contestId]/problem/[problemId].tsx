@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
@@ -58,6 +58,11 @@ import { withQuery } from '../../../../api/server'
 import { Footer } from '../../../../components/footer'
 import { InlineComponent } from '../../../../components/inline-component'
 import { MonacoEditor } from '../../../../components/monaco-editor'
+import {
+  ClientInPortal,
+  ClientOutPortal,
+  useHtmlPortalNode,
+} from '../../../../components/portals'
 import { SubmissionStatusButton } from '../../../../components/submission-status'
 import { useSubmissionPolling } from '../../../../components/submission-table'
 import { TableComponent } from '../../../../components/table-component'
@@ -143,8 +148,12 @@ export default function ContestPage(props: ContestProblemPageProps) {
       router.push(`/contest/${props.contestId}`)
     }
   }, [contestStatus])
-  // TODO save instance
   const queryClient = useQueryClient()
+  const { containerRef, isBreakpoint: isLargeScreen } =
+    useContainerBreakpoint<HTMLDivElement>({
+      breakpoint: 960,
+    })
+  const codeEditorPortal = useHtmlPortalNode()
   const codeEditorForm = (
     <CodeEditorForm
       contestId={contest.id}
@@ -184,7 +193,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <section className="@container flex-1">
+      <section className="flex-1 @container" ref={containerRef}>
         <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <TabsList className="bg-transparent px-4">
             <TabsTrigger
@@ -231,7 +240,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
                   defaultSize={50}
                   className="hidden @[60rem]:block"
                 >
-                  {codeEditorForm}
+                  {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
                 </ResizablePanel>
               </ResizablePanelGroup>
             </TabsContent>
@@ -241,7 +250,10 @@ export default function ContestPage(props: ContestProblemPageProps) {
               forceMount
               value="editor"
             >
-              {codeEditorForm}
+              <ClientInPortal node={codeEditorPortal}>
+                {codeEditorForm}
+              </ClientInPortal>
+              {!isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
             </TabsContent>
             <TabsContent
               className="data-[state=inactive]:hidden"
@@ -261,6 +273,39 @@ export default function ContestPage(props: ContestProblemPageProps) {
   )
 }
 ContestPage.footer = false
+
+function useContainerBreakpoint<T extends Element>(options: {
+  breakpoint: number
+  defaultValue?: boolean
+}) {
+  const [isBreakpoint, setIsBreakpoint] = useState(
+    options.defaultValue ?? false
+  )
+  const previousObserver = useRef<ResizeObserver | null>(null)
+  const containerRef = useCallback((node: T) => {
+    if (previousObserver.current) {
+      previousObserver.current.disconnect()
+      previousObserver.current = null
+    }
+
+    if (node?.nodeType === Node.ELEMENT_NODE) {
+      const observer = new ResizeObserver(([entry]) => {
+        if (entry && entry.borderBoxSize) {
+          const {
+            inlineSize: width,
+            //  blockSize: height
+          } = entry.borderBoxSize[0]!
+          setIsBreakpoint(options.breakpoint <= width)
+        }
+      })
+
+      observer.observe(node)
+      previousObserver.current = observer
+    }
+  }, [])
+
+  return { containerRef, isBreakpoint }
+}
 
 const CodeEditorFormSchema = z.object({
   sourceCode: z.string(),
