@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
@@ -68,6 +68,7 @@ import { useSubmissionPolling } from '../../../../components/submission-table'
 import { TableComponent } from '../../../../components/table-component'
 import { useUserContext } from '../../../../context/user-context'
 import { Language, LanguageName } from '../../../../enums'
+import { useContainerBreakpoint } from '../../../../hooks/use-container-breakpoint'
 import {
   ContestLayout,
   useContestProps,
@@ -141,34 +142,13 @@ export default function ContestPage(props: ContestProblemPageProps) {
   const contestProps = useContestProps(props)
   const { contest, contestStatus } = contestProps
   const { problem } = props
-  type Tab = 'problem' | 'editor' | 'submissions'
-  const [tab, setTab] = useState<Tab>('problem')
+
   useEffect(() => {
     if (contestStatus !== 'RUNNING') {
       router.push(`/contest/${props.contestId}`)
     }
   }, [contestStatus])
-  const queryClient = useQueryClient()
-  const { containerRef, isBreakpoint: isLargeScreen } =
-    useContainerBreakpoint<HTMLDivElement>({
-      breakpoint: 960,
-    })
-  const codeEditorPortal = useHtmlPortalNode()
-  const codeEditorForm = (
-    <CodeEditorForm
-      contestId={contest.id}
-      problem={problem}
-      latestSubmission={props.latestSubmission}
-      onSuccess={() => {
-        queryClient.invalidateQueries({
-          queryKey: submissionKey.getContestSubmissions({
-            params: { contestId: props.contestId.toString() },
-          }).queryKey,
-        })
-        setTab('submissions')
-      }}
-    />
-  )
+
   return (
     <ContestLayout {...contestProps}>
       <Head>
@@ -193,118 +173,110 @@ export default function ContestPage(props: ContestProblemPageProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <section className="flex-1 @container" ref={containerRef}>
-        <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
-          <TabsList className="bg-transparent px-4">
-            <TabsTrigger
-              value="problem"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-            >
-              Problem
-            </TabsTrigger>
-            <TabsTrigger
-              value="editor"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
-            >
-              Editor
-            </TabsTrigger>
-            <TabsTrigger
-              value="submissions"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-            >
-              Submissions
-            </TabsTrigger>
-          </TabsList>
-          <div className="px-4">
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="problem"
-            >
-              <ResizablePanelGroup
-                direction="horizontal"
-                className="w-full flex gap-2"
-              >
-                <ResizablePanel
-                  defaultSize={50}
-                  className="flex flex-col gap-2"
-                >
-                  <embed
-                    src={`/api/problem/${problem.id}`}
-                    height="800px"
-                    className="w-full rounded-md border"
-                  />
-                </ResizablePanel>
-                <ResizableHandle className="hidden @[60rem]:block" />
-                <ResizablePanel
-                  defaultSize={50}
-                  className="hidden @[60rem]:block"
-                >
-                  {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </TabsContent>
-
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="editor"
-            >
-              <ClientInPortal node={codeEditorPortal}>
-                {codeEditorForm}
-              </ClientInPortal>
-              {!isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
-            </TabsContent>
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="submissions"
-            >
-              <ContestSubmissionTable
-                contestId={props.contest.id}
-                problemId={props.problem.id}
-              />
-            </TabsContent>
-          </div>
-        </Tabs>
-      </section>
+      <ContestProblemSection {...props} />
       <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }
 ContestPage.footer = false
 
-function useContainerBreakpoint<T extends Element>(options: {
-  breakpoint: number
-  defaultValue?: boolean
-}) {
-  const [isBreakpoint, setIsBreakpoint] = useState(
-    options.defaultValue ?? false
+const ContestProblemSection = (props: ContestProblemPageProps) => {
+  type Tab = 'problem' | 'editor' | 'submissions'
+  const [tab, setTab] = useState<Tab>('problem')
+  const queryClient = useQueryClient()
+  const { containerRef, isBreakpoint: isLargeScreen } =
+    useContainerBreakpoint<HTMLDivElement>({
+      breakpoint: 960,
+    })
+
+  const codeEditorPortal = useHtmlPortalNode()
+
+  return (
+    <section className="flex-1 @container" ref={containerRef}>
+      <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
+        <TabsList className="bg-transparent px-4">
+          <TabsTrigger
+            value="problem"
+            className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          >
+            Problem
+          </TabsTrigger>
+          <TabsTrigger
+            value="editor"
+            className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
+          >
+            Editor
+          </TabsTrigger>
+          <TabsTrigger
+            value="submissions"
+            className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          >
+            Submissions
+          </TabsTrigger>
+        </TabsList>
+        <div className="px-4">
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="problem"
+          >
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="w-full flex gap-2 !overflow-clip"
+            >
+              <ResizablePanel defaultSize={50} className="flex flex-col gap-2">
+                <embed
+                  src={`/api/problem/${props.problem.id}`}
+                  height="800px"
+                  className="w-full rounded-md border"
+                />
+              </ResizablePanel>
+              <ResizableHandle className="hidden @[60rem]:block" />
+              <ResizablePanel
+                defaultSize={50}
+                className="hidden @[60rem]:block !overflow-clip"
+              >
+                {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </TabsContent>
+
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="editor"
+          >
+            <ClientInPortal node={codeEditorPortal}>
+              <CodeEditorForm
+                contestId={props.contest.id}
+                problem={props.problem}
+                latestSubmission={props.latestSubmission}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: submissionKey.getContestSubmissions({
+                      params: { contestId: props.contestId.toString() },
+                    }).queryKey,
+                  })
+                  setTab('submissions')
+                }}
+              />
+            </ClientInPortal>
+            {!isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
+          </TabsContent>
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="submissions"
+          >
+            <ContestSubmissionTable
+              contestId={props.contest.id}
+              problemId={props.problem.id}
+            />
+          </TabsContent>
+        </div>
+      </Tabs>
+    </section>
   )
-  const previousObserver = useRef<ResizeObserver | null>(null)
-  const containerRef = useCallback((node: T) => {
-    if (previousObserver.current) {
-      previousObserver.current.disconnect()
-      previousObserver.current = null
-    }
-
-    if (node?.nodeType === Node.ELEMENT_NODE) {
-      const observer = new ResizeObserver(([entry]) => {
-        if (entry && entry.borderBoxSize) {
-          const {
-            inlineSize: width,
-            //  blockSize: height
-          } = entry.borderBoxSize[0]!
-          setIsBreakpoint(options.breakpoint <= width)
-        }
-      })
-
-      observer.observe(node)
-      previousObserver.current = observer
-    }
-  }, [])
-
-  return { containerRef, isBreakpoint }
 }
 
 const CodeEditorFormSchema = z.object({
@@ -376,7 +348,7 @@ function CodeEditorForm(props: CodeEditorForm) {
             </FormItem>
           )}
         />
-        <div className="flex gap-2 sm:gap-4">
+        <div className="grid grid-cols-3 py-4 sticky -my-4 bottom-0 bg-background">
           <FormField
             control={form.control}
             name="language"
@@ -401,8 +373,7 @@ function CodeEditorForm(props: CodeEditorForm) {
               </FormItem>
             )}
           />
-          <div className="flex-1" />
-          <div className="flex gap-2 flex-1">
+          <div className="col-start-3 flex gap-2">
             <Button className="flex-1" type="submit">
               ส่ง
             </Button>
@@ -445,7 +416,12 @@ function ContestSubmissionTable(props: ContestSubmissionTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
-  return <TableComponent table={table} />
+  return (
+    <TableComponent
+      table={table}
+      classNames={{ container: 'border-transparent' }}
+    />
+  )
 }
 
 const columnHelper = createColumnHelper<SubmissionSchema>()

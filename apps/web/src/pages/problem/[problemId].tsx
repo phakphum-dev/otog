@@ -15,12 +15,12 @@ import {
   CheckIcon,
   DocumentDuplicateIcon,
   PencilIcon,
+  PencilSquareIcon,
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
-import { PencilSquareIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   Cell,
@@ -29,13 +29,15 @@ import {
   getCoreRowModel,
 } from '@tanstack/table-core'
 import { File } from '@web-std/file'
+import dayjs from 'dayjs'
 import { produce } from 'immer'
+import { Columns2Icon } from 'lucide-react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
-import { SubmissionDetailSchema } from '@otog/contract'
-import { Problem } from '@otog/database'
+import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
+import { Problem, SubmissionStatus } from '@otog/database'
 import { Button } from '@otog/ui/button'
 import {
   Form,
@@ -46,21 +48,39 @@ import {
 } from '@otog/ui/form'
 import { Link } from '@otog/ui/link'
 import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@otog/ui/resizable'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 import { Textarea } from '@otog/ui/textarea'
+import { Toggle } from '@otog/ui/toggle'
+import { clsx } from '@otog/ui/utils'
 
 import { problemQuery, submissionKey, submissionQuery } from '../../api/query'
 import { withQuery } from '../../api/server'
+import { InlineComponent } from '../../components/inline-component'
 import { MonacoEditor } from '../../components/monaco-editor'
+import {
+  ClientInPortal,
+  ClientOutPortal,
+  useHtmlPortalNode,
+} from '../../components/portals'
+import { SubmissionStatusButton } from '../../components/submission-status'
+import { useSubmissionPolling } from '../../components/submission-table'
 import { TableComponent } from '../../components/table-component'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
 import { useClipboard } from '../../hooks/use-clipboard'
+import { useContainerBreakpoint } from '../../hooks/use-container-breakpoint'
 import { SubmitCode } from '../../modules/problem/submit-code'
 
 interface WriteSolutionPageProps {
@@ -124,36 +144,159 @@ export const getServerSideProps = withQuery<WriteSolutionPageProps>(
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
-    <main className="container max-w-4xl flex-1 py-8" id="content">
+    <main className="flex-1 py-8 max-w-[96rem] w-full mx-auto" id="content">
       <Head>
-        <title>One Tambon One Grader</title>
+        <title>{problem.name} | One Tambon One Grader</title>
       </Head>
-      <section className="flex flex-col flex-1 gap-4 p-6 border rounded-2xl">
-        <div>
-          <h1
-            className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
-            aria-label={`โจทย์ข้อที่ ${problem.id}: ${problem.name}`}
-          >
-            <PencilSquareIcon className="size-6" />
-            {problem.name}
-          </h1>
-          <div className="flex justify-between gap-1">
-            <p className="text-sm text-muted-foreground">
-              ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
-            </p>
-            <Link
-              className="text-sm"
-              isExternal
-              href={`/api/problem/${problem.id}`}
-            >
-              [ดาวน์โหลด]
-            </Link>
-          </div>
-        </div>
-        <CodeEditorForm {...props} />
-        <ExampleTable problem={problem} />
-      </section>
+      <ProblemSection {...props} />
     </main>
+  )
+}
+
+const ProblemSection = (props: WriteSolutionPageProps) => {
+  type Tab = 'problem' | 'editor' | 'submissions'
+  const [tab, setTab] = useState<Tab>('problem')
+  const queryClient = useQueryClient()
+  const { containerRef, isBreakpoint: isLargeScreen } =
+    useContainerBreakpoint<HTMLDivElement>({
+      breakpoint: 960,
+    })
+
+  const codeEditorPortal = useHtmlPortalNode()
+  const { user } = useUserContext()
+
+  const [twoColumn, setTwoColumn] = useState(false)
+  return (
+    <section
+      className={clsx(
+        'flex-1 @container flex flex-col gap-4 px-4',
+        !twoColumn && 'max-w-4xl mx-auto'
+      )}
+      ref={containerRef}
+    >
+      <div>
+        <h1
+          className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
+          aria-label={`โจทย์ข้อที่ ${props.problem.id}: ${props.problem.name}`}
+        >
+          <PencilSquareIcon className="size-6" />
+          {props.problem.name}
+        </h1>
+        <div className="flex justify-between gap-1">
+          <p className="text-sm text-muted-foreground">
+            ({props.problem.timeLimit / 1000} วินาที {props.problem.memoryLimit}{' '}
+            MB)
+          </p>
+          <Link
+            className="text-sm"
+            isExternal
+            href={`/api/problem/${props.problem.id}`}
+          >
+            [ดาวน์โหลด]
+          </Link>
+        </div>
+      </div>
+
+      <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
+        <div className="flex justify-between">
+          <TabsList className="bg-transparent">
+            <TabsTrigger
+              value="problem"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Problem
+            </TabsTrigger>
+            <TabsTrigger
+              value="editor"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
+            >
+              Editor
+            </TabsTrigger>
+            <TabsTrigger
+              value="submissions"
+              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+            >
+              Submissions
+            </TabsTrigger>
+          </TabsList>
+          <Toggle
+            pressed={twoColumn}
+            onPressedChange={(value) => {
+              setTwoColumn(value)
+              if (value === true && tab === 'editor') {
+                setTab('problem')
+              }
+            }}
+          >
+            <Columns2Icon />
+          </Toggle>
+        </div>
+        <TabsContent
+          className="data-[state=inactive]:hidden"
+          forceMount
+          value="problem"
+        >
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="w-full flex gap-2 !overflow-clip"
+          >
+            <ResizablePanel
+              defaultSize={50}
+              className={clsx(
+                'flex flex-col gap-2 !overflow-x-clip ',
+                twoColumn && '!overflow-y-scroll max-h-[800px]'
+              )}
+            >
+              <embed
+                src={`/api/problem/${props.problem.id}`}
+                height="800px"
+                className="w-full rounded-md border min-h-[800px]"
+              />
+              <ExampleTable problem={props.problem} />
+            </ResizablePanel>
+            <ResizableHandle className="hidden @[60rem]:block" />
+            <ResizablePanel
+              defaultSize={50}
+              className="hidden @[60rem]:block !overflow-clip"
+            >
+              {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </TabsContent>
+
+        <TabsContent
+          className="data-[state=inactive]:hidden"
+          forceMount
+          value="editor"
+        >
+          <ClientInPortal node={codeEditorPortal}>
+            <CodeEditorForm
+              problem={props.problem}
+              latestSubmission={props.submission}
+              onSuccess={() => {
+                queryClient.invalidateQueries({
+                  queryKey: submissionKey.getSubmissionsByProblemId({
+                    params: {
+                      problemId: props.problem.id.toString(),
+                      userId: user?.id.toString()!,
+                    },
+                  }).queryKey,
+                })
+                setTab('submissions')
+              }}
+            />
+          </ClientInPortal>
+          {!isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
+        </TabsContent>
+        <TabsContent
+          className="data-[state=inactive]:hidden"
+          forceMount
+          value="submissions"
+        >
+          <SubmissionTable problemId={props.problem.id} />
+        </TabsContent>
+      </Tabs>
+    </section>
   )
 }
 
@@ -176,7 +319,12 @@ const CodeEditorFormSchema = z.object({
 })
 type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
 
-function CodeEditorForm(props: WriteSolutionPageProps) {
+interface CodeEditorFormProps {
+  latestSubmission: SubmissionDetailSchema | null
+  problem: Problem
+  onSuccess: () => void
+}
+function CodeEditorForm(props: CodeEditorFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const form = useForm<CodeEditorFormSchema>({
     defaultValues: { language: 'cpp' },
@@ -204,7 +352,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
         },
         onSuccess: () => {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
-          router.push('/submission')
+          props.onSuccess()
         },
       }
     )
@@ -238,9 +386,9 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
               <FormItem className="space-y-0">
                 <FormLabel className="sr-only">โค้ด</FormLabel>
                 <MonacoEditor
-                  height="800px"
+                  height="744px"
                   language={form.watch('language')}
-                  defaultValue={props.submission?.sourceCode}
+                  defaultValue={props.latestSubmission?.sourceCode}
                   onChange={field.onChange}
                 />
                 <FormMessage />
@@ -249,7 +397,7 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
           />
         )}
 
-        <div className="grid grid-cols-3 mt-4">
+        <div className="grid grid-cols-3 py-4 sticky bottom-0 -mb-4 bg-background">
           <FormField
             control={form.control}
             name="language"
@@ -338,6 +486,137 @@ function CodeEditorForm(props: WriteSolutionPageProps) {
 //   )
 // }
 
+interface SubmissionTableProps {
+  problemId: number
+}
+function SubmissionTable(props: SubmissionTableProps) {
+  const { user } = useUserContext()
+  const getSubmissionsByProblemId = useQuery({
+    ...submissionKey.getSubmissionsByProblemId({
+      params: {
+        problemId: props.problemId.toString(),
+        userId: user?.id.toString()!,
+      },
+    }),
+    enabled: !!user,
+  })
+  const data = useMemo(
+    () => getSubmissionsByProblemId.data?.body ?? [],
+    [getSubmissionsByProblemId.data]
+  )
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+  return (
+    <TableComponent
+      table={table}
+      classNames={{ container: 'border-transparent' }}
+    />
+  )
+}
+
+const columnHelper = createColumnHelper<SubmissionSchema>()
+const columns = [
+  columnHelper.accessor('creationDate', {
+    header: 'ส่งเมื่อ',
+    cell: ({ getValue }) => dayjs(getValue()).format('DD/MM/BB HH:mm'),
+    meta: { cellClassName: 'text-muted-foreground tabular-nums' },
+    enableSorting: false,
+  }),
+  columnHelper.display({
+    id: 'score',
+    header: 'คะแนน',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          if (
+            submission.status == SubmissionStatus.waiting ||
+            submission.status == SubmissionStatus.grading
+          ) {
+            return (
+              <div className="inline-flex gap-2 items-center">
+                <Spinner size="sm" />
+                <div>
+                  {submission.submissionResult?.score ?? 0} /{' '}
+                  {submission.problem.score}
+                </div>
+              </div>
+            )
+          }
+          return (
+            <div>
+              {submission.submissionResult?.score ?? 0} /{' '}
+              {submission.problem.score}
+            </div>
+          )
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      cellClassName:
+        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
+      headClassName: 'text-end',
+    },
+  }),
+
+  columnHelper.display({
+    id: 'timeUsed',
+    header: 'เวลาที่ใช้ (วินาที)',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return ((submission.submissionResult?.timeUsed ?? 0) / 1000).toFixed(
+            3
+          )
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
+    },
+  }),
+  columnHelper.display({
+    id: 'memUsed',
+    header: 'ความจำที่ใช้ (kB)',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return ((submission.submissionResult?.memUsed ?? 0) / 1000).toFixed(3)
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
+    },
+  }),
+  columnHelper.accessor('status', {
+    header: 'สถานะ',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return <SubmissionStatusButton submission={submission} />
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-center',
+      cellClassName: 'text-center',
+    },
+  }),
+]
+
 interface Testcase {
   input: string
   output: string
@@ -346,6 +625,7 @@ interface Testcase {
 interface ExampleTableProps {
   problem: Problem
 }
+
 const ExampleTable = ({ problem }: ExampleTableProps) => {
   const examples: Testcase[] = (problem.examples as unknown as Testcase[]) ?? []
   const { isAdmin } = useUserContext()

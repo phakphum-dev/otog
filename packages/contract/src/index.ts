@@ -278,6 +278,16 @@ export const submissionRouter = contract.router(
       query: PaginationQuerySchema,
       summary: 'Get submissions for a user',
     },
+    getSubmissionsByProblemId: {
+      method: 'GET',
+      path: '/user/:userId/problem/:problemId',
+      responses: {
+        200: z.array(SubmissionSchema),
+        400: z.object({ message: z.string() }),
+      },
+      query: PaginationQuerySchema,
+      summary: 'Get submissions for a problem',
+    },
     getSubmission: {
       method: 'GET',
       path: '/:submissionId',
