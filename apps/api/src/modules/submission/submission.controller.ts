@@ -63,16 +63,38 @@ export class SubmissionController {
   }
 
   // unused
-  @TsRestHandler(c.getContestSubmissions)
+  @TsRestHandler(c.getContestSubmissionsForAdmin)
   @Roles(Role.Admin)
-  getContestSubmissions() {
+  getContestSubmissionsForAdmin() {
     return tsRestHandler(
-      c.getContestSubmissions,
+      c.getContestSubmissionsForAdmin,
       async ({ query: { limit, offset } }) => {
         const submissions = await this.submissionService.findAllWithContest(
           offset,
           limit
         )
+        return { status: 200, body: submissions }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getContestSubmissions, { jsonQuery: true })
+  @Roles(Role.Admin, Role.User)
+  getContestSubmissions() {
+    return tsRestHandler(
+      c.getContestSubmissions,
+      async ({
+        query: { offset = 1e9, limit = 89, problemId, userId },
+        params,
+      }) => {
+        const contestId = z.coerce.number().parse(params.contestId)
+        const submissions = await this.submissionService.getContestSubmissions({
+          offset,
+          limit,
+          userId,
+          problemId,
+          contestId,
+        })
         return { status: 200, body: submissions }
       }
     )

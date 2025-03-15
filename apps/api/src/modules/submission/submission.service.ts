@@ -111,6 +111,26 @@ export class SubmissionService {
     })
   }
 
+  async getContestSubmissions(args: {
+    offset: number
+    limit: number
+    userId: number
+    contestId: number
+    problemId: number
+  }) {
+    return await this.prisma.submission.findMany({
+      where: {
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        userId: args.userId,
+        problemId: args.problemId,
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { creationDate: 'desc' },
+    })
+  }
+
   findAllWithContest(offset = 1e9, limit = 89) {
     return this.prisma.submission.findMany({
       where: {

@@ -4,9 +4,7 @@ import toast from 'react-hot-toast'
 import { MdUploadFile } from 'react-icons/md'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import { File } from '@web-std/file'
-import { useRouter } from 'next/router'
 import { z } from 'zod'
 
 import { Problem } from '@otog/database'
@@ -35,7 +33,7 @@ import {
   SelectValue,
 } from '@otog/ui/select'
 
-import { submissionKey, submissionQuery } from '../../api/query'
+import { submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { Language, LanguageName } from '../../enums'
 
@@ -48,6 +46,7 @@ type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
 export const SubmitCode = (props: {
   problem: Pick<Problem, 'id' | 'name'>
   contestId?: number
+  onSuccess: () => void
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -57,9 +56,7 @@ export const SubmitCode = (props: {
     resolver: zodResolver(SubmitCodeFormSchema),
   })
 
-  const router = useRouter()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
-  const queryClient = useQueryClient()
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
     await uploadFile.mutateAsync(
@@ -76,10 +73,7 @@ export const SubmitCode = (props: {
         onSuccess: () => {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
           setOpen(false)
-          router.push('/submission')
-          queryClient.invalidateQueries({
-            queryKey: submissionKey.getSubmissions._def,
-          })
+          props?.onSuccess()
         },
       }
     )

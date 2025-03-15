@@ -1,15 +1,25 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import dayjs from 'dayjs'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
-import { ContestSchema, SubmissionDetailSchema } from '@otog/contract'
-import { Problem, ProblemModel } from '@otog/database'
+import {
+  ContestSchema,
+  SubmissionDetailSchema,
+  SubmissionSchema,
+} from '@otog/contract'
+import { Problem, ProblemModel, SubmissionStatus } from '@otog/database'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,12 +50,18 @@ import {
 } from '@otog/ui/select'
 import { Separator } from '@otog/ui/separator'
 import { SidebarTrigger } from '@otog/ui/sidebar'
+import { Spinner } from '@otog/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 
 import { submissionKey, submissionQuery } from '../../../../api/query'
 import { withQuery } from '../../../../api/server'
 import { Footer } from '../../../../components/footer'
+import { InlineComponent } from '../../../../components/inline-component'
 import { MonacoEditor } from '../../../../components/monaco-editor'
+import { SubmissionStatusButton } from '../../../../components/submission-status'
+import { useSubmissionPolling } from '../../../../components/submission-table'
+import { TableComponent } from '../../../../components/table-component'
+import { useUserContext } from '../../../../context/user-context'
 import { Language, LanguageName } from '../../../../enums'
 import {
   ContestLayout,
@@ -126,11 +142,19 @@ export default function ContestPage(props: ContestProblemPageProps) {
     }
   }, [contestStatus])
   // TODO save instance
+  const queryClient = useQueryClient()
   const codeEditorForm = (
     <CodeEditorForm
       contestId={contest.id}
       problem={problem}
       latestSubmission={props.latestSubmission}
+      onSuccess={() => {
+        queryClient.invalidateQueries({
+          queryKey: submissionKey.getContestSubmissions({
+            params: { contestId: props.contestId.toString() },
+          }).queryKey,
+        })
+      }}
     />
   )
   return (
@@ -157,9 +181,6 @@ export default function ContestPage(props: ContestProblemPageProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      {/* TODO: Make new layout (maybe CMS-like?) */}
-      {/* <AnnouncementCarousel contestId={contest.id} /> */}
-      {/* <TaskCard problem={problem} contestId={contest.id} /> */}
       <section className="@container flex-1">
         <Tabs defaultValue="problem">
           <TabsList className="bg-transparent px-4">
@@ -224,9 +245,10 @@ export default function ContestPage(props: ContestProblemPageProps) {
               forceMount
               value="submissions"
             >
-              <p className="p-4 text-center text-xs text-muted-foreground">
-                Submissions
-              </p>
+              <ContestSubmissionTable
+                contestId={props.contest.id}
+                problemId={props.problem.id}
+              />
             </TabsContent>
           </div>
         </Tabs>
@@ -247,6 +269,7 @@ interface CodeEditorForm {
   problem: Problem
   contestId: number
   latestSubmission: SubmissionDetailSchema | null
+  onSuccess: () => void
 }
 function CodeEditorForm(props: CodeEditorForm) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -255,7 +278,6 @@ function CodeEditorForm(props: CodeEditorForm) {
     resolver: zodResolver(CodeEditorFormSchema),
   })
 
-  const queryClient = useQueryClient()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
@@ -277,11 +299,7 @@ function CodeEditorForm(props: CodeEditorForm) {
         },
         onSuccess: () => {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
-          queryClient.invalidateQueries({
-            queryKey: submissionKey.getLatestSubmissionByProblemId({
-              params: { problemId: props.problem.id.toString() },
-            }).queryKey,
-          })
+          props.onSuccess?.()
         },
       }
     )
@@ -340,10 +358,144 @@ function CodeEditorForm(props: CodeEditorForm) {
             <Button className="flex-1" type="submit">
               ส่ง
             </Button>
-            <SubmitCode problem={props.problem} contestId={props.contestId} />
+            <SubmitCode
+              problem={props.problem}
+              contestId={props.contestId}
+              onSuccess={props.onSuccess}
+            />
           </div>
         </div>
       </form>
     </Form>
   )
 }
+
+interface ContestSubmissionTableProps {
+  contestId: number
+  problemId: number
+}
+function ContestSubmissionTable(props: ContestSubmissionTableProps) {
+  const { user } = useUserContext()
+  const getContestSubmissions = useQuery({
+    ...submissionKey.getContestSubmissions({
+      params: {
+        contestId: props.contestId.toString(),
+      },
+      query: {
+        problemId: props.problemId,
+        userId: user?.id!,
+      },
+    }),
+    enabled: !!user,
+  })
+  const data = useMemo(
+    () => getContestSubmissions.data?.body ?? [],
+    [getContestSubmissions.data]
+  )
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+  return <TableComponent table={table} />
+}
+
+const columnHelper = createColumnHelper<SubmissionSchema>()
+const columns = [
+  columnHelper.accessor('creationDate', {
+    header: 'ส่งเมื่อ',
+    cell: ({ getValue }) => dayjs(getValue()).format('DD/MM/BB HH:mm'),
+    meta: { cellClassName: 'text-muted-foreground tabular-nums' },
+    enableSorting: false,
+  }),
+  columnHelper.display({
+    id: 'score',
+    header: 'คะแนน',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          if (
+            submission.status == SubmissionStatus.waiting ||
+            submission.status == SubmissionStatus.grading
+          ) {
+            return (
+              <div className="inline-flex gap-2 items-center">
+                <Spinner size="sm" />
+                <div>
+                  {submission.submissionResult?.score ?? 0} /{' '}
+                  {submission.problem.score}
+                </div>
+              </div>
+            )
+          }
+          return (
+            <div>
+              {submission.submissionResult?.score ?? 0} /{' '}
+              {submission.problem.score}
+            </div>
+          )
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      cellClassName:
+        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
+      headClassName: 'text-end',
+    },
+  }),
+
+  columnHelper.display({
+    id: 'timeUsed',
+    header: 'เวลาที่ใช้ (วินาที)',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return ((submission.submissionResult?.timeUsed ?? 0) / 1000).toFixed(
+            3
+          )
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
+    },
+  }),
+  columnHelper.display({
+    id: 'memUsed',
+    header: 'ความจำที่ใช้ (kB)',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return ((submission.submissionResult?.memUsed ?? 0) / 1000).toFixed(3)
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-end',
+      cellClassName: 'text-end tabular-nums',
+    },
+  }),
+  columnHelper.accessor('status', {
+    header: 'สถานะ',
+    cell: ({ row: { original } }) => (
+      <InlineComponent
+        render={() => {
+          const submission = useSubmissionPolling(original)
+          return <SubmissionStatusButton submission={submission} />
+        }}
+      />
+    ),
+    enableSorting: false,
+    meta: {
+      headClassName: 'text-center',
+      cellClassName: 'text-center',
+    },
+  }),
+]

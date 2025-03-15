@@ -213,7 +213,7 @@ export const submissionRouter = contract.router(
       query: GetSubmissionsQuery,
       summary: 'Get paginated submissions',
     },
-    getContestSubmissions: {
+    getContestSubmissionsForAdmin: {
       method: 'GET',
       path: '/contest',
       responses: {
@@ -221,6 +221,18 @@ export const submissionRouter = contract.router(
       },
       query: PaginationQuerySchema,
       summary: 'Get paginated contest submissions',
+    },
+    getContestSubmissions: {
+      method: 'GET',
+      path: '/contest/:contestId',
+      responses: {
+        200: z.array(SubmissionSchema),
+      },
+      query: PaginationQuerySchema.extend({
+        userId: z.number(),
+        problemId: z.number(),
+      }),
+      summary: 'Get paginated contest submissions by user',
     },
     getLatestSubmissionByProblemId: {
       method: 'GET',
