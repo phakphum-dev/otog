@@ -121,29 +121,27 @@ export function Chat() {
           side="top"
           onInteractOutside={(ev) => ev.preventDefault()}
         >
-          <OnlineUsersTooltip align="start">
-            <Button className="justify-between rounded-b-none p-0" asChild>
-              <div>
-                <OnlineUsersDialog>
-                  <Button
-                    variant="link"
-                    className="text-inherit underline-offset-4 hover:underline p-4"
-                  >
-                    OTOG Chat
-                  </Button>
-                </OnlineUsersDialog>
+          <Button className="justify-between rounded-b-none p-0" asChild>
+            <div>
+              <OnlineUsersDialog>
                 <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setOpen(false)}
-                  aria-label="ปิด"
-                  className="flex-1 size-4 hover:bg-transparent hover:text-inherit justify-end h-full p-4"
+                  variant="link"
+                  className="text-inherit underline-offset-4 hover:underline p-4"
                 >
-                  <XMarkIcon />
+                  OTOG Chat
                 </Button>
-              </div>
-            </Button>
-          </OnlineUsersTooltip>
+              </OnlineUsersDialog>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                aria-label="ปิด"
+                className="flex-1 size-4 hover:bg-transparent hover:text-inherit justify-end h-full p-4"
+              >
+                <XMarkIcon />
+              </Button>
+            </div>
+          </Button>
 
           <section
             className="flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden border-x px-2"
@@ -266,11 +264,12 @@ const OnlineUsersDialog = forwardRef<
   const onlineUsersQuery = useQuery(userKey.getOnlineUsers())
   const onlineUsers =
     onlineUsersQuery.data?.status === 200 ? onlineUsersQuery.data.body : []
+  const [open, setOpen] = useState(false)
   if (onlineUsers.length === 0) {
     return children
   }
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild ref={ref}>
         {children}
       </DialogTrigger>
@@ -285,7 +284,10 @@ const OnlineUsersDialog = forwardRef<
                 variant="hidden"
                 className="line-clamp-3 max-w-[275px] items-center flex gap-2"
               >
-                <NextLink href={`/user/${user.id}`}>
+                <NextLink
+                  href={`/user/${user.id}`}
+                  onClick={() => setOpen(false)}
+                >
                   <UserAvatar user={user} />
                   {user.showName}
                 </NextLink>
