@@ -222,7 +222,7 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
           >
             <ResizablePanelGroup
               direction="horizontal"
-              className="w-full flex gap-2 !overflow-clip"
+              className="w-full flex gap-2"
             >
               <ResizablePanel defaultSize={50} className="flex flex-col gap-2">
                 <embed
@@ -234,7 +234,7 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
               <ResizableHandle className="hidden @[60rem]:block" />
               <ResizablePanel
                 defaultSize={50}
-                className="hidden @[60rem]:block !overflow-clip"
+                className="hidden @[60rem]:block"
               >
                 {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
               </ResizablePanel>

@@ -144,7 +144,7 @@ export const getServerSideProps = withQuery<WriteSolutionPageProps>(
 export default function WriteSolutionPage(props: WriteSolutionPageProps) {
   const problem = props.problem
   return (
-    <main className="flex-1 py-8 max-w-[96rem] w-full mx-auto" id="content">
+    <main className="flex-1 py-8 w-full mx-auto" id="content">
       <Head>
         <title>{problem.name} | One Tambon One Grader</title>
       </Head>
@@ -166,136 +166,147 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
   const { user } = useUserContext()
 
   const [twoColumn, setTwoColumn] = useState(false)
+  useEffect(() => {
+    if (!isLargeScreen) {
+      setTwoColumn(false)
+    }
+  }, [isLargeScreen])
   return (
-    <section
-      className={clsx(
-        'flex-1 @container flex flex-col gap-4 px-4',
-        !twoColumn && 'max-w-4xl mx-auto'
-      )}
-      ref={containerRef}
-    >
-      <div>
-        <h1
-          className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
-          aria-label={`โจทย์ข้อที่ ${props.problem.id}: ${props.problem.name}`}
-        >
-          <PencilSquareIcon className="size-6" />
-          {props.problem.name}
-        </h1>
-        <div className="flex justify-between gap-1">
-          <p className="text-sm text-muted-foreground">
-            ({props.problem.timeLimit / 1000} วินาที {props.problem.memoryLimit}{' '}
-            MB)
-          </p>
-          <Link
-            className="text-sm"
-            isExternal
-            href={`/api/problem/${props.problem.id}`}
+    <section ref={containerRef} className="w-full @container">
+      <div
+        className={clsx(
+          'flex-1 flex flex-col gap-4 px-4',
+          !twoColumn && 'max-w-4xl mx-auto'
+        )}
+      >
+        <div>
+          <h1
+            className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
+            aria-label={`โจทย์ข้อที่ ${props.problem.id}: ${props.problem.name}`}
           >
-            [ดาวน์โหลด]
-          </Link>
+            <PencilSquareIcon className="size-6" />
+            {props.problem.name}
+          </h1>
+          <div className="flex justify-between gap-1">
+            <p className="text-sm text-muted-foreground">
+              ({props.problem.timeLimit / 1000} วินาที{' '}
+              {props.problem.memoryLimit} MB)
+            </p>
+            <Link
+              className="text-sm"
+              isExternal
+              href={`/api/problem/${props.problem.id}`}
+            >
+              [ดาวน์โหลด]
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
-        <div className="flex justify-between">
-          <TabsList className="bg-transparent">
-            <TabsTrigger
-              value="problem"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-            >
-              Problem
-            </TabsTrigger>
-            <TabsTrigger
-              value="editor"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none @[60rem]:hidden"
-            >
-              Editor
-            </TabsTrigger>
-            <TabsTrigger
-              value="submissions"
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
-            >
-              Submissions
-            </TabsTrigger>
-          </TabsList>
-          <Toggle
-            pressed={twoColumn}
-            onPressedChange={(value) => {
-              setTwoColumn(value)
-              if (value === true && tab === 'editor') {
-                setTab('problem')
-              }
-            }}
-          >
-            <Columns2Icon />
-          </Toggle>
-        </div>
-        <TabsContent
-          className="data-[state=inactive]:hidden"
-          forceMount
-          value="problem"
-        >
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="w-full flex gap-2 !overflow-clip"
-          >
-            <ResizablePanel
-              defaultSize={50}
-              className={clsx(
-                'flex flex-col gap-2 !overflow-x-clip ',
-                twoColumn && '!overflow-y-scroll max-h-[800px]'
-              )}
-            >
-              <embed
-                src={`/api/problem/${props.problem.id}`}
-                height="800px"
-                className="w-full rounded-md border min-h-[800px]"
-              />
-              <ExampleTable problem={props.problem} />
-            </ResizablePanel>
-            <ResizableHandle className="hidden @[60rem]:block" />
-            <ResizablePanel
-              defaultSize={50}
-              className="hidden @[60rem]:block !overflow-clip"
-            >
-              {isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </TabsContent>
-
-        <TabsContent
-          className="data-[state=inactive]:hidden"
-          forceMount
-          value="editor"
-        >
-          <ClientInPortal node={codeEditorPortal}>
-            <CodeEditorForm
-              problem={props.problem}
-              latestSubmission={props.submission}
-              onSuccess={() => {
-                queryClient.invalidateQueries({
-                  queryKey: submissionKey.getSubmissionsByProblemId({
-                    params: {
-                      problemId: props.problem.id.toString(),
-                      userId: user?.id.toString()!,
-                    },
-                  }).queryKey,
-                })
-                setTab('submissions')
+        <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
+          <div className="flex justify-between">
+            <TabsList className="bg-transparent">
+              <TabsTrigger
+                value="problem"
+                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+              >
+                Problem
+              </TabsTrigger>
+              <TabsTrigger
+                value="editor"
+                className={clsx(
+                  'data-[state=active]:bg-muted data-[state=active]:shadow-none',
+                  twoColumn && 'hidden'
+                )}
+              >
+                Editor
+              </TabsTrigger>
+              <TabsTrigger
+                value="submissions"
+                className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
+              >
+                Submissions
+              </TabsTrigger>
+            </TabsList>
+            <Toggle
+              className={clsx(!isLargeScreen && 'hidden')}
+              pressed={twoColumn}
+              onPressedChange={(value) => {
+                setTwoColumn(value)
+                if (value === true && tab === 'editor') {
+                  setTab('problem')
+                }
               }}
-            />
-          </ClientInPortal>
-          {!isLargeScreen && <ClientOutPortal node={codeEditorPortal} />}
-        </TabsContent>
-        <TabsContent
-          className="data-[state=inactive]:hidden"
-          forceMount
-          value="submissions"
-        >
-          <SubmissionTable problemId={props.problem.id} />
-        </TabsContent>
-      </Tabs>
+            >
+              <Columns2Icon />
+            </Toggle>
+          </div>
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="problem"
+          >
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="w-full flex gap-2"
+            >
+              <ResizablePanel
+                defaultSize={50}
+                className={clsx(
+                  'flex flex-col gap-2',
+                  twoColumn && '!overflow-y-scroll max-h-[800px]'
+                )}
+              >
+                <embed
+                  src={`/api/problem/${props.problem.id}`}
+                  height="800px"
+                  className="w-full rounded-md border min-h-[800px]"
+                />
+                <ExampleTable problem={props.problem} />
+              </ResizablePanel>
+              {twoColumn && (
+                <>
+                  <ResizableHandle />
+                  <ResizablePanel defaultSize={50}>
+                    <ClientOutPortal node={codeEditorPortal} />
+                  </ResizablePanel>
+                </>
+              )}
+            </ResizablePanelGroup>
+          </TabsContent>
+
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="editor"
+          >
+            <ClientInPortal node={codeEditorPortal}>
+              <CodeEditorForm
+                problem={props.problem}
+                latestSubmission={props.submission}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: submissionKey.getSubmissionsByProblemId({
+                      params: {
+                        problemId: props.problem.id.toString(),
+                        userId: user?.id.toString()!,
+                      },
+                    }).queryKey,
+                  })
+                  setTab('submissions')
+                }}
+              />
+            </ClientInPortal>
+            {!twoColumn && <ClientOutPortal node={codeEditorPortal} />}
+          </TabsContent>
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="submissions"
+          >
+            <SubmissionTable problemId={props.problem.id} />
+          </TabsContent>
+        </Tabs>
+      </div>
     </section>
   )
 }
@@ -363,7 +374,7 @@ function CodeEditorForm(props: CodeEditorFormProps) {
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={onSubmit} className="flex flex-col">
+      <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4">
         {!preferOldEditor && form.watch('language') === 'cpp' ? (
           <div className="overflow-hidden rounded-md border">
             {/* <div role="application" aria-label="Clang Editor">
@@ -397,7 +408,7 @@ function CodeEditorForm(props: CodeEditorFormProps) {
           />
         )}
 
-        <div className="grid grid-cols-3 py-4 sticky bottom-0 -mb-4 bg-background">
+        <div className="grid grid-cols-3">
           <FormField
             control={form.control}
             name="language"
