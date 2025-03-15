@@ -23,11 +23,14 @@ const c = nestControllerContract(contestRouter)
 export class ContestController {
   constructor(private contestService: ContestService) {}
 
-  @TsRestHandler(c.getContests)
-  getContests() {
-    return tsRestHandler(c.getContests, async () => {
-      const contests = await this.contestService.findAll()
-      return { status: 200, body: contests }
+  @TsRestHandler(c.listContest, { jsonQuery: true })
+  listContest() {
+    return tsRestHandler(c.listContest, async ({ query }) => {
+      const [contests, total] = await Promise.all([
+        this.contestService.listContest(query),
+        this.contestService.countContest(),
+      ])
+      return { status: 200, body: { data: contests, total } }
     })
   }
 
@@ -116,6 +119,22 @@ export class ContestController {
     )
   }
 
+  @TsRestHandler(c.putProblemToContest)
+  @Roles(Role.Admin)
+  putProblemToContest() {
+    return tsRestHandler(
+      c.putProblemToContest,
+      async ({ body, params: { contestId } }) => {
+        const id = z.coerce.number().parse(contestId)
+        await this.contestService.putProblemToContest({
+          contestId: id,
+          data: body,
+        })
+        return { status: 200, body: {} }
+      }
+    )
+  }
+
   @TsRestHandler(c.updateContest)
   @Roles(Role.Admin)
   updateContest() {
@@ -156,4 +175,40 @@ export class ContestController {
   }
 
   //  TODO who have join the contest?
+
+  @TsRestHandler(c.getContestsForAdmin, { jsonQuery: true })
+  @Roles(Role.Admin)
+  getContestsForAdmin() {
+    return tsRestHandler(
+      c.getContestsForAdmin,
+      async ({ query: { limit = 10, skip = 0, search } }) => {
+        const [contests, total] = await Promise.all([
+          this.contestService.getContestsForAdmin({
+            limit,
+            skip,
+            search,
+          }),
+          this.contestService.getContestCountForAdmin({
+            search,
+          }),
+        ])
+        return { status: 200, body: { data: contests, total } }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getContestForAdmin, { jsonQuery: true })
+  @Roles(Role.Admin)
+  getContestForAdmin() {
+    return tsRestHandler(c.getContestForAdmin, async ({ params }) => {
+      const contestId = z.coerce.number().parse(params.contestId)
+      const contest = await this.contestService.getContestForAdmin({
+        id: contestId,
+      })
+      if (contest === null) {
+        return { status: 404, body: { message: 'Not Found' } }
+      }
+      return { status: 200, body: contest }
+    })
+  }
 }

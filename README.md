@@ -8,7 +8,7 @@
 
 ### Become a god of competitive programming, code and create algorithms efficiently.
 
-### http://beta.otog.in.th/
+### http://otog.in.th/
 
 An online grader which was originally provided for POSN KKU center students but currently open for everybody.
 
@@ -59,10 +59,10 @@ Open http://localhost:3000 with your browser to see the result.
 
 ## TODO
 
+- [x] Subtask Testcase
 - [ ] Upload Library
 - [ ] Rating and Rank
 - [ ] Forgot Password
-- [ ] Subtask Testcase
 - [ ] Editorial Article
 
 ## Bug Report

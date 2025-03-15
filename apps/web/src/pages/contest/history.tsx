@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -13,7 +13,10 @@ import { Contest } from '@otog/database'
 import { Link } from '@otog/ui/link'
 
 import { contestKey } from '../../api/query'
-import { TableComponent } from '../../components/table-component'
+import {
+  TableComponent,
+  TablePaginationInfo,
+} from '../../components/table-component'
 import { toThaiDuration } from '../../utils/time'
 
 export { getServerSideProps } from '../../api/server'
@@ -34,23 +37,47 @@ export default function ContestHistoryPage() {
 }
 
 const ContestTable = () => {
-  const getContests = useQuery(contestKey.getContests())
-  const data = useMemo(
-    () => (getContests.data?.status === 200 ? getContests.data.body : []),
-    [getContests.data]
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const listContest = useQuery(
+    contestKey.listContest({
+      query: {
+        limit: pagination.pageSize,
+        skip: pagination.pageIndex * pagination.pageSize,
+      },
+    })
   )
+  const { data, total } = useMemo(
+    () =>
+      listContest.data?.status === 200
+        ? listContest.data.body
+        : { data: [], total: 0 },
+    [listContest.data]
+  )
+
   const table = useReactTable({
     data,
     columns,
+    state: { pagination },
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id.toString(),
+    onPaginationChange: setPagination,
+    manualPagination: true,
+    rowCount: total,
   })
   return (
-    <TableComponent
-      table={table}
-      isLoading={getContests.isLoading}
-      isError={getContests.isError}
-    />
+    <>
+      <TableComponent
+        table={table}
+        isLoading={listContest.isLoading}
+        isError={listContest.isError}
+      />
+      <div className="flex justify-end">
+        <TablePaginationInfo table={table} isLoading={listContest.isLoading} />
+      </div>
+    </>
   )
 }
 

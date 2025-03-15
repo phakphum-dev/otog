@@ -44,7 +44,9 @@ export const getServerSideProps = withQuery<ContestPageProps>(
 export default function ContestPage(props: ContestPageProps) {
   const currentContestQuery = useQuery({
     ...contestKey.getCurrentContest(),
-    initialData: initialDataSuccess({ currentContest: props.currentContest }),
+    initialData: initialDataSuccess({
+      currentContest: CurrentContest.nullable().parse(props.currentContest),
+    }),
   })
   const currentContest =
     currentContestQuery.data.status === 200

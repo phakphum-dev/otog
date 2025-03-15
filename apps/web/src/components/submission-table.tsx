@@ -94,7 +94,9 @@ const columns = [
       <Link asChild variant="hidden" className="inline-flex gap-2 items-center">
         <NextLink href={`/user/${row.original.user!.id}`}>
           <UserAvatar user={row.original.user!} />
-          {getValue()}
+          <span className="max-w-60 overflow-hidden text-ellipsis">
+            {getValue()}
+          </span>
         </NextLink>
       </Link>
     ),
@@ -141,7 +143,8 @@ const columns = [
     ),
     enableSorting: false,
     meta: {
-      cellClassName: 'max-w-[200px] whitespace-pre-wrap text-end tabular-nums',
+      cellClassName:
+        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
       headClassName: 'text-end',
     },
   }),

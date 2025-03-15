@@ -2,7 +2,6 @@ import { forwardRef } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import BoringAvatar from 'boring-avatars'
-import { useTheme } from 'next-themes'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@otog/ui/avatar'
 import { cn } from '@otog/ui/utils'
@@ -25,7 +24,6 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
     // TODO: implement img url in session instead
     const getAvatarUrl = useQuery(avatarKey.getUrl({ userId: user.id, size }))
 
-    const { resolvedTheme } = useTheme()
     return (
       <Avatar
         ref={ref}
@@ -44,7 +42,7 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
               size={size === 'small' ? 24 : 320}
               name={user.showName}
               variant="beam"
-              colors={colors[resolvedTheme === 'dark' ? 'dark' : 'light']}
+              colors={colors}
             />
           </ClientOnly>
         </AvatarFallback>
@@ -54,7 +52,11 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
 )
 UserAvatar.displayName = 'UserAvatar'
 
-const colors = {
-  light: ['#F7FAFC', '#EDF2F7', '#E2E8F0'],
-  dark: ['#2D3748', '#1A202C', '#171923'],
-}
+const colors = [
+  '#ffd5ae',
+  '#b1e9fc',
+  '#b9f6ba',
+  '#ffb1b2',
+  '#ffe0ae',
+  '#CBD5E0',
+]

@@ -7,7 +7,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { WretchResponse } from 'wretch'
 
-import { LoginResponse, UserWithourPasswordSchema } from '@otog/contract'
+import { LoginResponse, UserSchema } from '@otog/contract'
 
 import { api, secure } from '../../../api'
 import { environment } from '../../../env'
@@ -138,7 +138,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   return await NextAuth(req, res, authOptions)
 }
 
-export type AccessTokenPayload = UserWithourPasswordSchema
+export type AccessTokenPayload = UserSchema
 export function getUserData(accessToken: string): AccessTokenPayload {
   const { id, username, showName, role, rating } = jwtDecode<
     AccessTokenPayload & JwtPayload
