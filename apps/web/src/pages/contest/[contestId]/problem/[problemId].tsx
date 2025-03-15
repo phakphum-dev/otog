@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
@@ -136,6 +136,8 @@ export default function ContestPage(props: ContestProblemPageProps) {
   const contestProps = useContestProps(props)
   const { contest, contestStatus } = contestProps
   const { problem } = props
+  type Tab = 'problem' | 'editor' | 'submissions'
+  const [tab, setTab] = useState<Tab>('problem')
   useEffect(() => {
     if (contestStatus !== 'RUNNING') {
       router.push(`/contest/${props.contestId}`)
@@ -154,6 +156,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
             params: { contestId: props.contestId.toString() },
           }).queryKey,
         })
+        setTab('submissions')
       }}
     />
   )
@@ -182,7 +185,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
         </Breadcrumb>
       </div>
       <section className="@container flex-1">
-        <Tabs defaultValue="problem">
+        <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <TabsList className="bg-transparent px-4">
             <TabsTrigger
               value="problem"
