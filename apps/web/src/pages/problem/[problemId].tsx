@@ -681,7 +681,7 @@ const ExampleTable = ({ problem }: ExampleTableProps) => {
     getCoreRowModel: getCoreRowModel(),
   })
 
-  if (examples.length === 0) {
+  if (examples.length === 0 && !isAdmin) {
     return null
   }
 
