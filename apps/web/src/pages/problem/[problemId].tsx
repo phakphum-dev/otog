@@ -179,7 +179,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
           !twoColumn && 'max-w-4xl mx-auto'
         )}
       >
-        <div>
+        <div className="flex sm:justify-between w-full flex-col sm:flex-row">
           <h1
             className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
             aria-label={`โจทย์ข้อที่ ${props.problem.id}: ${props.problem.name}`}
@@ -187,11 +187,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
             <PencilSquareIcon className="size-6" />
             {props.problem.name}
           </h1>
-          <div className="flex justify-between gap-1">
-            <p className="text-sm text-muted-foreground">
-              ({props.problem.timeLimit / 1000} วินาที{' '}
-              {props.problem.memoryLimit} MB)
-            </p>
+          <div className="flex flex-col justify-between gap-1 items-end">
             <Link
               className="text-sm"
               isExternal
@@ -199,6 +195,10 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
             >
               [ดาวน์โหลด]
             </Link>
+            <p className="text-sm text-">
+              ({props.problem.timeLimit / 1000} วินาที{' '}
+              {props.problem.memoryLimit} MB)
+            </p>
           </div>
         </div>
 
@@ -408,7 +408,7 @@ function CodeEditorForm(props: CodeEditorFormProps) {
           />
         )}
 
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 sticky bottom-0 bg-background py-4 -my-4">
           <FormField
             control={form.control}
             name="language"
