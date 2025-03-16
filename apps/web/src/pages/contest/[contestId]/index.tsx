@@ -163,7 +163,7 @@ function PostContest() {
   const { contest } = useContest()
   return (
     <div className="flex flex-col items-center gap-4">
-      <h1 className="text-center font-heading text-4xl font-bold">
+      <h1 className="text-center font-heading text-4xl font-bold text-balance">
         การแข่งขัน {contest.name} จบลงแล้ว
       </h1>
       {environment.OFFLINE_MODE ? (

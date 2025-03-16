@@ -24,7 +24,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@otog/ui/breadcrumb'
-import { Button } from '@otog/ui/button'
+import { Dialog, DialogContent, DialogTrigger } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Separator } from '@otog/ui/separator'
 import { SidebarTrigger } from '@otog/ui/sidebar'
@@ -33,7 +33,7 @@ import { clsx } from '@otog/ui/utils'
 
 import { withQuery } from '../../../api/server'
 import { Footer } from '../../../components/footer'
-import { ScoreHistoryDialog } from '../../../components/score-history-dialog'
+import { ScoreHistoryDialogContent } from '../../../components/score-history-dialog'
 import { TableComponent } from '../../../components/table-component'
 import { UserAvatar } from '../../../components/user-avatar'
 import { ContestLayout } from '../../../modules/contest/sidebar'
@@ -170,7 +170,7 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
           <ScoreDetailButton
             contestScoreboard={contestScoreboard}
             user={row.original.user}
-            problemId={-1}
+            problemId={null}
           >
             <span
               className={clsx(
@@ -322,23 +322,30 @@ const ScoreDetailButton = ({
 }: {
   contestScoreboard: ContestScoreboard
   user: UserDisplaySchema
-  problemId: number
+  problemId: number | null
   children: React.ReactNode
 }) => {
   const [open, setOpen] = useState(false)
   return (
-    <>
-      <button title="score details" onClick={() => setOpen(true)}>
-        {children}
-      </button>
-      <ScoreHistoryDialog
-        open={open}
-        setOpen={setOpen}
-        contestScoreboard={contestScoreboard}
-        user={user}
-        problemId={problemId}
-      />
-    </>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Link
+        aria-label="score details"
+        onClick={() => setOpen(true)}
+        variant="hidden"
+        asChild
+      >
+        <DialogTrigger>{children}</DialogTrigger>
+      </Link>
+      <DialogContent className="w-full max-w-2xl rounded-2xl self-start md:max-w-5xl">
+        <ScoreHistoryDialogContent
+          open={open}
+          setOpen={setOpen}
+          contestScoreboard={contestScoreboard}
+          user={user}
+          problemId={problemId}
+        />
+      </DialogContent>
+    </Dialog>
   )
 }
 

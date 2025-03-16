@@ -11,15 +11,21 @@ import {
   ScoreHistorySchema,
   UserDisplaySchema,
 } from '@otog/contract'
-import { Button } from '@otog/ui/button'
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@otog/ui/chart'
-import { Dialog, DialogContent, DialogTitle } from '@otog/ui/dialog'
+import { DialogTitle } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@otog/ui/select'
 import { Spinner } from '@otog/ui/spinner'
 
 import { contestKey } from '../api/query'
@@ -31,21 +37,18 @@ interface ChartData {
   score: number
 }
 
-export const ScoreHistoryDialog = ({
+export const ScoreHistoryDialogContent = ({
   contestScoreboard,
   user,
   problemId,
   open,
-  setOpen,
 }: {
   contestScoreboard: ContestScoreboard
   user: UserDisplaySchema
-  problemId: number
+  problemId: number | null
   open: boolean
   setOpen: (open: boolean) => void
 }) => {
-  const [selectedProblemId, setSelectedProblemId] = useState(problemId)
-
   const getUserContestScoreHistory = useQuery({
     ...contestKey.getUserContestScoreHistory({
       params: {
@@ -60,50 +63,43 @@ export const ScoreHistoryDialog = ({
       ? getUserContestScoreHistory.data.body
       : undefined
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="min-w-2xl max-w-2xl rounded-2xl self-start md:max-w-5xl">
-        <DialogTitle className="text-2xl">
-          รายละเอียดคะแนนของ{' '}
-          <Link variant="hidden">
-            <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
-          </Link>
-        </DialogTitle>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-8 md:flex-row">
-            <div className="w-[320px]">
-              <div className="relative group size-80 rounded-md overflow-hidden">
-                <UserAvatar
-                  user={user}
-                  className="size-80 rounded-md"
-                  size="default"
-                />
-              </div>
-            </div>
-            <div className="w-full">
-              <ScoreTable
-                contestScoreboard={contestScoreboard}
+    <>
+      <DialogTitle className="text-2xl">
+        รายละเอียดคะแนนของ{' '}
+        <Link variant="hidden">
+          <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
+        </Link>
+      </DialogTitle>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-8 md:flex-row">
+          <div className="w-[320px]">
+            <div className="relative group size-80 rounded-md overflow-hidden">
+              <UserAvatar
                 user={user}
-                selectedProblemId={selectedProblemId}
-                setSelectedProblemId={setSelectedProblemId}
+                className="size-80 rounded-md"
+                size="default"
               />
             </div>
           </div>
+          <div className="w-full">
+            <ScoreTable contestScoreboard={contestScoreboard} user={user} />
+          </div>
         </div>
-        {contestScoreHistory ? (
-          <div className="w-full mt-4 flex-col justify-center overflow-x-scroll">
-            <ScoreHistoryDetail
-              contestScoreboard={contestScoreboard}
-              contestScoreHistory={contestScoreHistory}
-              problemId={selectedProblemId}
-            />
-          </div>
-        ) : (
-          <div className="w-full h-48 flex justify-center items-center">
-            <Spinner />
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      </div>
+      {contestScoreHistory ? (
+        <div className="w-full mt-4 flex-col justify-center overflow-x-auto">
+          <ScoreHistoryDetail
+            contestScoreboard={contestScoreboard}
+            contestScoreHistory={contestScoreHistory}
+            problemId={problemId}
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 flex justify-center items-center">
+          <Spinner />
+        </div>
+      )}
+    </>
   )
 }
 
@@ -117,13 +113,9 @@ interface ScoreTableItem {
 const ScoreTable = ({
   contestScoreboard,
   user,
-  selectedProblemId,
-  setSelectedProblemId,
 }: {
   contestScoreboard: ContestScoreboard
   user: UserDisplaySchema
-  selectedProblemId: number
-  setSelectedProblemId: (selectedProblemId: number) => void
 }) => {
   const data = useMemo(() => {
     const data: ScoreTableItem[] = []
@@ -131,6 +123,7 @@ const ScoreTable = ({
       (item) => item.userId === user.id
     )
     const contestScores = userData?.contestScores ?? []
+
     data.push({
       name: 'คะแนนรวม',
       score: contestScores.reduce((acc, val) => acc + val.score, 0),
@@ -162,52 +155,6 @@ const ScoreTable = ({
     })
     return data
   }, [contestScoreboard])
-  const columnHelper = createColumnHelper<ScoreTableItem>()
-  const columns = [
-    columnHelper.accessor('name', {
-      header: 'โจทย์',
-      cell: ({ getValue }) => getValue(),
-      meta: {
-        headClassName: 'text-left',
-        cellClassName: 'text-left py-1',
-      },
-      enableSorting: false,
-    }),
-    columnHelper.accessor('score', {
-      header: 'คะแนน',
-      cell: ({ getValue }) => getValue(),
-      meta: {
-        headClassName: 'text-right',
-        cellClassName: 'text-right tabular-nums py-1',
-      },
-      enableSorting: false,
-    }),
-    columnHelper.accessor('rank', {
-      header: 'อันดับ',
-      cell: ({ getValue }) => getValue(),
-      meta: {
-        headClassName: 'text-right',
-        cellClassName: 'text-right tabular-nums py-1',
-      },
-      enableSorting: false,
-    }),
-    columnHelper.accessor('problemId', {
-      header: '',
-      cell: ({ getValue }) => (
-        <Button
-          size="sm"
-          className="text-xs [&>svg]:size-3 -mx-2 px-2"
-          onClick={() => setSelectedProblemId(getValue())}
-        >
-          เลือก
-        </Button>
-      ),
-      meta: {
-        cellClassName: 'flex item-center justify-center py-1',
-      },
-      enableSorting: false,
-    }),
-  ]
 
   const table = useReactTable({
     data,
@@ -217,6 +164,41 @@ const ScoreTable = ({
 
   return <TableComponent table={table} />
 }
+const columnHelper = createColumnHelper<ScoreTableItem>()
+const columns = [
+  columnHelper.accessor('name', {
+    header: 'โจทย์',
+    cell: ({ getValue }) => {
+      if (getValue() === 'คะแนนรวม') {
+        return <span className="font-semibold">{getValue()}</span>
+      }
+      return <span className="pl-4">{getValue()}</span>
+    },
+    meta: {
+      headClassName: 'text-left',
+      cellClassName: 'text-left',
+    },
+    enableSorting: false,
+  }),
+  columnHelper.accessor('score', {
+    header: 'คะแนน',
+    cell: ({ getValue }) => getValue(),
+    meta: {
+      headClassName: 'text-right',
+      cellClassName: 'text-right tabular-nums',
+    },
+    enableSorting: false,
+  }),
+  columnHelper.accessor('rank', {
+    header: 'อันดับ',
+    cell: ({ getValue }) => getValue(),
+    meta: {
+      headClassName: 'text-right',
+      cellClassName: 'text-right tabular-nums',
+    },
+    enableSorting: false,
+  }),
+]
 
 interface HistoryWithoutDetail {
   problemId: number
@@ -231,8 +213,12 @@ const ScoreHistoryDetail = ({
 }: {
   contestScoreboard: ContestScoreboard
   contestScoreHistory: ScoreHistorySchema[]
-  problemId: number
+  problemId: number | null
 }) => {
+  const [selectedProblemId, setSelectedProblemId] = useState<number | null>(
+    problemId ?? null
+  )
+
   const startTime = new Date(contestScoreboard.contest.timeStart).getTime()
   const endTime = new Date(contestScoreboard.contest.timeEnd).getTime()
   const contestDuration = Math.floor((endTime - startTime) / 1000)
@@ -268,11 +254,12 @@ const ScoreHistoryDetail = ({
     return chartData
   }, [contestScoreHistory])
   const chartData: ChartData[] = (
-    problemId === -1
+    selectedProblemId === null
       ? totalScoreChartData
       : (
-          contestScoreHistory.find((value) => value.problemId === problemId)
-            ?.contestScoreHistory ?? []
+          contestScoreHistory.find(
+            (value) => value.problemId === selectedProblemId
+          )?.contestScoreHistory ?? []
         )
           .map((history) => {
             return {
@@ -289,17 +276,17 @@ const ScoreHistoryDetail = ({
   }))
   const problem =
     contestScoreboard.contest.contestProblem.find(
-      (problem) => problem.problemId === problemId
+      (problem) => problem.problemId === selectedProblemId
     )?.problem ?? undefined
   const fullScore =
-    problemId === -1
+    selectedProblemId === null
       ? contestScoreboard.contest.contestProblem
           .map((problem) => problem.problem.score)
           .reduce((acc, val) => acc + val, 0)
       : (problem?.score ?? 0)
   const submissions =
     contestScoreHistory
-      .find((contestScore) => contestScore.problemId === problemId)
+      .find((contestScore) => contestScore.problemId === selectedProblemId)
       ?.contestScoreHistory.map((item) => item.submission) ?? []
   const subtaskFullScores: number[] =
     submissions[0]?.submissionResult?.subtaskResults.map(
@@ -313,17 +300,41 @@ const ScoreHistoryDetail = ({
         .sort((a, b) => a.subtaskIndex - b.subtaskIndex)
         .map((result) => result.score) ?? [],
   }))
+
   return (
     <div className="flex flex-col items-center gap-4">
-      <h2 className="text-2xl font-semibold font-heading leading-none tracking-tight">
-        {problemId === -1 ? 'คะแนนรวม' : (problem?.name ?? '')}
-      </h2>
+      <div className="flex items-center justify-between w-full">
+        <h2 className="text-2xl font-semibold font-heading tracking-tight">
+          {selectedProblemId === null ? 'คะแนนรวม' : (problem?.name ?? '')}
+        </h2>
+        <Select
+          value={selectedProblemId?.toString() ?? 'Total'}
+          onValueChange={(value) => {
+            setSelectedProblemId(value === 'Total' ? null : parseInt(value))
+          }}
+        >
+          <SelectTrigger className="w-fit gap-2">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="Total">คะแนนรวม</SelectItem>
+            {contestScoreboard.contest.contestProblem.map((contestProblem) => (
+              <SelectItem
+                key={contestProblem.problemId}
+                value={contestProblem.problemId.toString()}
+              >
+                {contestProblem.problem.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <ScoreHistoryChart
         contestDuration={contestDuration}
         chartData={chartData}
         fullScore={fullScore}
       />
-      {problemId === -1 ? null : subtaskFullScores.length > 0 ? (
+      {selectedProblemId && subtaskFullScores.length > 0 ? (
         <SubtaskScoreTable
           data={tableData}
           subtaskFullScores={subtaskFullScores}
@@ -393,7 +404,7 @@ const ScoreHistoryChart = ({
         />
         <ChartTooltip
           cursor={true}
-          content={<ChartTooltipContent hideLabel />}
+          content={<ChartTooltipContent hideLabel hideIndicator />}
         />
         <Area
           dataKey="score"
@@ -422,7 +433,7 @@ const SubtaskScoreTable = ({
   data: SubtaskScoreTableItem[]
   subtaskFullScores: number[]
 }) => {
-  const fullScore = subtaskFullScores.reduce((acc, val) => acc + val, 0)
+  // const fullScore = subtaskFullScores.reduce((acc, val) => acc + val, 0)
   const columnHelper = createColumnHelper<SubtaskScoreTableItem>()
   const columns = useMemo(
     () => [
