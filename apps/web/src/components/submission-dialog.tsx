@@ -408,7 +408,7 @@ const columns = [
     cell: ({ getValue }) => {
       const memUsed = getValue()
       if (memUsed === -1) return '-'
-      return (memUsed / 1000).toFixed(3)
+      return memUsed
     },
     enableSorting: false,
     meta: {

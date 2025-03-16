@@ -626,7 +626,7 @@ const columns = [
           const submission = useSubmissionPolling(original)
           const memUsed = submission.submissionResult?.memUsed ?? 0
           if (memUsed === -1) return '-'
-          return (memUsed / 1000).toFixed(3)
+          return memUsed
         }}
       />
     ),

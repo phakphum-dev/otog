@@ -47,7 +47,6 @@ export const ScoreHistoryDialogContent = ({
   user: UserDisplaySchema
   problemId: number | null
   open: boolean
-  setOpen: (open: boolean) => void
 }) => {
   const getUserContestScoreHistory = useQuery({
     ...contestKey.getUserContestScoreHistory({
@@ -70,30 +69,20 @@ export const ScoreHistoryDialogContent = ({
           <NextLink href={`/user/${user.id}`}>{user.showName}</NextLink>
         </Link>
       </DialogTitle>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-8 md:flex-row">
-          <div className="w-[320px]">
-            <div className="relative group size-80 rounded-md overflow-hidden">
-              <UserAvatar
-                user={user}
-                className="size-80 rounded-md"
-                size="default"
-              />
-            </div>
-          </div>
-          <div className="w-full">
-            <ScoreTable contestScoreboard={contestScoreboard} user={user} />
-          </div>
-        </div>
+      <div className="flex flex-col gap-8 md:flex-row">
+        <UserAvatar
+          user={user}
+          className="size-80 rounded-md shrink-0"
+          size="default"
+        />
+        <ScoreTable contestScoreboard={contestScoreboard} user={user} />
       </div>
       {contestScoreHistory ? (
-        <div className="w-full mt-4 flex-col justify-center overflow-x-auto">
-          <ScoreHistoryDetail
-            contestScoreboard={contestScoreboard}
-            contestScoreHistory={contestScoreHistory}
-            problemId={problemId}
-          />
-        </div>
+        <ScoreHistoryDetail
+          contestScoreboard={contestScoreboard}
+          contestScoreHistory={contestScoreHistory}
+          problemId={problemId}
+        />
       ) : (
         <div className="w-full h-48 flex justify-center items-center">
           <Spinner />
@@ -107,7 +96,7 @@ interface ScoreTableItem {
   name: string
   score: number
   rank: string
-  problemId: number
+  problemId: number | null
 }
 
 const ScoreTable = ({
@@ -128,7 +117,7 @@ const ScoreTable = ({
       name: 'คะแนนรวม',
       score: contestScores.reduce((acc, val) => acc + val.score, 0),
       rank: userData?.rank?.toString() ?? '-',
-      problemId: -1,
+      problemId: null,
     })
     contestScoreboard.contest.contestProblem.forEach((problem) => {
       const contestScore = contestScores.find(
@@ -302,47 +291,52 @@ const ScoreHistoryDetail = ({
   }))
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="flex items-center justify-between w-full">
-        <h2 className="text-2xl font-semibold font-heading tracking-tight">
-          {selectedProblemId === null ? 'คะแนนรวม' : (problem?.name ?? '')}
-        </h2>
-        <Select
-          value={selectedProblemId?.toString() ?? 'Total'}
-          onValueChange={(value) => {
-            setSelectedProblemId(value === 'Total' ? null : parseInt(value))
-          }}
-        >
-          <SelectTrigger className="w-fit gap-2">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="Total">คะแนนรวม</SelectItem>
-            {contestScoreboard.contest.contestProblem.map((contestProblem) => (
-              <SelectItem
-                key={contestProblem.problemId}
-                value={contestProblem.problemId.toString()}
-              >
-                {contestProblem.problem.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <ScoreHistoryChart
-        contestDuration={contestDuration}
-        chartData={chartData}
-        fullScore={fullScore}
-      />
-      {selectedProblemId && subtaskFullScores.length > 0 ? (
-        <SubtaskScoreTable
-          data={tableData}
-          subtaskFullScores={subtaskFullScores}
+    <>
+      <div className="flex flex-col gap-4 min-w-0">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold font-heading tracking-tight">
+            กราฟแสดงคะแนนตามเวลา
+          </h3>
+          <Select
+            value={selectedProblemId?.toString() ?? 'Total'}
+            onValueChange={(value) => {
+              setSelectedProblemId(value === 'Total' ? null : parseInt(value))
+            }}
+          >
+            <SelectTrigger className="w-fit gap-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="Total">คะแนนรวม</SelectItem>
+              {contestScoreboard.contest.contestProblem.map(
+                (contestProblem) => (
+                  <SelectItem
+                    key={contestProblem.problemId}
+                    value={contestProblem.problemId.toString()}
+                  >
+                    {contestProblem.problem.name}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+        <ScoreHistoryChart
+          contestDuration={contestDuration}
+          chartData={chartData}
+          fullScore={fullScore}
         />
-      ) : (
-        <p className="text-sm italic">ไม่มีการส่งในข้อนี้</p>
-      )}
-    </div>
+        {selectedProblemId &&
+          (subtaskFullScores.length > 0 ? (
+            <SubtaskScoreTable
+              data={tableData}
+              subtaskFullScores={subtaskFullScores}
+            />
+          ) : (
+            <p className="text-sm italic w-full text-center">ไม่มีข้อมูล</p>
+          ))}
+      </div>
+    </>
   )
 }
 
@@ -368,7 +362,10 @@ const ScoreHistoryChart = ({
     score: chartData[chartData.length - 1]!.score,
   })
   return (
-    <ChartContainer config={chartConfig} className="h-[300px] w-full mr-10">
+    <ChartContainer
+      config={chartConfig}
+      className="h-[300px] w-full aspect-auto pr-10"
+    >
       <AreaChart
         accessibilityLayer
         data={chartData}
@@ -404,7 +401,15 @@ const ScoreHistoryChart = ({
         />
         <ChartTooltip
           cursor={true}
-          content={<ChartTooltipContent hideLabel hideIndicator />}
+          content={
+            <ChartTooltipContent
+              hideIndicator
+              hideLabel
+              labelKey="time"
+              nameKey="score"
+              labelFormatter={timeFormatter}
+            />
+          }
         />
         <Area
           dataKey="score"
@@ -487,5 +492,5 @@ const timeFormatter = (value: number) => {
   const hour = Math.floor(abs / 3600)
   const minute = Math.floor(abs / 60) % 60
   const second = abs % 60
-  return `${value < 0 ? '-' : ''}${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`
+  return `${value < 0 ? '-' : ''}${hour.toString()}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`
 }

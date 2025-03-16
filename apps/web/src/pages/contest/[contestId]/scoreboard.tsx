@@ -336,10 +336,9 @@ const ScoreDetailButton = ({
       >
         <DialogTrigger>{children}</DialogTrigger>
       </Link>
-      <DialogContent className="w-full max-w-2xl rounded-2xl self-start md:max-w-5xl">
+      <DialogContent className="max-w-2xl rounded-2xl self-start md:max-w-5xl">
         <ScoreHistoryDialogContent
           open={open}
-          setOpen={setOpen}
           contestScoreboard={contestScoreboard}
           user={user}
           problemId={problemId}
