@@ -663,7 +663,7 @@ interface ExampleTableProps {
   problem: Problem
 }
 
-const ExampleTable = ({ problem }: ExampleTableProps) => {
+export const ExampleTable = ({ problem }: ExampleTableProps) => {
   const examples: Testcase[] = (problem.examples as unknown as Testcase[]) ?? []
   const { isAdmin } = useUserContext()
   const [isEditing, setEditing] = useState(false)
