@@ -7,6 +7,17 @@ import { FileUpload, useFileUpload } from '@ark-ui/react/file-upload'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@otog/ui/alert-dialog'
 import { Button } from '@otog/ui/button'
 import {
   Dialog,
@@ -34,7 +45,7 @@ export const AvatarUpload = (props: AvatarUploadProps) => {
   const fileUpload = useFileUpload({
     id: useId(),
     maxFiles: 1,
-    accept: { images: ['.c', '.cc', '.cpp', '.py'] },
+    accept: { images: ['.jpg', '.jpeg', '.png'] },
     onFileChange: (details) => {
       const file = details.acceptedFiles[0]
       onFileSelect(file)
@@ -88,43 +99,12 @@ export const AvatarUpload = (props: AvatarUploadProps) => {
     }
   }
 
-  //   const confirm = useConfirmModal()
-  //   const onRemove = () => {
-  //     if (!user) {
-  //       return
-  //     }
-  //     confirm({
-  //       cancleText: 'ยกเลิก',
-  //       submitText: 'ยืนยัน',
-  //       title: 'ยืนยันลบโปรไฟล์',
-  //       subtitle: 'คุณยืนยันที่จะลบรูปโปรไฟล์ของคุณหรือไม่',
-  //       onSubmit: async () => {
-  //         try {
-  //           await Promise.all([
-  //             storage.ref(`images/${user.id}.jpeg`).delete(),
-  //             storage.ref(`images/${user.id}_32.jpeg`).delete(),
-  //           ])
-  //           reloadBigAvatar()
-  //         //   reloadSmallAvatar()
-  //         } catch {}
-  //       },
-  //     })
-  //   }
-
   return (
     <>
       <div className="absolute inset-0 bg-black/15 invisible group-hover:visible" />
-
       {avatarUrl && (
         <div className="invisible absolute top-1 right-1 flex gap-2 group-hover:visible">
-          <Button
-            size="icon"
-            variant="secondary"
-            aria-label="remove-profile-picture"
-            // onClick={onRemove}
-          >
-            <XMarkIcon />
-          </Button>
+          <DeleteAvatarDialog />
         </div>
       )}
       <div className="invisible absolute top-1/2 right-1/2 flex translate-x-1/2 -translate-y-1/2 gap-2 group-hover:visible">
@@ -308,5 +288,61 @@ export const ImageCropModal = (props: ImageUploadModalProps) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+const DeleteAvatarDialog = () => {
+  const { user } = useUserContext()
+  if (!user) {
+    return null
+  }
+  const queryClient = useQueryClient()
+  const onSubmit = async () => {
+    try {
+      await toast.promise(
+        Promise.all([
+          storage.ref(`images/${user.id}.jpeg`).delete(),
+          storage.ref(`images/${user.id}_32.jpeg`).delete(),
+        ]),
+        {
+          loading: 'กำลังลบรูปโปรไฟล์',
+          success: 'ลบรูปโปรไฟล์สำเร็จ',
+          error: 'เกิดข้อผิดพลาดในการลบรูปโปรไฟล์',
+        }
+      )
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: avatarKey.getUrl({ userId: user.id, size: 'small' }),
+        })
+        queryClient.invalidateQueries({
+          queryKey: avatarKey.getUrl({ userId: user.id, size: 'default' }),
+        })
+      }, 1000)
+    } catch {}
+  }
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="icon"
+          variant="secondary"
+          aria-label="remove-profile-picture"
+        >
+          <XMarkIcon />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>ยืนยันลบโปรไฟล์</AlertDialogTitle>
+          <AlertDialogDescription>
+            คุณยืนยันที่จะลบรูปโปรไฟล์ของคุณหรือไม่
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+          <AlertDialogAction onClick={onSubmit}>ยืนยัน</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
