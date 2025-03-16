@@ -20,7 +20,7 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   Cell,
@@ -67,6 +67,7 @@ import { clsx } from '@otog/ui/utils'
 
 import { problemQuery, submissionKey, submissionQuery } from '../../api/query'
 import { withQuery } from '../../api/server'
+import { InfiniteTable } from '../../components/infinite-table'
 import { InlineComponent } from '../../components/inline-component'
 import { MonacoEditor } from '../../components/monaco-editor'
 import {
@@ -303,7 +304,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
             forceMount
             value="submissions"
           >
-            <SubmissionTable problemId={props.problem.id} />
+            <ProblemSubmissionTable problemId={props.problem.id} />
           </TabsContent>
         </Tabs>
       </div>
@@ -497,22 +498,41 @@ function CodeEditorForm(props: CodeEditorFormProps) {
 //   )
 // }
 
-interface SubmissionTableProps {
+interface ProblemSubmissionTableProps {
   problemId: number
 }
-function SubmissionTable(props: SubmissionTableProps) {
+function ProblemSubmissionTable(props: ProblemSubmissionTableProps) {
   const { user } = useUserContext()
-  const getSubmissionsByProblemId = useQuery({
-    ...submissionKey.getSubmissionsByProblemId({
+  const pageSize = 10
+  const getSubmissionsByProblemId = useInfiniteQuery({
+    queryKey: submissionKey.getSubmissionsByProblemId({
       params: {
         problemId: props.problemId.toString(),
         userId: user?.id.toString()!,
       },
-    }),
+    }).queryKey,
+    // TODO: https://github.com/lukemorales/query-key-factory/issues/89
+    queryFn: ({ pageParam }) =>
+      submissionQuery.getSubmissionsByProblemId.query({
+        params: {
+          problemId: props.problemId.toString(),
+          userId: user?.id.toString()!,
+        },
+        query: {
+          offset: pageParam,
+          limit: pageSize,
+        },
+      }),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.status === 200 ? lastPage.body.at(-1)?.id : undefined,
     enabled: !!user,
   })
   const data = useMemo(
-    () => getSubmissionsByProblemId.data?.body ?? [],
+    () =>
+      getSubmissionsByProblemId.data?.pages.flatMap((page) =>
+        page.status === 200 ? page.body : []
+      ) ?? [],
     [getSubmissionsByProblemId.data]
   )
   const table = useReactTable({
@@ -521,9 +541,13 @@ function SubmissionTable(props: SubmissionTableProps) {
     getCoreRowModel: getCoreRowModel(),
   })
   return (
-    <TableComponent
+    <InfiniteTable
       table={table}
       classNames={{ container: 'border-transparent' }}
+      isLoading={getSubmissionsByProblemId.isLoading}
+      isError={getSubmissionsByProblemId.isError}
+      hasNextPage={getSubmissionsByProblemId.hasNextPage}
+      fetchNextPage={getSubmissionsByProblemId.fetchNextPage}
     />
   )
 }
@@ -600,7 +624,9 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return ((submission.submissionResult?.memUsed ?? 0) / 1000).toFixed(3)
+          const memUsed = submission.submissionResult?.memUsed ?? 0
+          if (memUsed === -1) return '-'
+          return (memUsed / 1000).toFixed(3)
         }}
       />
     ),

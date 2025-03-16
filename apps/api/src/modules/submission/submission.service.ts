@@ -211,6 +211,24 @@ export class SubmissionService {
     })
   }
 
+  getSubmissionsByProblemId(args: {
+    userId: number
+    problemId: number
+    limit: number
+    offset: number
+  }) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId: args.userId,
+        problemId: args.problemId,
+        id: { lt: args.offset },
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { id: 'desc' },
+    })
+  }
+
   findFirstByUserId(userId: number) {
     return this.prisma.submission.findFirst({
       where: { userId },

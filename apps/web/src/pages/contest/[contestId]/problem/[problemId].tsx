@@ -496,7 +496,9 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return ((submission.submissionResult?.memUsed ?? 0) / 1000).toFixed(3)
+          const memUsed = submission.submissionResult?.memUsed ?? 0
+          if (memUsed === -1) return '-'
+          return (memUsed / 1000).toFixed(3)
         }}
       />
     ),

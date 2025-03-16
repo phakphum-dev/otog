@@ -405,6 +405,11 @@ const columns = [
   }),
   columnHelper.accessor('memUsed', {
     header: 'ความจำที่ใช้ (kB)',
+    cell: ({ getValue }) => {
+      const memUsed = getValue()
+      if (memUsed === -1) return '-'
+      return (memUsed / 1000).toFixed(3)
+    },
     enableSorting: false,
     meta: {
       headClassName: 'text-end',

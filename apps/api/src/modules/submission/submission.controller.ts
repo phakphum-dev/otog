@@ -180,6 +180,26 @@ export class SubmissionController {
     )
   }
 
+  @TsRestHandler(c.getSubmissionsByProblemId)
+  @Roles(Role.User, Role.Admin)
+  getSubmissionsByProblemId() {
+    return tsRestHandler(
+      c.getSubmissionsByProblemId,
+      async ({ params, query: { limit = 10, offset = 1e9 } }) => {
+        const userId = z.coerce.number().parse(params.userId)
+        const problemId = z.coerce.number().parse(params.problemId)
+        const submissions =
+          await this.submissionService.getSubmissionsByProblemId({
+            limit,
+            userId,
+            problemId,
+            offset,
+          })
+        return { status: 200, body: submissions }
+      }
+    )
+  }
+
   @TsRestHandler(c.getSubmission)
   @OfflineAccess(AccessState.Authenticated)
   getSubmissionById() {
