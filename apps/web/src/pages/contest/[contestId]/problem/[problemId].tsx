@@ -53,7 +53,11 @@ import { SidebarTrigger } from '@otog/ui/sidebar'
 import { Spinner } from '@otog/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 
-import { submissionKey, submissionQuery } from '../../../../api/query'
+import {
+  contestKey,
+  submissionKey,
+  submissionQuery,
+} from '../../../../api/query'
 import { withQuery } from '../../../../api/server'
 import { Footer } from '../../../../components/footer'
 import { InlineComponent } from '../../../../components/inline-component'
@@ -348,7 +352,7 @@ function CodeEditorForm(props: CodeEditorForm) {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-3 py-4 sticky -my-4 bottom-0 bg-background">
+        <div className="grid grid-cols-3">
           <FormField
             control={form.control}
             name="language"
@@ -514,6 +518,19 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
+          const queryClient = useQueryClient()
+          useEffect(() => {
+            if (
+              original.submissionResult?.score !==
+              submission.submissionResult?.score
+            ) {
+              queryClient.invalidateQueries({
+                queryKey: contestKey.getUserContestScores({
+                  params: { contestId: submission.contestId?.toString()! },
+                }).queryKey,
+              })
+            }
+          }, [submission])
           return <SubmissionStatusButton submission={submission} />
         }}
       />
