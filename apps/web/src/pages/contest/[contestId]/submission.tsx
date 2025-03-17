@@ -85,7 +85,7 @@ ContestSubmissionPage.footer = false
 function ContestSubmission() {
   const { contest } = useContest()
   return (
-    <section className="flex-1">
+    <div className="flex-1">
       <div className="flex gap-2 items-center p-4">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -110,7 +110,7 @@ function ContestSubmission() {
       </div>
 
       <ContestSubmissionTable contestId={contest.id} />
-    </section>
+    </div>
   )
 }
 

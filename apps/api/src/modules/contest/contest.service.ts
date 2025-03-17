@@ -94,6 +94,7 @@ export class ContestService {
           },
         },
         announce: true,
+        _count: { select: { announcements: true } },
       },
     })
   }

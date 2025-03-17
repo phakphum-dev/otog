@@ -8,14 +8,17 @@ import {
 } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TablePropertiesIcon } from 'lucide-react'
+import { Terminal } from 'lucide-react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
 import { ContestSchema, ContestStatusEnum } from '@otog/contract'
+import { Alert, AlertDescription, AlertTitle } from '@otog/ui/alert'
 import { Badge } from '@otog/ui/badge'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -115,6 +118,9 @@ export function ContestLayout(
           <SidebarContent>
             <ContestSidebar />
           </SidebarContent>
+          <SidebarFooter>
+            <ContestAnnouncementAlert />
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset id="content">{props.children}</SidebarInset>
       </SidebarProvider>
@@ -410,5 +416,29 @@ const SideBarButton = (props: {
         {props.children}
       </NextLink>
     </SidebarMenuButton>
+  )
+}
+
+const ContestAnnouncementAlert = () => {
+  const { contest } = useContest()
+
+  const getContestDetail = useQuery({
+    ...contestKey.getContestDetail({
+      params: { contestId: contest.id.toString() },
+    }),
+  })
+
+  if (!getContestDetail.data?.body._count.announcements) {
+    return null
+  }
+
+  return (
+    <NextLink href={`/contest/${contest.id}/announcement`}>
+      <Alert>
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>ประกาศ!</AlertTitle>
+        <AlertDescription>กดอ่านด้วย</AlertDescription>
+      </Alert>
+    </NextLink>
   )
 }

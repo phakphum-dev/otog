@@ -442,6 +442,7 @@ export const ContestDetailSchema = ContestSchema.extend({
       }),
     })
   ),
+  _count: z.object({ announcements: z.number() }),
 })
 export type ContestDetailSchema = z.infer<typeof ContestDetailSchema>
 
