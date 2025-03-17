@@ -222,7 +222,7 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
       >
         <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <div className="flex justify-between">
-            <TabsList className="bg-transparent px-4">
+            <TabsList className="bg-transparent p-0">
               <TabsTrigger
                 value="problem"
                 className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
@@ -246,7 +246,7 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
               </TabsTrigger>
             </TabsList>
             <Toggle
-              className={clsx(!isLargeScreen && 'hidden', 'mr-4')}
+              className={clsx(!isLargeScreen && 'hidden')}
               pressed={twoColumn}
               onPressedChange={(value) => {
                 setTwoColumn(value)
@@ -259,89 +259,87 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
             </Toggle>
           </div>
 
-          <div className="px-4">
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="problem"
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="problem"
+          >
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="w-full flex gap-2"
             >
-              <ResizablePanelGroup
-                direction="horizontal"
-                className="w-full flex gap-2"
-              >
-                <ResizablePanel
-                  defaultSize={50}
-                  className={clsx(
-                    'flex flex-col gap-2',
-                    twoColumn && '!overflow-y-auto max-h-[800px]'
-                  )}
-                >
-                  <embed
-                    src={`/api/problem/${props.problem.id}`}
-                    height="800px"
-                    className="w-full rounded-md border min-h-[800px]"
-                  />
-                  {/* TODO: add attachment */}
-                  <div className="flex justify-between gap-1 items-end">
-                    <p className="text-sm text-muted-foreground">
-                      {props.problem.timeLimit / 1000} วินาที{' '}
-                      {props.problem.memoryLimit} MB
-                    </p>
-                    <Link
-                      className="text-sm text-muted-foreground"
-                      variant="hidden"
-                      isExternal
-                      href={`/api/problem/${props.problem.id}`}
-                    >
-                      [ดาวน์โหลด]
-                    </Link>
-                  </div>
-                  <ExampleTable problem={props.problem} />
-                </ResizablePanel>
-                {twoColumn && (
-                  <>
-                    <ResizableHandle />
-                    <ResizablePanel defaultSize={50}>
-                      <ClientOutPortal node={codeEditorPortal} />
-                    </ResizablePanel>
-                  </>
+              <ResizablePanel
+                defaultSize={50}
+                className={clsx(
+                  'flex flex-col gap-2',
+                  twoColumn && '!overflow-y-auto max-h-[800px]'
                 )}
-              </ResizablePanelGroup>
-            </TabsContent>
-
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="editor"
-            >
-              <ClientInPortal node={codeEditorPortal}>
-                <CodeEditorForm
-                  contestId={props.contest.id}
-                  problem={props.problem}
-                  latestSubmission={props.latestSubmission}
-                  onSuccess={() => {
-                    queryClient.invalidateQueries({
-                      queryKey: submissionKey.getContestSubmissions({
-                        params: { contestId: props.contestId.toString() },
-                      }).queryKey,
-                    })
-                    setTab('submissions')
-                  }}
+              >
+                <embed
+                  src={`/api/problem/${props.problem.id}`}
+                  height="800px"
+                  className="w-full rounded-md border min-h-[800px]"
                 />
-              </ClientInPortal>
-              {!twoColumn && <ClientOutPortal node={codeEditorPortal} />}
-            </TabsContent>
-            <TabsContent
-              className="data-[state=inactive]:hidden"
-              forceMount
-              value="submissions"
-            >
-              <ContestSubmissionTable
+                {/* TODO: add attachment */}
+                <div className="flex justify-between gap-1 items-end">
+                  <p className="text-sm text-muted-foreground">
+                    {props.problem.timeLimit / 1000} วินาที{' '}
+                    {props.problem.memoryLimit} MB
+                  </p>
+                  <Link
+                    className="text-sm text-muted-foreground"
+                    variant="hidden"
+                    isExternal
+                    href={`/api/problem/${props.problem.id}`}
+                  >
+                    [ดาวน์โหลด]
+                  </Link>
+                </div>
+                <ExampleTable problem={props.problem} />
+              </ResizablePanel>
+              {twoColumn && (
+                <>
+                  <ResizableHandle />
+                  <ResizablePanel defaultSize={50}>
+                    <ClientOutPortal node={codeEditorPortal} />
+                  </ResizablePanel>
+                </>
+              )}
+            </ResizablePanelGroup>
+          </TabsContent>
+
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="editor"
+          >
+            <ClientInPortal node={codeEditorPortal}>
+              <CodeEditorForm
                 contestId={props.contest.id}
-                problemId={props.problem.id}
+                problem={props.problem}
+                latestSubmission={props.latestSubmission}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: submissionKey.getContestSubmissions({
+                      params: { contestId: props.contestId.toString() },
+                    }).queryKey,
+                  })
+                  setTab('submissions')
+                }}
               />
-            </TabsContent>
-          </div>
+            </ClientInPortal>
+            {!twoColumn && <ClientOutPortal node={codeEditorPortal} />}
+          </TabsContent>
+          <TabsContent
+            className="data-[state=inactive]:hidden"
+            forceMount
+            value="submissions"
+          >
+            <ContestSubmissionTable
+              contestId={props.contest.id}
+              problemId={props.problem.id}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </section>

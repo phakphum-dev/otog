@@ -163,7 +163,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
 
         <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <div className="flex justify-between">
-            <TabsList className="bg-transparent">
+            <TabsList className="bg-transparent p-0">
               <TabsTrigger
                 value="problem"
                 className="data-[state=active]:bg-muted data-[state=active]:shadow-none"
