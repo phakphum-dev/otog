@@ -7,6 +7,7 @@ import {
   TrophyIcon,
 } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { TablePropertiesIcon } from 'lucide-react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
@@ -31,6 +32,7 @@ import { Spinner } from '@otog/ui/spinner'
 import { clsx } from '@otog/ui/utils'
 
 import { appKey, contestKey } from '../../api/query'
+import { useUserContext } from '../../context/user-context'
 import { initialDataSuccess } from '../../utils/initial-data-success'
 import { toTimerFormat } from '../../utils/time'
 import { useTimer } from '../../utils/use-timer'
@@ -109,7 +111,11 @@ export function ContestLayout(
   return (
     <ContestProvider value={props}>
       <SidebarProvider className="max-w-screen-2xl mx-auto">
-        <ContestSidebar />
+        <Sidebar>
+          <SidebarContent>
+            <ContestSidebar />
+          </SidebarContent>
+        </Sidebar>
         <SidebarInset id="content">{props.children}</SidebarInset>
       </SidebarProvider>
     </ContestProvider>
@@ -128,82 +134,65 @@ function ContestSidebar() {
 }
 
 function PreContestSidebar() {
-  const { contest } = useContest()
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup className="mt-2">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="Home">
-                <SideBarButton href={`/contest/${contest.id}`}>
-                  <div className="flex items-center gap-2">
-                    <HomeIcon className="size-4" />
-                    Home
-                  </div>
-                </SideBarButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <HomeMenuItem />
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   )
 }
 
 function PostContestSidebar() {
-  const { contest } = useContest()
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup className="mt-2">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="Home">
-                <SideBarButton href={`/contest/${contest.id}`}>
-                  <div className="flex items-center gap-2">
-                    <HomeIcon className="size-4" />
-                    Home
-                  </div>
-                </SideBarButton>
-              </SidebarMenuItem>
-              <ScoreboardMenu />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <HomeMenuItem />
+          <ScoreboardMenuItem />
+          <SubmissionMenuItem />
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   )
 }
 
 function MidContestSidebar() {
-  const { contest } = useContest()
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup className="mt-2">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="Home">
-                <SideBarButton href={`/contest/${contest.id}`}>
-                  <div className="flex items-center gap-2">
-                    <HomeIcon className="size-4" />
-                    Home
-                  </div>
-                </SideBarButton>
-              </SidebarMenuItem>
-              <ScoreboardMenu />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarSeparator />
-        <NavProblems />
-      </SidebarContent>
-    </Sidebar>
+    <>
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <HomeMenuItem />
+            <ScoreboardMenuItem />
+            <SubmissionMenuItem />
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+      <SidebarSeparator />
+      <NavProblems />
+    </>
   )
 }
 
-function ScoreboardMenu() {
+function HomeMenuItem() {
+  const { contest } = useContest()
+  return (
+    <SidebarMenuItem>
+      <SideBarButton
+        href={`/contest/${contest.id}`}
+        className="flex items-center gap-2"
+      >
+        <HomeIcon className="size-4" />
+        Home
+      </SideBarButton>
+    </SidebarMenuItem>
+  )
+}
+
+function ScoreboardMenuItem() {
   const { contest, contestStatus } = useContest()
   if (contest.scoreboardPolicy === 'NOT_VISIBLE') {
     return null
@@ -215,16 +204,34 @@ function ScoreboardMenu() {
     return null
   }
   return (
-    <>
-      <SidebarMenuItem key="Scoreboard">
-        <SideBarButton href={`/contest/${contest.id}/scoreboard`}>
-          <div className="flex items-center gap-2">
-            <TrophyIcon className="size-4" />
-            Scoreboard
-          </div>
-        </SideBarButton>
-      </SidebarMenuItem>
-    </>
+    <SidebarMenuItem>
+      <SideBarButton
+        href={`/contest/${contest.id}/scoreboard`}
+        className="flex items-center gap-2"
+      >
+        <TrophyIcon className="size-4" />
+        Scoreboard
+      </SideBarButton>
+    </SidebarMenuItem>
+  )
+}
+
+function SubmissionMenuItem() {
+  const { isAdmin } = useUserContext()
+  const { contest } = useContest()
+  if (!isAdmin) {
+    return null
+  }
+  return (
+    <SidebarMenuItem>
+      <SideBarButton
+        href={`/contest/${contest.id}/submission`}
+        className="flex items-center gap-2"
+      >
+        <TablePropertiesIcon className="size-4" />
+        Submission
+      </SideBarButton>
+    </SidebarMenuItem>
   )
 }
 
@@ -245,26 +252,20 @@ function NavProblems() {
       <>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarGroupLabel className="text-sm">
-              <div className="flex items-center gap-2">
-                <ClockIcon className="size-4" />
-                เหลือเวลาอีก <Timer />
-              </div>
+            <SidebarGroupLabel className="text-sm flex items-center gap-2">
+              <ClockIcon className="size-4" />
+              เหลือเวลาอีก <Timer />
             </SidebarGroupLabel>
-            <SidebarGroupLabel className="text-sm">
-              <div className="flex items-center gap-2">
-                คะแนนรวม: <Spinner size="sm" />
-              </div>
+            <SidebarGroupLabel className="text-sm flex items-center gap-2">
+              คะแนนรวม <Spinner size="sm" />
             </SidebarGroupLabel>
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarSeparator />
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sm">
-            <div className="flex items-center gap-2">
-              <BookOpenIcon className="size-4" />
-              Problems
-            </div>
+          <SidebarGroupLabel className="text-sm flex items-center gap-2">
+            <BookOpenIcon className="size-4" />
+            Problems
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -307,24 +308,20 @@ function NavProblems() {
     <>
       <SidebarGroup>
         <SidebarGroupContent>
-          <SidebarGroupLabel className="text-sm">
-            <div className="flex items-center gap-2">
-              <ClockIcon className="size-4" />
-              เหลือเวลาอีก <Timer />
-            </div>
+          <SidebarGroupLabel className="text-sm flex items-center gap-2">
+            <ClockIcon className="size-4" />
+            เหลือเวลาอีก <Timer />
           </SidebarGroupLabel>
           <SidebarGroupLabel className="text-sm">
-            คะแนนรวม: {totalScore} / {totalFullScore}
+            คะแนนรวม {totalScore} / {totalFullScore}
           </SidebarGroupLabel>
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarSeparator />
       <SidebarGroup>
-        <SidebarGroupLabel className="text-sm">
-          <div className="flex items-center gap-2">
-            <BookOpenIcon className="size-4" />
-            Problems
-          </div>
+        <SidebarGroupLabel className="text-sm flex items-center gap-2">
+          <BookOpenIcon className="size-4" />
+          Problems
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
@@ -340,12 +337,10 @@ function NavProblems() {
                   <SidebarMenuSub className="mr-0 pr-0" key={problem.id}>
                     <SideBarButton
                       href={`/contest/${contest.id}/problem/${problem.id}`}
-                      className="h-10"
+                      className="h-10 flex gap-2 justify-between items-center"
                     >
-                      <div className="flex gap-2 justify-between items-center w-full">
-                        <p>{problem.name}</p>
-                        <Badge variant={getBadgeVariant()}>{score}</Badge>
-                      </div>
+                      {problem.name}
+                      <Badge variant={getBadgeVariant()}>{score}</Badge>
                     </SideBarButton>
                   </SidebarMenuSub>
                 )

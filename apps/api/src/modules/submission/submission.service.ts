@@ -131,13 +131,25 @@ export class SubmissionService {
     })
   }
 
-  findAllWithContest(offset = 1e9, limit = 89) {
+  findAllWithContest(args: {
+    contestId: number
+    offset: number
+    limit: number
+    problemSearch: string | undefined
+    userSearch: string | undefined
+  }) {
     return this.prisma.submission.findMany({
       where: {
-        contestId: { not: null },
-        id: { lt: offset },
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
+        user: args.userSearch
+          ? { showName: { contains: args.userSearch, mode: 'insensitive' } }
+          : undefined,
       },
-      take: limit,
+      take: args.limit,
       select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })

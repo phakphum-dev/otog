@@ -11,7 +11,6 @@ import Head from 'next/head'
 import NextLink from 'next/link'
 
 import {
-  ContestPrize,
   ContestSchema,
   ContestScoreboard,
   UserContestScoreboard,
@@ -20,6 +19,7 @@ import {
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -43,12 +43,10 @@ interface ContestScoreboardPageProps {
   contest: ContestSchema
   serverTime: string
   contestScoreboard: ContestScoreboard
-  contestPrize: ContestPrize
 }
 
 interface ContestScoreboardProps {
   contestScoreboard: ContestScoreboard
-  contestPrize: ContestPrize
 }
 
 export const getServerSideProps = withQuery<ContestScoreboardPageProps>(
@@ -57,26 +55,21 @@ export const getServerSideProps = withQuery<ContestScoreboardPageProps>(
     if (Number.isNaN(parseInt(contestId))) {
       return { notFound: true }
     }
-    const [getTime, getContest, getContestScoreboard, getContestPrize] =
-      await Promise.all([
-        query.app.time.query(),
-        query.contest.getContest.query({
-          params: { contestId: contestId },
-        }),
-        query.contest.getContestScoreboard.query({
-          params: { contestId: contestId },
-        }),
-        query.contest.getContestPrize.query({
-          params: { contestId: contestId },
-        }),
-      ])
+    const [getTime, getContest, getContestScoreboard] = await Promise.all([
+      query.app.time.query(),
+      query.contest.getContest.query({
+        params: { contestId: contestId },
+      }),
+      query.contest.getContestScoreboard.query({
+        params: { contestId: contestId },
+      }),
+    ])
     if (
       getTime.status !== 200 ||
       getContest.status !== 200 ||
-      getContestScoreboard.status !== 200 ||
-      getContestPrize.status !== 200
+      getContestScoreboard.status !== 200
     ) {
-      return { notFound: true }
+      throw new Error('Failed to fetch data')
     }
     return {
       props: {
@@ -84,7 +77,6 @@ export const getServerSideProps = withQuery<ContestScoreboardPageProps>(
         contest: getContest.body,
         serverTime: getTime.body.toString(),
         contestScoreboard: getContestScoreboard.body,
-        contestPrize: getContestPrize.body,
       },
     }
   }
@@ -96,7 +88,7 @@ export default function ContestScoreboardPage(
   return (
     <ContestLayout {...props}>
       <Head>
-        <title>Scoreboard | {props.contest.id} | OTOG</title>
+        <title>{props.contest.name} - Scoreboard | OTOG</title>
       </Head>
       <Scoreboard {...props} />
       <Footer className="pt-8 px-4 max-w-full" />
@@ -275,9 +267,14 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-                <Breadcrumb>{contestScoreboard.contest.name}</Breadcrumb>
-              </BreadcrumbItem>
+              <BreadcrumbLink
+                className="font-heading text-lg font-semibold hidden md:block"
+                asChild
+              >
+                <NextLink href={`/contest/${contestScoreboard.contest.id}`}>
+                  {contestScoreboard.contest.name}
+                </NextLink>
+              </BreadcrumbLink>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 <BreadcrumbPage className="font-heading text-lg font-semibold">
@@ -289,6 +286,7 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
         </div>
         <Toggle
           pressed={!expanded}
+          className="p-1.5 h-7"
           onPressedChange={() => setExpanded((expanded) => !expanded)}
         >
           <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
@@ -356,107 +354,107 @@ const fontSize: Record<number, string> = {
   5: 'text-lg',
 }
 
-export function Prize(props: ContestScoreboardProps) {
-  const data = useMemo(
-    () =>
-      Object.entries(props.contestPrize).map(([prizeName, users]) => ({
-        prizeName: prizeName as keyof ContestPrize,
-        users,
-      })),
-    [props.contestPrize]
-  )
+// export function Prize(props: ContestScoreboardProps) {
+//   const data = useMemo(
+//     () =>
+//       Object.entries(props.contestPrize).map(([prizeName, users]) => ({
+//         prizeName: prizeName as keyof ContestPrize,
+//         users,
+//       })),
+//     [props.contestPrize]
+//   )
 
-  const columnHelper = createColumnHelper<{
-    prizeName: keyof ContestPrize
-    users: ContestPrize[keyof ContestPrize]
-  }>()
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor('prizeName', {
-        header: 'รางวัล',
-        cell: ({ getValue }) => {
-          const prize = prizeDescription[getValue()]
-          return (
-            <div className="flex flex-col gap-2 items-center text-center text-pretty">
-              <span className="text-3xl">{prize.emoji}</span>
-              <span className="font-semibold">{prize.name}</span>
-              <p className="text-muted-foreground">{prize.description}</p>
-            </div>
-          )
-        },
+//   const columnHelper = createColumnHelper<{
+//     prizeName: keyof ContestPrize
+//     users: ContestPrize[keyof ContestPrize]
+//   }>()
+//   const columns = useMemo(
+//     () => [
+//       columnHelper.accessor('prizeName', {
+//         header: 'รางวัล',
+//         cell: ({ getValue }) => {
+//           const prize = prizeDescription[getValue()]
+//           return (
+//             <div className="flex flex-col gap-2 items-center text-center text-pretty">
+//               <span className="text-3xl">{prize.emoji}</span>
+//               <span className="font-semibold">{prize.name}</span>
+//               <p className="text-muted-foreground">{prize.description}</p>
+//             </div>
+//           )
+//         },
 
-        meta: {
-          headClassName: 'text-center',
-        },
-        enableSorting: false,
-      }),
-      ...props.contestScoreboard.contest.contestProblem
-        .map((contestProblem) => contestProblem.problem)
-        .map((problem) =>
-          columnHelper.display({
-            id: `problem-${problem.id}`,
-            header: problem.name!,
+//         meta: {
+//           headClassName: 'text-center',
+//         },
+//         enableSorting: false,
+//       }),
+//       ...props.contestScoreboard.contest.contestProblem
+//         .map((contestProblem) => contestProblem.problem)
+//         .map((problem) =>
+//           columnHelper.display({
+//             id: `problem-${problem.id}`,
+//             header: problem.name!,
 
-            cell: ({ row }) => {
-              const users = row.original.users.filter(
-                (user) => user.problem!.id === problem.id
-              )
-              return (
-                <ul className="list-disc">
-                  {users.length === 0 && '-'}
-                  {users.map(({ user }) => (
-                    <li key={user!.id}>
-                      <Link variant="hidden" asChild>
-                        <NextLink href={`/user/${user!.id}`}>
-                          {user!.showName}
-                        </NextLink>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )
-            },
-          })
-        ),
-    ],
-    [props.contestScoreboard]
-  )
-  const table = useReactTable({
-    data: data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
+//             cell: ({ row }) => {
+//               const users = row.original.users.filter(
+//                 (user) => user.problem!.id === problem.id
+//               )
+//               return (
+//                 <ul className="list-disc">
+//                   {users.length === 0 && '-'}
+//                   {users.map(({ user }) => (
+//                     <li key={user!.id}>
+//                       <Link variant="hidden" asChild>
+//                         <NextLink href={`/user/${user!.id}`}>
+//                           {user!.showName}
+//                         </NextLink>
+//                       </Link>
+//                     </li>
+//                   ))}
+//                 </ul>
+//               )
+//             },
+//           })
+//         ),
+//     ],
+//     [props.contestScoreboard]
+//   )
+//   const table = useReactTable({
+//     data: data,
+//     columns,
+//     getCoreRowModel: getCoreRowModel(),
+//   })
 
-  return (
-    <section>
-      <h2 className="font-heading text-2xl font-semibold mb-4">รางวัล</h2>
-      <TableComponent table={table} />
-    </section>
-  )
-}
+//   return (
+//     <section>
+//       <h2 className="font-heading text-2xl font-semibold mb-4">รางวัล</h2>
+//       <TableComponent table={table} />
+//     </section>
+//   )
+// }
 
-export const prizeDescription: Record<
-  keyof ContestPrize,
-  { name: string; description: string; emoji: string }
-> = {
-  firstBlood: {
-    name: 'First Blood',
-    description: 'The first user that passed the task.',
-    emoji: '💀',
-  },
-  // fasterThanLight: {
-  //   name: 'Faster Than Light',
-  //   description: 'The user that solved the task with fastest algorithm.',
-  //   emoji: '⚡️',
-  // },
-  // passedInOne: {
-  //   name: 'Passed In One',
-  //   description: 'The user that passed the task in one submission.',
-  //   emoji: '🎯',
-  // },
-  oneManSolve: {
-    name: 'One Man Solve',
-    description: 'The only one user that passed the task.',
-    emoji: '🏅',
-  },
-}
+// export const prizeDescription: Record<
+//   keyof ContestPrize,
+//   { name: string; description: string; emoji: string }
+// > = {
+//   firstBlood: {
+//     name: 'First Blood',
+//     description: 'The first user that passed the task.',
+//     emoji: '💀',
+//   },
+// fasterThanLight: {
+//   name: 'Faster Than Light',
+//   description: 'The user that solved the task with fastest algorithm.',
+//   emoji: '⚡️',
+// },
+// passedInOne: {
+//   name: 'Passed In One',
+//   description: 'The user that passed the task in one submission.',
+//   emoji: '🎯',
+// },
+//   oneManSolve: {
+//     name: 'One Man Solve',
+//     description: 'The only one user that passed the task.',
+//     emoji: '🏅',
+//   },
+// }

@@ -12,6 +12,7 @@ import {
 import dayjs from 'dayjs'
 import { Columns2Icon } from 'lucide-react'
 import Head from 'next/head'
+import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { z } from 'zod'
 
@@ -24,6 +25,7 @@ import { Problem, ProblemModel, SubmissionStatus } from '@otog/database'
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -62,6 +64,7 @@ import {
   submissionQuery,
 } from '../../../../api/query'
 import { withQuery } from '../../../../api/server'
+import { ExampleTable } from '../../../../components/example-table'
 import { Footer } from '../../../../components/footer'
 import { InlineComponent } from '../../../../components/inline-component'
 import { MonacoEditor } from '../../../../components/monaco-editor'
@@ -81,7 +84,6 @@ import {
   useContestProps,
 } from '../../../../modules/contest/sidebar'
 import { SubmitCode } from '../../../../modules/problem/submit-code'
-import { ExampleTable } from '../../../problem/[problemId]'
 
 type ProblemModel = z.infer<typeof ProblemModel>
 
@@ -161,7 +163,7 @@ export default function ContestPage(props: ContestProblemPageProps) {
     <ContestLayout {...contestProps}>
       <Head>
         <title>
-          {problem.name} | {contest.name} | OTOG
+          {problem.name} - {contest.name} | OTOG
         </title>
       </Head>
       <div className="flex items-center gap-2 p-4">
@@ -169,9 +171,14 @@ export default function ContestPage(props: ContestProblemPageProps) {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-              <Breadcrumb>{contest.name}</Breadcrumb>
-            </BreadcrumbItem>
+            <BreadcrumbLink
+              className="font-heading text-lg font-semibold hidden md:block"
+              asChild
+            >
+              <NextLink href={`/contest/${props.contestId}`}>
+                {contest.name}
+              </NextLink>
+            </BreadcrumbLink>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
               <BreadcrumbPage className="font-heading text-lg font-semibold">
@@ -265,13 +272,13 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
                   defaultSize={50}
                   className={clsx(
                     'flex flex-col gap-2',
-                    twoColumn && '!overflow-y-scroll max-h-[800px]'
+                    twoColumn && '!overflow-y-auto max-h-[800px]'
                   )}
                 >
                   <embed
                     src={`/api/problem/${props.problem.id}`}
                     height="800px"
-                    className="w-full rounded-md border"
+                    className="w-full rounded-md border min-h-[800px]"
                   />
                   <ExampleTable problem={props.problem} />
                 </ResizablePanel>

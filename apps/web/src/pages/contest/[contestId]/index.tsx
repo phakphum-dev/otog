@@ -5,13 +5,7 @@ import Head from 'next/head'
 import NextLink from 'next/link'
 
 import { ContestSchema } from '@otog/contract'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@otog/ui/breadcrumb'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList } from '@otog/ui/breadcrumb'
 import { Button } from '@otog/ui/button'
 import { Separator } from '@otog/ui/separator'
 
@@ -59,21 +53,15 @@ export default function ContestPage(props: ContestPageProps) {
   return (
     <ContestLayout {...props}>
       <Head>
-        <title>{props.contest.name} | OTOG</title>
+        <title>{props.contest.name} - Contest | OTOG</title>
       </Head>
       <div className="flex items-center gap-2 p-4">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="font-heading text-lg font-semibold hidden md:block">
-              <Breadcrumb>{props.contest.name}</Breadcrumb>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="font-heading text-lg font-semibold">
-                Home
-              </BreadcrumbPage>
+            <BreadcrumbItem className="font-heading text-lg font-semibold">
+              {props.contest.name}
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
