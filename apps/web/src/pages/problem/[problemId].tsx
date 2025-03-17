@@ -156,28 +156,10 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
           !twoColumn && 'max-w-4xl mx-auto'
         )}
       >
-        <div className="flex sm:justify-between w-full flex-col sm:flex-row">
-          <h1
-            className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
-            aria-label={`โจทย์ข้อที่ ${props.problem.id}: ${props.problem.name}`}
-          >
-            <PencilSquareIcon className="size-6" />
-            {props.problem.name}
-          </h1>
-          <div className="flex flex-col justify-between gap-1 items-end">
-            <Link
-              className="text-sm"
-              isExternal
-              href={`/api/problem/${props.problem.id}`}
-            >
-              [ดาวน์โหลด]
-            </Link>
-            <p className="text-sm text-">
-              ({props.problem.timeLimit / 1000} วินาที{' '}
-              {props.problem.memoryLimit} MB)
-            </p>
-          </div>
-        </div>
+        <h1 className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center">
+          <PencilSquareIcon className="size-6" />
+          {props.problem.name}
+        </h1>
 
         <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <div className="flex justify-between">
@@ -238,6 +220,21 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
                   height="800px"
                   className="w-full rounded-md border min-h-[800px]"
                 />
+                {/* TODO: add attachment */}
+                <div className="flex justify-between gap-1 items-end">
+                  <p className="text-sm text-muted-foreground">
+                    {props.problem.timeLimit / 1000} วินาที{' '}
+                    {props.problem.memoryLimit} MB
+                  </p>
+                  <Link
+                    className="text-sm text-muted-foreground"
+                    variant="hidden"
+                    isExternal
+                    href={`/api/problem/${props.problem.id}`}
+                  >
+                    [ดาวน์โหลด]
+                  </Link>
+                </div>
                 <ExampleTable problem={props.problem} />
               </ResizablePanel>
               {twoColumn && (

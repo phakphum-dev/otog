@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from 'react'
 import { toast } from 'react-hot-toast'
@@ -50,36 +49,6 @@ export const ExampleTable = ({ problem }: ExampleTableProps) => {
   const [testcases, setTestcases] = useState(examples)
 
   const updateProblemExamples = problemQuery.updateProblemExamples.useMutation()
-
-  const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<Testcase>()
-    return [
-      columnHelper.accessor('input', {
-        header: 'Input',
-        cell: ({ cell, row }) => <TestcaseCell row={row} cell={cell} />,
-        meta: {
-          headClassName: 'border-r',
-          cellClassName: 'border-r relative align-top group/example',
-        },
-        enableSorting: false,
-      }),
-      columnHelper.accessor('output', {
-        header: 'Output',
-        cell: ({ cell, row }) => (
-          <>
-            <TestcaseCell row={row} cell={cell} />
-            <DeleteTestcase row={row} />
-            <InsertTestcase row={row} />
-          </>
-        ),
-        meta: {
-          headClassName: '',
-          cellClassName: 'relative align-top group/example',
-        },
-        enableSorting: false,
-      }),
-    ]
-  }, [])
 
   const table = useReactTable({
     columns,
@@ -168,6 +137,34 @@ export const ExampleTable = ({ problem }: ExampleTableProps) => {
     </div>
   )
 }
+
+const columnHelper = createColumnHelper<Testcase>()
+const columns = [
+  columnHelper.accessor('input', {
+    header: 'Input',
+    cell: ({ cell, row }) => <TestcaseCell row={row} cell={cell} />,
+    meta: {
+      headClassName: 'border-r',
+      cellClassName: 'border-r relative align-top group/example',
+    },
+    enableSorting: false,
+  }),
+  columnHelper.accessor('output', {
+    header: 'Output',
+    cell: ({ cell, row }) => (
+      <>
+        <TestcaseCell row={row} cell={cell} />
+        <DeleteTestcase row={row} />
+        <InsertTestcase row={row} />
+      </>
+    ),
+    meta: {
+      headClassName: '',
+      cellClassName: 'relative align-top group/example',
+    },
+    enableSorting: false,
+  }),
+]
 
 interface TestcaseTableContextValue {
   isEditing: boolean

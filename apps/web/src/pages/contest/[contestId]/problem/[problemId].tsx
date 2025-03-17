@@ -39,6 +39,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@otog/ui/form'
+import { Link } from '@otog/ui/link'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -280,6 +281,21 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
                     height="800px"
                     className="w-full rounded-md border min-h-[800px]"
                   />
+                  {/* TODO: add attachment */}
+                  <div className="flex justify-between gap-1 items-end">
+                    <p className="text-sm text-muted-foreground">
+                      {props.problem.timeLimit / 1000} วินาที{' '}
+                      {props.problem.memoryLimit} MB
+                    </p>
+                    <Link
+                      className="text-sm text-muted-foreground"
+                      variant="hidden"
+                      isExternal
+                      href={`/api/problem/${props.problem.id}`}
+                    >
+                      [ดาวน์โหลด]
+                    </Link>
+                  </div>
                   <ExampleTable problem={props.problem} />
                 </ResizablePanel>
                 {twoColumn && (
