@@ -642,9 +642,9 @@ export const contestRouter = contract.router(
     },
     toggleProblemToContest: {
       method: 'PATCH',
-      path: '/:contestId',
+      path: '/:contestId/problem/:problemId',
       responses: { 200: z.object({ show: z.boolean() }) },
-      body: z.object({ show: z.boolean(), problemId: z.coerce.number() }),
+      body: z.object({ show: z.boolean() }),
       summary: 'Toggle problem to a contest',
     },
     putProblemToContest: {
@@ -661,6 +661,15 @@ export const contestRouter = contract.router(
         200: ContestModel,
       },
       body: ContestModel.omit({ id: true }),
+      summary: 'Update a contest',
+    },
+    patchContest: {
+      method: 'PATCH',
+      path: '/:contestId',
+      responses: {
+        200: ContestModel,
+      },
+      body: ContestModel.omit({ id: true }).partial(),
       summary: 'Update a contest',
     },
     deleteContest: {

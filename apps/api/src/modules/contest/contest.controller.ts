@@ -210,10 +210,11 @@ export class ContestController {
   toggleProblemToContest() {
     return tsRestHandler(
       c.toggleProblemToContest,
-      async ({ body: { problemId, show }, params: { contestId } }) => {
-        const id = z.coerce.number().parse(contestId)
+      async ({ body: { show }, params }) => {
+        const contestId = z.coerce.number().parse(params.contestId)
+        const problemId = z.coerce.number().parse(params.problemId)
         const contest = await this.contestService.toggleProblemToContest(
-          id,
+          contestId,
           problemId,
           show
         )
@@ -246,6 +247,19 @@ export class ContestController {
       async ({ body, params: { contestId } }) => {
         const id = z.coerce.number().parse(contestId)
         const contest = await this.contestService.updateContest(id, body)
+        return { status: 200, body: contest }
+      }
+    )
+  }
+
+  @TsRestHandler(c.patchContest)
+  @Roles(Role.Admin)
+  patchContest() {
+    return tsRestHandler(
+      c.patchContest,
+      async ({ body, params: { contestId } }) => {
+        const id = z.coerce.number().parse(contestId)
+        const contest = await this.contestService.patchContest(id, body)
         return { status: 200, body: contest }
       }
     )

@@ -57,10 +57,33 @@ interface AnnouncementEditableProps {
 export const AnnouncementEditable = ({
   announcement,
 }: AnnouncementEditableProps) => {
+  const value = useMemo(
+    () => (announcement.value ? JSON.parse(announcement.value) : null),
+    [announcement.value]
+  )
+
   const [isEditing, setEditing] = useState(false)
+  const queryClient = useQueryClient()
+  const onSave = async (value: string) => {
+    try {
+      await announcementQuery.updateAnnouncement.mutation({
+        params: { announcementId: announcement.id.toString() },
+        body: { ...announcement, value },
+      })
+      queryClient.invalidateQueries({
+        queryKey: announcementKey._def,
+      })
+      setEditing(false)
+      toast.success('บันทึกประกาศแล้ว')
+    } catch (e) {
+      console.error(e)
+      toast.error('บันทึกประกาศไม่สำเร็จ')
+    }
+  }
   return isEditing ? (
     <AnnouncementEditor
-      announcement={announcement}
+      onSave={onSave}
+      defaultValue={value}
       onClose={() => setEditing(false)}
       key={announcement.id}
     />
@@ -73,7 +96,7 @@ export const AnnouncementEditable = ({
         className="flex w-full flex-col justify-center items-center gap-2 overflow-hidden"
         style={{ height: HEIGHT }}
       >
-        <ReadonlyEditor value={JSON.parse(announcement.value)} />
+        <ReadonlyEditor value={value} />
       </div>
       <div className="absolute flex gap-1 right-0 top-1">
         <ToggleAnnouncement announcement={announcement} />
@@ -92,33 +115,20 @@ export const AnnouncementEditable = ({
 }
 
 type AnnouncementEditorProps = {
-  announcement: AnnouncementSchema
+  defaultValue: any
   onClose: () => void
+  onSave: (value: string) => void
+  height?: 'auto' | number
 }
 
 export const AnnouncementEditor = ({
-  announcement,
+  defaultValue,
   onClose,
+  onSave,
+  height = HEIGHT,
 }: AnnouncementEditorProps) => {
-  const [value, setValue] = useState(() => JSON.parse(announcement.value))
+  const [value, setValue] = useState(defaultValue)
 
-  const queryClient = useQueryClient()
-  const onSave = async () => {
-    try {
-      await announcementQuery.updateAnnouncement.mutation({
-        params: { announcementId: announcement.id.toString() },
-        body: { ...announcement, value: JSON.stringify(value) },
-      })
-      queryClient.invalidateQueries({
-        queryKey: announcementKey._def,
-      })
-      onClose()
-      toast.success('บันทึกประกาศแล้ว')
-    } catch (e) {
-      console.error(e)
-      toast.error('บันทึกประกาศไม่สำเร็จ')
-    }
-  }
   const editor = useMemo(() => withReact(withHistory(createEditor())), [])
   // editor.children = value
   const handleHotkey = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -166,7 +176,11 @@ export const AnnouncementEditor = ({
             <Button variant="ghost" size="sm" onClick={onClose}>
               ยกเลิก
             </Button>
-            <Button variant="success" onClick={onSave} size="sm">
+            <Button
+              variant="success"
+              onClick={() => onSave(JSON.stringify(value))}
+              size="sm"
+            >
               บันทึก
             </Button>
           </div>
@@ -174,8 +188,8 @@ export const AnnouncementEditor = ({
         <Editable
           className="outline-none overflow-hidden text-center flex flex-col justify-center gap-2"
           style={{
-            minHeight: HEIGHT,
-            maxHeight: HEIGHT,
+            minHeight: height,
+            maxHeight: height,
           }}
           placeholder="Enter announcement…"
           renderElement={Element}

@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
 
+import { PencilIcon } from '@heroicons/react/24/outline'
 import { useQueryClient } from '@tanstack/react-query'
 import Head from 'next/head'
 import NextLink from 'next/link'
@@ -10,10 +12,13 @@ import { Button } from '@otog/ui/button'
 import { Separator } from '@otog/ui/separator'
 
 import { SidebarTrigger } from '../../../../../../packages/ui/src/sidebar'
-import { appKey, contestKey } from '../../../api/query'
+import { appKey, contestKey, contestQuery } from '../../../api/query'
 import { withQuery } from '../../../api/server'
 import { Footer } from '../../../components/footer'
+import { useUserContext } from '../../../context/user-context'
 import { environment } from '../../../env'
+import { AnnouncementEditor } from '../../../modules/announcement/editor'
+import { ReadonlyEditor } from '../../../modules/announcement/readonly-editor'
 import { ContestLayout, useContest } from '../../../modules/contest/sidebar'
 import { toThaiDuration } from '../../../utils/time'
 import { useTimer } from '../../../utils/use-timer'
@@ -66,14 +71,70 @@ export default function ContestPage(props: ContestPageProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <section className="container max-w-4xl flex flex-col flex-1 items-center justify-center">
+      <section className="container max-w-4xl flex flex-col flex-1 items-center justify-center py-10 gap-8 rounded-lg">
         <ContestDisplay />
+        <ContestDetail />
       </section>
       <Footer className="pt-8 px-4 max-w-full" />
     </ContestLayout>
   )
 }
 ContestPage.footer = false
+
+function ContestDetail() {
+  const { contest } = useContest()
+  const { isAdmin } = useUserContext()
+  const value = useMemo(
+    () => (contest.announce ? JSON.parse(contest.announce) : null),
+    [contest.announce]
+  )
+  const [isEditing, setEditing] = useState(false)
+  const queryClient = useQueryClient()
+  if (!contest.announce || !isAdmin) {
+    return null
+  }
+  if (isEditing) {
+    return (
+      <AnnouncementEditor
+        height="auto"
+        defaultValue={value}
+        onClose={() => setEditing(false)}
+        onSave={async (value) => {
+          try {
+            await contestQuery.patchContest.mutation({
+              params: { contestId: contest.id.toString() },
+              body: { announce: value },
+            })
+            queryClient.invalidateQueries({
+              queryKey: contestKey.getContest({
+                params: { contestId: contest.id.toString() },
+              }).queryKey,
+            })
+            setEditing(false)
+            toast.success('บันทึกประกาศแล้ว')
+          } catch (e) {
+            console.error(e)
+            toast.error('บันทึกประกาศไม่สำเร็จ')
+          }
+        }}
+      />
+    )
+  }
+  return (
+    <div className="w-full flex items-center justify-center overflow-hidden relative min-h-10">
+      <ReadonlyEditor value={value} height="auto" />
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setEditing(true)}
+        title="แก้ไขประกาศ"
+        className="absolute flex gap-1 right-0 top-0"
+      >
+        <PencilIcon />
+      </Button>
+    </div>
+  )
+}
 
 function ContestDisplay() {
   const { contestStatus } = useContest()

@@ -256,8 +256,11 @@ const ActionMenu = ({ row }: { row: Row<ContestProblem> }) => {
                 const toastId = toast.loading('กำลังลบโจทย์...')
                 toggleProblemToContest.mutateAsync(
                   {
-                    body: { problemId: row.original.problemId, show: false },
-                    params: { contestId: row.original.contestId.toString() },
+                    body: { show: false },
+                    params: {
+                      contestId: row.original.contestId.toString(),
+                      problemId: row.original.problemId.toString(),
+                    },
                   },
                   {
                     onSuccess: () => {

@@ -495,6 +495,16 @@ export class ContestService {
     })
   }
 
+  async patchContest(
+    contestId: number,
+    contestData: Prisma.ContestUpdateInput
+  ) {
+    return this.prisma.contest.update({
+      where: { id: contestId },
+      data: contestData,
+    })
+  }
+
   async deleteContest(contestId: number) {
     return this.prisma.contest.delete({ where: { id: contestId } })
   }
