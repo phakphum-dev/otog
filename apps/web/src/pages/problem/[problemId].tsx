@@ -149,7 +149,7 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
       <Head>
         <title>{problem.name} | One Tambon One Grader</title>
       </Head>
-      <ProblemSection {...props} />
+      <ProblemSection {...props} key={problem.id} />
     </main>
   )
 }
