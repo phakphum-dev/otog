@@ -138,13 +138,12 @@ function ContestAnnouncement(props: ContestAnnouncementPageProps) {
                 key={announcement.id}
               />
             ) : (
-              <>
+              <div className="border-b last:border-b-0">
                 <ReadonlyEditor
                   value={JSON.parse(announcement.value)}
                   key={announcement.id}
                 />
-                <hr className="w-full" />
-              </>
+              </div>
             )}
           </>
         ))}
