@@ -90,7 +90,7 @@ function ContestDetail() {
   )
   const [isEditing, setEditing] = useState(false)
   const queryClient = useQueryClient()
-  if (!contest.announce || !isAdmin) {
+  if (!contest.announce && !isAdmin) {
     return null
   }
   if (isEditing) {
@@ -123,15 +123,17 @@ function ContestDetail() {
   return (
     <div className="w-full flex items-center justify-center overflow-hidden relative min-h-10">
       <ReadonlyEditor value={value} height="auto" />
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={() => setEditing(true)}
-        title="แก้ไขประกาศ"
-        className="absolute flex gap-1 right-0 top-0"
-      >
-        <PencilIcon />
-      </Button>
+      {isAdmin && (
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setEditing(true)}
+          title="แก้ไขประกาศ"
+          className="absolute flex gap-1 right-0 top-0"
+        >
+          <PencilIcon />
+        </Button>
+      )}
     </div>
   )
 }
