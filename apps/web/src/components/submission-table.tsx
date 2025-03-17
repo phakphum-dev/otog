@@ -167,7 +167,7 @@ export function useSubmissionPolling(originalSubmission: SubmissionSchema) {
         (data.body.status === SubmissionStatus.waiting ||
           data.body.status === SubmissionStatus.grading)
       ) {
-        return 1000
+        return 1000 * Math.pow(2, query.state.dataUpdateCount)
       }
       return false
     },

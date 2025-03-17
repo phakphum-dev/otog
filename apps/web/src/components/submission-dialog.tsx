@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import toast from 'react-hot-toast'
 
 import {
+  ArrowPathIcon,
   CheckIcon,
   DocumentDuplicateIcon,
   EyeIcon,
@@ -22,7 +24,7 @@ import NextLink from 'next/link'
 import { z } from 'zod'
 
 import { SubmissionDetailSchema } from '@otog/contract'
-import { VerdictModel } from '@otog/database'
+import { SubmissionStatus, VerdictModel } from '@otog/database'
 import {
   Accordion,
   AccordionContent,
@@ -63,6 +65,17 @@ export const SubmissionDialog = ({
       params: { submissionId: submissionId?.toString()! },
     }),
     enabled: !!submissionId && open,
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (
+        data?.status === 200 &&
+        (data.body.status === SubmissionStatus.waiting ||
+          data.body.status === SubmissionStatus.grading)
+      ) {
+        return 1000 * Math.pow(2, query.state.dataUpdateCount)
+      }
+      return false
+    },
   })
   const submission =
     getSubmission.data?.status === 200 ? getSubmission.data.body : undefined
@@ -109,6 +122,7 @@ export const SubmissionDetail = ({
   const { hasCopied, onCopy } = useClipboard()
   const queryClient = useQueryClient()
   const shareSubmission = submissionQuery.shareSubmission.useMutation()
+  const rejudgeSubmission = submissionQuery.rejudgeSubmission.useMutation()
   const { user } = useUserContext()
   return (
     <div className="text-sm min-w-0">
@@ -250,6 +264,35 @@ export const SubmissionDetail = ({
           language={submission.language ?? 'cpp'}
         />
         <div className="flex gap-1 absolute top-1 right-1">
+          {user?.role === 'admin' && (
+            <Button
+              size="icon"
+              title="rejudge"
+              variant="ghost"
+              onClick={() => {
+                const toastId = toast.loading('กำลังส่งตรวจใหม่...')
+                rejudgeSubmission.mutateAsync(
+                  { params: { submissionId: submission.id.toString() } },
+                  {
+                    onSuccess: () => {
+                      toast.success('ส่งตรวจใหม่แล้ว', { id: toastId })
+                      queryClient.invalidateQueries({
+                        queryKey: submissionKey.getSubmissionWithSourceCode({
+                          params: { submissionId: submission.id.toString() },
+                        }).queryKey,
+                      })
+                    },
+                    onError: (error) => {
+                      toast.error('ส่งตรวจใหม่ไม่สำเร็จ', { id: toastId })
+                      console.error(error)
+                    },
+                  }
+                )
+              }}
+            >
+              <ArrowPathIcon />
+            </Button>
+          )}
           {(user?.id === submission.userId || user?.role === 'admin') && (
             <Button
               size="icon"
