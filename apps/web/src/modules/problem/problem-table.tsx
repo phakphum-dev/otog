@@ -1,4 +1,4 @@
-import { ReactNode, forwardRef, useMemo, useState } from 'react'
+import { ReactNode, forwardRef, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import {
@@ -85,6 +85,14 @@ export const ProblemTable = () => {
     recentShowTime: false,
     passedCount: false,
   })
+  useEffect(() => {
+    const passedCountVisible =
+      window.localStorage.getItem('preferredColumn.passedCount') === 'true'
+    setColumnVisibility((prev) => ({
+      ...prev,
+      passedCount: passedCountVisible,
+    }))
+  }, [])
   const table = useReactTable({
     columns,
     data: problems,
@@ -299,7 +307,13 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
           <DropdownMenuContent align="end">
             <DropdownMenuCheckboxItem
               checked={passedCountColumn.getIsVisible()}
-              onClick={() => passedCountColumn.toggleVisibility()}
+              onClick={() => {
+                window.localStorage.setItem(
+                  'preferredColumn.passedCount',
+                  (!passedCountColumn.getIsVisible()).toString()
+                )
+                passedCountColumn.toggleVisibility()
+              }}
             >
               ผู้ที่ผ่าน
             </DropdownMenuCheckboxItem>
@@ -542,9 +556,9 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <NextLink href={`/problem/${row.original.id}`}>
+            <NextLink href={`/problem/${row.original.id}?tab=editor`}>
               <PencilSquareIcon />
-              {row.original.latestSubmission ? 'แก้ไขการส่งล่าสุด' : 'เขียนส่ง'}
+              เขียนส่ง
             </NextLink>
           </DropdownMenuItem>
           <DropdownMenuItem

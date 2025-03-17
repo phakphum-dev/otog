@@ -335,7 +335,7 @@ export const SubmissionDetail = ({
             {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
           </Button>
           <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
-            <NextLink href={`/problem/${submission.problem.id}`}>
+            <NextLink href={`/problem/${submission.problem.id}?tab=editor`}>
               <PencilSquareIcon />
             </NextLink>
           </Button>

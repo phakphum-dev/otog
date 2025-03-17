@@ -281,7 +281,7 @@ const ContestProblemSection = (props: ContestProblemPageProps) => {
                   className="w-full rounded-md border min-h-[800px]"
                 />
                 {/* TODO: add attachment */}
-                <div className="flex justify-between gap-1 items-end">
+                <div className="flex justify-between gap-1">
                   <p className="text-sm text-muted-foreground">
                     {props.problem.timeLimit / 1000} วินาที{' '}
                     {props.problem.memoryLimit} MB

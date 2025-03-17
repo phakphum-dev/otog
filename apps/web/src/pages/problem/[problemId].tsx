@@ -12,6 +12,7 @@ import dayjs from 'dayjs'
 import { Columns2Icon } from 'lucide-react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { useQueryState } from 'nuqs'
 import { z } from 'zod'
 
 import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
@@ -132,7 +133,8 @@ export default function WriteSolutionPage(props: WriteSolutionPageProps) {
 
 const ProblemSection = (props: WriteSolutionPageProps) => {
   type Tab = 'problem' | 'editor' | 'submissions'
-  const [tab, setTab] = useState<Tab>('problem')
+  const [tab, setTab] = useQueryState('tab', { defaultValue: 'problem' })
+
   const queryClient = useQueryClient()
   const { containerRef, isBreakpoint: isLargeScreen } =
     useContainerBreakpoint<HTMLDivElement>({
@@ -221,7 +223,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
                   className="w-full rounded-md border min-h-[800px]"
                 />
                 {/* TODO: add attachment */}
-                <div className="flex justify-between gap-1 items-end">
+                <div className="flex justify-between gap-1">
                   <p className="text-sm text-muted-foreground">
                     {props.problem.timeLimit / 1000} วินาที{' '}
                     {props.problem.memoryLimit} MB
