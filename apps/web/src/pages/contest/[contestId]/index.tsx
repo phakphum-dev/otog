@@ -19,6 +19,7 @@ import { useUserContext } from '../../../context/user-context'
 import { environment } from '../../../env'
 import { AnnouncementEditor } from '../../../modules/announcement/editor'
 import { ReadonlyEditor } from '../../../modules/announcement/readonly-editor'
+import { createEmptyAnnouncement } from '../../../modules/announcement/utils'
 import { ContestLayout, useContest } from '../../../modules/contest/sidebar'
 import { toThaiDuration } from '../../../utils/time'
 import { useTimer } from '../../../utils/use-timer'
@@ -90,14 +91,14 @@ function ContestDetail() {
   )
   const [isEditing, setEditing] = useState(false)
   const queryClient = useQueryClient()
-  if (!contest.announce && !isAdmin) {
+  if (!value && !isAdmin) {
     return null
   }
   if (isEditing) {
     return (
       <AnnouncementEditor
         height="auto"
-        defaultValue={value}
+        defaultValue={value ?? createEmptyAnnouncement()}
         onClose={() => setEditing(false)}
         onSave={async (value) => {
           try {
@@ -122,7 +123,7 @@ function ContestDetail() {
   }
   return (
     <div className="w-full flex items-center justify-center overflow-hidden relative min-h-10">
-      <ReadonlyEditor value={value} height="auto" />
+      {value && <ReadonlyEditor value={value} height="auto" />}
       {isAdmin && (
         <Button
           size="icon"

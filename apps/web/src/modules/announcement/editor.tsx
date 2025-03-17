@@ -144,6 +144,7 @@ export const AnnouncementEditor = ({
       editor.insertText('\n')
     }
   }
+  // TODO: fix https://github.com/ianstormtaylor/slate/issues/3309
   return (
     <div className="flex flex-col gap-2 border-b py-4 last:border-b-0">
       <Slate editor={editor} initialValue={value} onChange={setValue}>
