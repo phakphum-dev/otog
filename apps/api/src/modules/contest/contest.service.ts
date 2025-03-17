@@ -234,7 +234,7 @@ export class ContestService {
       },
     })
     contestScores.forEach((contestScore) => {
-      const parsedContestScore = ContestScoreSchema.parse({
+      const parsedContestScore: ContestScoreSchema = {
         problemId: contestScore.problemId,
         score: contestScore.score,
         penalty: contestScore.latestSubmission
@@ -244,7 +244,7 @@ export class ContestService {
                 1000
             )
           : 0,
-      })
+      }
       if (userIdToContestScores.has(contestScore.userId)) {
         userIdToContestScores.get(contestScore.userId)!.push(parsedContestScore)
       } else {
