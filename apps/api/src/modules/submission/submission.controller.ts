@@ -62,17 +62,45 @@ export class SubmissionController {
     )
   }
 
-  // unused
-  @TsRestHandler(c.getContestSubmissions)
+  @TsRestHandler(c.getContestSubmissionsForAdmin, { jsonQuery: true })
   @Roles(Role.Admin)
+  getContestSubmissionsForAdmin() {
+    return tsRestHandler(
+      c.getContestSubmissionsForAdmin,
+      async ({
+        query: { offset = 1e9, limit = 89, userSearch, problemSearch },
+        params,
+      }) => {
+        const contestId = z.coerce.number().parse(params.contestId)
+        const submissions = await this.submissionService.findAllWithContest({
+          offset,
+          limit,
+          contestId,
+          problemSearch,
+          userSearch,
+        })
+        return { status: 200, body: submissions }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getContestSubmissions, { jsonQuery: true })
+  @Roles(Role.Admin, Role.User)
   getContestSubmissions() {
     return tsRestHandler(
       c.getContestSubmissions,
-      async ({ query: { limit, offset } }) => {
-        const submissions = await this.submissionService.findAllWithContest(
+      async ({
+        query: { offset = 1e9, limit = 89, problemId, userId },
+        params,
+      }) => {
+        const contestId = z.coerce.number().parse(params.contestId)
+        const submissions = await this.submissionService.getContestSubmissions({
           offset,
-          limit
-        )
+          limit,
+          userId,
+          problemId,
+          contestId,
+        })
         return { status: 200, body: submissions }
       }
     )
@@ -153,6 +181,26 @@ export class SubmissionController {
             offset,
             limit
           )
+        return { status: 200, body: submissions }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getSubmissionsByProblemId)
+  @Roles(Role.User, Role.Admin)
+  getSubmissionsByProblemId() {
+    return tsRestHandler(
+      c.getSubmissionsByProblemId,
+      async ({ params, query: { limit = 10, offset = 1e9 } }) => {
+        const userId = z.coerce.number().parse(params.userId)
+        const problemId = z.coerce.number().parse(params.problemId)
+        const submissions =
+          await this.submissionService.getSubmissionsByProblemId({
+            limit,
+            userId,
+            problemId,
+            offset,
+          })
         return { status: 200, body: submissions }
       }
     )

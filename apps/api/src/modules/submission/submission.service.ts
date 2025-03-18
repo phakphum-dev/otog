@@ -111,13 +111,45 @@ export class SubmissionService {
     })
   }
 
-  findAllWithContest(offset = 1e9, limit = 89) {
+  async getContestSubmissions(args: {
+    offset: number
+    limit: number
+    userId: number
+    contestId: number
+    problemId: number
+  }) {
+    return await this.prisma.submission.findMany({
+      where: {
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        userId: args.userId,
+        problemId: args.problemId,
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { creationDate: 'desc' },
+    })
+  }
+
+  findAllWithContest(args: {
+    contestId: number
+    offset: number
+    limit: number
+    problemSearch: string | undefined
+    userSearch: string | undefined
+  }) {
     return this.prisma.submission.findMany({
       where: {
-        contestId: { not: null },
-        id: { lt: offset },
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
+        user: args.userSearch
+          ? { showName: { contains: args.userSearch, mode: 'insensitive' } }
+          : undefined,
       },
-      take: limit,
+      take: args.limit,
       select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
@@ -186,6 +218,24 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { id: 'desc' },
+    })
+  }
+
+  getSubmissionsByProblemId(args: {
+    userId: number
+    problemId: number
+    limit: number
+    offset: number
+  }) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId: args.userId,
+        problemId: args.problemId,
+        id: { lt: args.offset },
+      },
+      take: args.limit,
       select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })

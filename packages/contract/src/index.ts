@@ -7,6 +7,8 @@ import {
   ChatModel,
   ContestModel,
   ContestProblemModel,
+  ContestScoreHistoryModel,
+  ContestScoreModel,
   ProblemModel,
   SubmissionModel,
   SubmissionResultModel,
@@ -211,14 +213,29 @@ export const submissionRouter = contract.router(
       query: GetSubmissionsQuery,
       summary: 'Get paginated submissions',
     },
-    getContestSubmissions: {
+    getContestSubmissionsForAdmin: {
       method: 'GET',
-      path: '/contest',
+      path: '/admin/contest/:contestId',
       responses: {
         200: z.array(SubmissionSchema),
       },
-      query: PaginationQuerySchema,
+      query: PaginationQuerySchema.extend({
+        problemSearch: z.string().optional(),
+        userSearch: z.string().optional(),
+      }),
       summary: 'Get paginated contest submissions',
+    },
+    getContestSubmissions: {
+      method: 'GET',
+      path: '/contest/:contestId',
+      responses: {
+        200: z.array(SubmissionSchema),
+      },
+      query: PaginationQuerySchema.extend({
+        userId: z.number(),
+        problemId: z.number(),
+      }),
+      summary: 'Get paginated contest submissions by user',
     },
     getLatestSubmissionByProblemId: {
       method: 'GET',
@@ -263,6 +280,16 @@ export const submissionRouter = contract.router(
       },
       query: PaginationQuerySchema,
       summary: 'Get submissions for a user',
+    },
+    getSubmissionsByProblemId: {
+      method: 'GET',
+      path: '/user/:userId/problem/:problemId',
+      responses: {
+        200: z.array(SubmissionSchema),
+        400: z.object({ message: z.string() }),
+      },
+      query: PaginationQuerySchema,
+      summary: 'Get submissions for a problem',
     },
     getSubmission: {
       method: 'GET',
@@ -393,36 +420,89 @@ export const userRouter = contract.router(
   { pathPrefix: '/user' }
 )
 
+export const ContestSchema = ContestModel.pick({
+  id: true,
+  name: true,
+  mode: true,
+  gradingMode: true,
+  scoreboardPolicy: true,
+  timeStart: true,
+  timeEnd: true,
+  announce: true,
+})
+export type ContestSchema = z.infer<typeof ContestSchema>
+
+export const ContestDetailSchema = ContestSchema.extend({
+  contestProblem: z.array(
+    z.object({
+      problem: ProblemModel.pick({
+        id: true,
+        name: true,
+        score: true,
+      }),
+    })
+  ),
+  _count: z.object({ announcements: z.number() }),
+})
+export type ContestDetailSchema = z.infer<typeof ContestDetailSchema>
+
+export const ContestStatusEnum = z.enum(['PENDING', 'RUNNING', 'FINISHED'])
+export type ContestStatusEnum = z.infer<typeof ContestStatusEnum>
+
 const PrizeSchema = z.object({
   id: z.number(),
   problem: ProblemModel.pick({ id: true }).nullable(),
   user: UserModel.pick({ id: true, showName: true }).nullable(),
 })
 
+export const ContestScoreSchema = z.object({
+  problemId: z.number(),
+  score: z.number(),
+  penalty: z.number(),
+})
+export type ContestScoreSchema = z.infer<typeof ContestScoreSchema>
+
+export const ContestScoreHistorySchema = ContestScoreHistoryModel.extend({
+  submission: SubmissionModel.pick({
+    creationDate: true,
+  }).extend({
+    submissionResult: SubmissionResultModel.pick({
+      score: true,
+    })
+      .extend({
+        subtaskResults: z.array(
+          SubtaskResultModel.pick({
+            score: true,
+            fullScore: true,
+            subtaskIndex: true,
+          })
+        ),
+      })
+      .nullable(),
+  }),
+})
+export type ContestScoreHistorySchema = z.infer<
+  typeof ContestScoreHistorySchema
+>
+
+export const ScoreHistorySchema = ContestScoreModel.extend({
+  contestScoreHistory: z.array(ContestScoreHistorySchema),
+})
+export type ScoreHistorySchema = z.infer<typeof ScoreHistorySchema>
+
+export const UserDisplaySchema = UserModel.pick({
+  id: true,
+  showName: true,
+  role: true,
+  rating: true,
+})
+export type UserDisplaySchema = z.infer<typeof UserDisplaySchema>
+
 export const UserContestScoreboard = UserContestModel.extend({
   totalScore: z.number(),
-  totalTimeUsed: z.number(),
-  user: UserModel.pick({
-    id: true,
-    showName: true,
-    role: true,
-    rating: true,
-  }),
-  submissions: z.array(
-    SubmissionModel.pick({
-      id: true,
-      problemId: true,
-      status: true,
-      userId: true,
-    }).extend({
-      submissionResult: SubmissionResultModel.pick({
-        id: true,
-        timeUsed: true,
-        score: true,
-        memUsed: true,
-      }).nullable(),
-    })
-  ),
+  maxPenalty: z.number(),
+  user: UserDisplaySchema,
+  contestScores: z.array(ContestScoreSchema),
 })
 export type UserContestScoreboard = z.infer<typeof UserContestScoreboard>
 
@@ -475,27 +555,64 @@ export const contestRouter = contract.router(
       query: ListPaginationQuerySchema,
       responses: {
         200: z.object({
-          data: z.array(ContestModel),
+          data: z.array(ContestSchema),
           total: z.number(),
         }),
       },
       summary: 'List paginated contests',
     },
-    getCurrentContest: {
+    getCurrentContests: {
       method: 'GET',
       path: '/now',
       responses: {
-        200: z.object({ currentContest: CurrentContest.nullable() }),
+        200: z.array(ContestSchema),
       },
-      summary: 'Get the current contest',
+      summary: 'Get the current contests',
     },
     getContest: {
       method: 'GET',
       path: '/:contestId',
       responses: {
-        200: ContestModel.nullable(),
+        200: ContestSchema,
+        404: z.object({ message: z.string() }),
       },
       summary: 'Get a contest',
+    },
+    getContestDetail: {
+      method: 'GET',
+      path: '/:contestId/detail',
+      responses: {
+        200: ContestDetailSchema,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      summary: 'Get a contest with detail',
+    },
+    getContestProblem: {
+      method: 'GET',
+      path: '/:contestId/problem/:problemId',
+      responses: {
+        200: ProblemModel,
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      summary: 'Get a problem in contest',
+    },
+    getUserContestScores: {
+      method: 'GET',
+      path: '/:contestId/score',
+      responses: {
+        200: z.array(ContestScoreSchema),
+      },
+      summary: 'Get a problem in contest',
+    },
+    getUserContestScoreHistory: {
+      method: 'GET',
+      path: '/:contestId/scoreHistory/:userId/',
+      responses: {
+        200: z.array(ScoreHistorySchema),
+        404: z.object({ message: z.string() }),
+      },
     },
     getContestScoreboard: {
       method: 'GET',
@@ -526,14 +643,14 @@ export const contestRouter = contract.router(
     },
     toggleProblemToContest: {
       method: 'PATCH',
-      path: '/:contestId',
+      path: '/:contestId/problem/:problemId',
       responses: { 200: z.object({ show: z.boolean() }) },
-      body: z.object({ show: z.boolean(), problemId: z.coerce.number() }),
+      body: z.object({ show: z.boolean() }),
       summary: 'Toggle problem to a contest',
     },
     putProblemToContest: {
       method: 'PUT',
-      path: '/:contestId',
+      path: '/:contestId/problems',
       responses: { 200: z.object({}) },
       body: z.array(z.object({ problemId: z.coerce.number() })),
       summary: 'Put problems to a contest',
@@ -545,6 +662,15 @@ export const contestRouter = contract.router(
         200: ContestModel,
       },
       body: ContestModel.omit({ id: true }),
+      summary: 'Update a contest',
+    },
+    patchContest: {
+      method: 'PATCH',
+      path: '/:contestId',
+      responses: {
+        200: ContestModel,
+      },
+      body: ContestModel.omit({ id: true }).partial(),
       summary: 'Update a contest',
     },
     deleteContest: {

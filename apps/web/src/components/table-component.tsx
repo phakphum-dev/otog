@@ -69,7 +69,7 @@ declare module '@tanstack/table-core' {
   }
 }
 
-interface TableComponentProps<T> {
+export interface TableComponentProps<T> {
   table: TanstackTable<T>
   isLoading?: boolean
   isError?: boolean

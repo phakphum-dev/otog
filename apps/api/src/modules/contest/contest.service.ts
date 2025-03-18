@@ -5,6 +5,9 @@ import { searchId } from 'src/utils/search'
 
 import {
   AdminContestWithProblems,
+  ContestDetailSchema,
+  ContestSchema,
+  ContestScoreSchema,
   ListPaginationQuerySchema,
   UserContestScoreboard,
 } from '@otog/contract'
@@ -20,6 +23,7 @@ export class ContestService {
         name: createContest.name,
         mode: createContest.mode,
         gradingMode: createContest.gradingMode,
+        scoreboardPolicy: createContest.scoreboardPolicy,
         timeStart: createContest.timeStart,
         timeEnd: createContest.timeEnd,
       },
@@ -28,6 +32,16 @@ export class ContestService {
 
   listContest(args: ListPaginationQuerySchema) {
     return this.prisma.contest.findMany({
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        scoreboardPolicy: true,
+        timeStart: true,
+        timeEnd: true,
+        announce: true,
+      },
       skip: args.skip,
       take: args.limit,
       orderBy: {
@@ -39,10 +53,139 @@ export class ContestService {
     return this.prisma.contest.count({})
   }
 
-  findOneById(contestId: number) {
+  findOneById(contestId: number): Promise<ContestSchema | null> {
     return this.prisma.contest.findUnique({
       where: { id: contestId },
-      include: { contestProblem: true },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        scoreboardPolicy: true,
+        timeStart: true,
+        timeEnd: true,
+        announce: true,
+      },
+    })
+  }
+
+  async getContestDetail(
+    contestId: number
+  ): Promise<ContestDetailSchema | null> {
+    return this.prisma.contest.findUnique({
+      where: { id: contestId },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        scoreboardPolicy: true,
+        timeStart: true,
+        timeEnd: true,
+        contestProblem: {
+          select: {
+            problem: {
+              select: {
+                id: true,
+                name: true,
+                score: true,
+              },
+            },
+          },
+        },
+        announce: true,
+        _count: { select: { announcements: true } },
+      },
+    })
+  }
+
+  async getContestProblem(contestId: number, problemId: number) {
+    const contestProblem = await this.prisma.contestProblem.findUnique({
+      where: {
+        contestId_problemId: {
+          contestId,
+          problemId,
+        },
+      },
+    })
+    if (!contestProblem) {
+      return null
+    }
+    return await this.prisma.problem.findUnique({
+      where: { id: problemId },
+    })
+  }
+
+  async getUserContestScores(contestId: number, userId: number) {
+    const contest = await this.prisma.contest.findUnique({
+      where: { id: contestId },
+      include: {
+        contestProblem: {
+          include: {
+            problem: true,
+          },
+        },
+      },
+    })
+    if (!contest) {
+      return null
+    }
+
+    const contestScores = await this.prisma.contestScore.findMany({
+      where: {
+        contestId,
+        userId,
+      },
+      select: {
+        problemId: true,
+        score: true,
+        latestSubmission: true,
+      },
+    })
+    return contestScores.map((contestScore) =>
+      ContestScoreSchema.parse({
+        problemId: contestScore.problemId,
+        score: contestScore.score,
+        penalty: contestScore.latestSubmission
+          ? Math.floor(
+              (contestScore.latestSubmission.getTime() -
+                contest.timeStart.getTime()) /
+                1000
+            )
+          : 0,
+      })
+    )
+  }
+
+  async getUserContestScoreHistory(contestId: number, userId: number) {
+    return await this.prisma.contestScore.findMany({
+      where: {
+        contestId,
+        userId,
+      },
+      include: {
+        contestScoreHistory: {
+          include: {
+            submission: {
+              select: {
+                creationDate: true,
+                submissionResult: {
+                  select: {
+                    score: true,
+                    subtaskResults: {
+                      select: {
+                        score: true,
+                        fullScore: true,
+                        subtaskIndex: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     })
   }
 
@@ -77,65 +220,59 @@ export class ContestService {
     if (!contest) {
       return null
     }
-    const lastSubmissions = await this.prisma.submission.groupBy({
-      _max: {
-        id: true,
-      },
-      by: ['userId', 'problemId'],
-      where: {
-        user: { role: Role.User },
-        contestId,
-      },
-    })
-    const submissionIds = lastSubmissions
-      .map((submission) => submission._max.id)
-      .filter((id): id is number => id !== null)
-    const submissions = await this.prisma.submission.findMany({
-      where: { id: { in: submissionIds } },
-      select: {
-        id: true,
-        problemId: true,
-        status: true,
-        userId: true,
-        submissionResult: {
-          select: {
-            id: true,
-            score: true,
-            timeUsed: true,
-            memUsed: true,
-          },
-        },
-      },
-    })
 
-    const userIdToSubmissions = new Map<number, typeof submissions>()
-    submissions.forEach((submission) => {
-      if (userIdToSubmissions.has(submission.userId)) {
-        userIdToSubmissions.get(submission.userId)!.push(submission)
+    const userIdToContestScores = new Map<number, ContestScoreSchema[]>()
+    const contestScores = await this.prisma.contestScore.findMany({
+      where: {
+        contestId,
+        user: { role: Role.User },
+      },
+      select: {
+        userId: true,
+        problemId: true,
+        score: true,
+        latestSubmission: true,
+      },
+    })
+    contestScores.forEach((contestScore) => {
+      const parsedContestScore: ContestScoreSchema = {
+        problemId: contestScore.problemId,
+        score: contestScore.score,
+        penalty: contestScore.latestSubmission
+          ? Math.floor(
+              (contestScore.latestSubmission.getTime() -
+                contest.timeStart.getTime()) /
+                1000
+            )
+          : 0,
+      }
+      if (userIdToContestScores.has(contestScore.userId)) {
+        userIdToContestScores.get(contestScore.userId)!.push(parsedContestScore)
       } else {
-        userIdToSubmissions.set(submission.userId, [submission])
+        userIdToContestScores.set(contestScore.userId, [parsedContestScore])
       }
     })
+
     const userContestScoreboards: UserContestScoreboard[] =
       contest.userContest.map((userContest) => {
-        const submissions = userIdToSubmissions.get(userContest.userId) ?? []
-        const totalScore = submissions
-          .map((s) => s.submissionResult?.score ?? 0)
+        const contestScores =
+          userIdToContestScores.get(userContest.userId) ?? []
+        const totalScore = contestScores
+          .map((contestScore) => contestScore.score)
           .reduce((acc, val) => acc + val, 0)
-        const totalTimeUsed =
-          submissions
-            .map((s) => s.submissionResult?.timeUsed ?? 0)
-            .reduce((acc, val) => acc + val, 0) / 1000
+        const maxPenalty = contestScores
+          .map((contestScore) => contestScore.penalty)
+          .reduce((acc, val) => Math.max(acc, val), 0)
         return {
           ...userContest,
-          submissions,
+          contestScores,
           totalScore,
-          totalTimeUsed,
+          maxPenalty,
         }
       })
     userContestScoreboards.sort((a, b) => {
       if (b.totalScore === a.totalScore) {
-        return b.totalTimeUsed - a.totalTimeUsed
+        return a.maxPenalty - b.maxPenalty
       }
       return b.totalScore - a.totalScore
     })
@@ -145,7 +282,10 @@ export class ContestService {
         return
       }
       const prevUser = userContestScoreboards[index - 1]!
-      if (user.totalScore === prevUser.totalScore) {
+      if (
+        user.totalScore === prevUser.totalScore &&
+        user.maxPenalty === prevUser.maxPenalty
+      ) {
         user.rank = prevUser.rank
         return
       }
@@ -260,20 +400,31 @@ export class ContestService {
     return { firstBlood, oneManSolve }
   }
 
-  currentContest() {
-    return this.prisma.contest.findFirst({
+  getCurrentContests() {
+    return this.prisma.contest.findMany({
       where: {
         timeEnd: {
-          gte: new Date(Date.now() - 60 * 60 * 1000),
+          gte: new Date(),
         },
       },
-      orderBy: { id: 'desc' },
-      include: { contestProblem: { include: { problem: true } } },
+      select: {
+        id: true,
+        name: true,
+        mode: true,
+        gradingMode: true,
+        scoreboardPolicy: true,
+        timeStart: true,
+        timeEnd: true,
+        announce: true,
+      },
+      orderBy: {
+        timeStart: 'asc',
+      },
     })
   }
 
-  getStartedAndUnFinishedContest() {
-    return this.prisma.contest.findFirst({
+  getStartedAndUnFinishedContests() {
+    return this.prisma.contest.findMany({
       where: {
         timeStart: {
           lte: new Date(),
@@ -285,7 +436,6 @@ export class ContestService {
       include: {
         contestProblem: true,
       },
-      orderBy: { id: 'desc' },
     })
   }
 
@@ -337,6 +487,16 @@ export class ContestService {
   }
 
   async updateContest(
+    contestId: number,
+    contestData: Prisma.ContestUpdateInput
+  ) {
+    return this.prisma.contest.update({
+      where: { id: contestId },
+      data: contestData,
+    })
+  }
+
+  async patchContest(
     contestId: number,
     contestData: Prisma.ContestUpdateInput
   ) {

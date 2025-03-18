@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -7,7 +5,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useIntersectionObserver } from '@uidotdev/usehooks'
 import dayjs from 'dayjs'
 import NextLink from 'next/link'
 
@@ -15,66 +12,26 @@ import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
-import { TableCell, TableFooter, TableRow } from '@otog/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@otog/ui/tooltip'
 
 import { submissionKey } from '../api/query'
+import { InfiniteTable, InfiniteTableProps } from './infinite-table'
 import { InlineComponent } from './inline-component'
 import { SubmissionStatusButton } from './submission-status'
-import { TableComponent } from './table-component'
 import { UserAvatar } from './user-avatar'
 
-export const SubmissionTable = ({
-  data,
-  isLoading,
-  isError,
-  fetchNextPage,
-  hasNextPage,
-}: {
+interface SubmissionTableProps extends Omit<InfiniteTableProps, 'table'> {
   data: Array<SubmissionSchema>
-  isLoading: boolean
-  isError: boolean
-  fetchNextPage: () => void
-  hasNextPage: boolean
-}) => {
+}
+
+export const SubmissionTable = ({ data, ...props }: SubmissionTableProps) => {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id.toString(),
   })
-  const [ref, entry] = useIntersectionObserver({
-    threshold: 0,
-    root: null,
-    rootMargin: '0px',
-  })
-  const isIntersecting = entry?.isIntersecting
-  useEffect(() => {
-    if (isIntersecting) {
-      fetchNextPage()
-    }
-  }, [isIntersecting])
-  return (
-    <TableComponent
-      table={table}
-      isLoading={isLoading}
-      isError={isError}
-      footer={
-        hasNextPage && (
-          <TableFooter className="bg-inherit" ref={ref}>
-            <TableRow>
-              <TableCell
-                colSpan={table.getAllColumns().length}
-                className="align-middle text-center"
-              >
-                <Spinner />
-              </TableCell>
-            </TableRow>
-          </TableFooter>
-        )
-      }
-    />
-  )
+  return <InfiniteTable table={table} {...props} />
 }
 
 const columnHelper = createColumnHelper<SubmissionSchema>()
@@ -210,7 +167,7 @@ export function useSubmissionPolling(originalSubmission: SubmissionSchema) {
         (data.body.status === SubmissionStatus.waiting ||
           data.body.status === SubmissionStatus.grading)
       ) {
-        return 1000
+        return 1000 * Math.pow(2, query.state.dataUpdateCount)
       }
       return false
     },

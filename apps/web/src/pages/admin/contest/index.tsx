@@ -22,7 +22,12 @@ import { PencilIcon, Plus, PlusIcon } from 'lucide-react'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
-import { Contest, ContestGradingMode, ContestMode } from '@otog/database'
+import {
+  Contest,
+  ContestGradingMode,
+  ContestMode,
+  ScoreboardPolicy,
+} from '@otog/database'
 import { Button } from '@otog/ui/button'
 import { DateTimePicker } from '@otog/ui/date-picker'
 import {
@@ -80,7 +85,7 @@ export const getServerSideProps = withSession<AdminContestPageProps>(
 export default function AdminContestPage() {
   return (
     <main className="container flex-1 py-8">
-      <h1 className="text-xl font-semibold mb-4">ระบบ GOTO</h1>
+      <h1 className="text-xl font-semibold mb-4 font-heading">ระบบ GOTO</h1>
       <Tabs value="contest">
         <TabsList className="justify-start relative h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border">
           <TabsTrigger
@@ -221,6 +226,10 @@ const columns = [
           return 'ACM'
         case 'classic':
           return 'Classic'
+        case 'bestSubmission':
+          return 'Best Submission'
+        case 'bestSubtask':
+          return 'Best Subtask'
         default:
           exhaustiveGuard(gradingMode)
       }
@@ -307,6 +316,7 @@ const EditContestFormSchema = z
   .object({
     name: z.string(),
     gradingMode: z.nativeEnum(ContestGradingMode),
+    scoreboardPolicy: z.nativeEnum(ScoreboardPolicy),
     mode: z.nativeEnum(ContestMode),
     timeStart: z.string().datetime(),
     timeEnd: z.string().datetime(),
@@ -334,6 +344,7 @@ const EditContestForm = ({
     defaultValues: {
       name: contest.name,
       gradingMode: contest.gradingMode,
+      scoreboardPolicy: contest.scoreboardPolicy,
       mode: contest.mode,
       timeStart: contest.timeStart.toISOString(),
       timeEnd: contest.timeEnd.toISOString(),
@@ -351,6 +362,7 @@ const EditContestForm = ({
           name: values.name,
           announce: contest.announce,
           gradingMode: values.gradingMode,
+          scoreboardPolicy: values.scoreboardPolicy,
           mode: values.mode,
           timeStart: new Date(values.timeStart),
           timeEnd: new Date(values.timeEnd),
@@ -429,6 +441,12 @@ const EditContestForm = ({
                     Classic
                   </SelectItem>
                   <SelectItem value={ContestGradingMode.acm}>ACM</SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubmission}>
+                    Best Submission
+                  </SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubtask}>
+                    Best Subtask
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -456,6 +474,34 @@ const EditContestForm = ({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="scoreboardPolicy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ดูอันดับ</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกโหมด" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ScoreboardPolicy.AFTER_CONTEST}>
+                    After Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.DURING_CONTEST}>
+                    During Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.NOT_VISIBLE}>
+                    Not Visible
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex gap-2 justify-end col-span-full">
           <DialogClose asChild>
             <Button variant="secondary">ยกเลิก</Button>
@@ -468,8 +514,9 @@ const EditContestForm = ({
 }
 
 const AddContest = () => {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary">
           <Plus />
@@ -478,7 +525,7 @@ const AddContest = () => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogTitle>เพิ่มการแข่งขัน</DialogTitle>
-        <AddContestForm />
+        <AddContestForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )
@@ -488,6 +535,7 @@ const AddContestFormSchema = z
   .object({
     name: z.string(),
     gradingMode: z.nativeEnum(ContestGradingMode),
+    scoreboardPolicy: z.nativeEnum(ScoreboardPolicy),
     mode: z.nativeEnum(ContestMode),
     timeStart: z.string().datetime(),
     timeEnd: z.string().datetime(),
@@ -504,12 +552,16 @@ const AddContestFormSchema = z
 type AddContestFormInput = z.input<typeof AddContestFormSchema>
 type AddContestFormOutput = z.output<typeof AddContestFormSchema>
 
-const AddContestForm = () => {
+interface AddContestFormProps {
+  onSuccess: () => void
+}
+const AddContestForm = (props: AddContestFormProps) => {
   const form = useForm<AddContestFormInput, any, AddContestFormOutput>({
     defaultValues: {
       name: '',
       gradingMode: 'classic',
       mode: 'unrated',
+      scoreboardPolicy: 'AFTER_CONTEST',
       timeStart: '',
       timeEnd: '',
     },
@@ -525,6 +577,7 @@ const AddContestForm = () => {
           name: values.name,
           announce: null,
           gradingMode: values.gradingMode,
+          scoreboardPolicy: values.scoreboardPolicy,
           mode: values.mode,
           timeStart: new Date(values.timeStart),
           timeEnd: new Date(values.timeEnd),
@@ -536,6 +589,7 @@ const AddContestForm = () => {
           queryClient.invalidateQueries({
             queryKey: contestKey.getContestsForAdmin._def,
           })
+          props.onSuccess()
         },
         onError: () => {
           toast.error('ไม่สามารถบันทึกได้', { id: toastId })
@@ -602,6 +656,12 @@ const AddContestForm = () => {
                     Classic
                   </SelectItem>
                   <SelectItem value={ContestGradingMode.acm}>ACM</SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubmission}>
+                    Best Submission
+                  </SelectItem>
+                  <SelectItem value={ContestGradingMode.bestSubtask}>
+                    Best Subtask
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -623,6 +683,34 @@ const AddContestForm = () => {
                 <SelectContent>
                   <SelectItem value={ContestMode.rated}>Rated</SelectItem>
                   <SelectItem value={ContestMode.unrated}>Unrated</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="scoreboardPolicy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ดูอันดับ</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger {...field}>
+                    <SelectValue placeholder="เลือกโหมด" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={ScoreboardPolicy.AFTER_CONTEST}>
+                    After Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.DURING_CONTEST}>
+                    During Contest
+                  </SelectItem>
+                  <SelectItem value={ScoreboardPolicy.NOT_VISIBLE}>
+                    Not Visible
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

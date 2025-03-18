@@ -1,25 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 
-import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useReactTable } from '@tanstack/react-table'
-import { createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
-import { File } from '@web-std/file'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import dayjs from 'dayjs'
 import { Columns2Icon } from 'lucide-react'
 import Head from 'next/head'
+import NextLink from 'next/link'
 import { useRouter } from 'next/router'
-import { useQueryState } from 'nuqs'
 import { z } from 'zod'
 
-import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
-import { Problem, SubmissionStatus } from '@otog/database'
+import {
+  ContestSchema,
+  SubmissionDetailSchema,
+  SubmissionSchema,
+} from '@otog/contract'
+import { Problem, ProblemModel, SubmissionStatus } from '@otog/database'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@otog/ui/breadcrumb'
 import { Button } from '@otog/ui/button'
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -38,103 +52,153 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@otog/ui/select'
+import { Separator } from '@otog/ui/separator'
+import { SidebarTrigger } from '@otog/ui/sidebar'
 import { Spinner } from '@otog/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
 
-import { submissionKey, submissionQuery } from '../../api/query'
-import { withQuery } from '../../api/server'
-import { ExampleTable } from '../../components/example-table'
-import { InfiniteTable } from '../../components/infinite-table'
-import { InlineComponent } from '../../components/inline-component'
-import { MonacoEditor } from '../../components/monaco-editor'
+import {
+  contestKey,
+  submissionKey,
+  submissionQuery,
+} from '../../../../api/query'
+import { withQuery } from '../../../../api/server'
+import { ExampleTable } from '../../../../components/example-table'
+import { Footer } from '../../../../components/footer'
+import { InlineComponent } from '../../../../components/inline-component'
+import { MonacoEditor } from '../../../../components/monaco-editor'
 import {
   ClientInPortal,
   ClientOutPortal,
   useHtmlPortalNode,
-} from '../../components/portals'
-import { SubmissionStatusButton } from '../../components/submission-status'
-import { useSubmissionPolling } from '../../components/submission-table'
-import { useUserContext } from '../../context/user-context'
-import { Language, LanguageName } from '../../enums'
-import { useContainerBreakpoint } from '../../hooks/use-container-breakpoint'
-import { SubmitCode } from '../../modules/problem/submit-code'
+} from '../../../../components/portals'
+import { SubmissionStatusButton } from '../../../../components/submission-status'
+import { useSubmissionPolling } from '../../../../components/submission-table'
+import { TableComponent } from '../../../../components/table-component'
+import { useUserContext } from '../../../../context/user-context'
+import { Language, LanguageName } from '../../../../enums'
+import { useContainerBreakpoint } from '../../../../hooks/use-container-breakpoint'
+import {
+  ContestLayout,
+  useContestProps,
+} from '../../../../modules/contest/sidebar'
+import { SubmitCode } from '../../../../modules/problem/submit-code'
 
-interface WriteSolutionPageProps {
-  submission: SubmissionDetailSchema | null
-  problem: Problem
+type ProblemModel = z.infer<typeof ProblemModel>
+
+interface ContestProblemPageProps {
+  contestId: string
+  contest: ContestSchema
+  serverTime: string
+  problem: ProblemModel
+  latestSubmission: SubmissionDetailSchema | null
 }
 
-export const getServerSideProps = withQuery<WriteSolutionPageProps>(
+export const getServerSideProps = withQuery<ContestProblemPageProps>(
   async ({ context, query }) => {
-    const problemId = Number.parseInt(context.query.problemId as string)
-    const submissionId = Number.parseInt(context.params?.submissionId as string)
-    if (!Number.isInteger(problemId)) {
+    const contestId = context.query.contestId as string
+    if (Number.isNaN(Number(contestId))) {
       return { notFound: true }
     }
-    const problemResult = await query.problem.getProblem.query({
-      params: { problemId: problemId.toString() },
-    })
-    if (problemResult.status === 404) {
+    const problemId = context.query.problemId as string
+    if (Number.isNaN(Number(problemId))) {
       return { notFound: true }
     }
-    if (problemResult.status !== 200) {
-      throw problemResult
+    const [getTime, getContest, getProblem, getLatestSubmission] =
+      await Promise.all([
+        query.app.time.query(),
+        query.contest.getContest.query({
+          params: { contestId: contestId },
+        }),
+        query.contest.getContestProblem.query({
+          params: { contestId, problemId },
+        }),
+        query.submission.getLatestSubmissionByProblemId.query({
+          params: { problemId },
+        }),
+      ])
+    if (getTime.status !== 200) {
+      throw getTime
     }
-    if (Number.isInteger(submissionId)) {
-      const submissionResult =
-        await query.submission.getSubmissionWithSourceCode.query({
-          params: { submissionId: submissionId.toString() },
-        })
-      if (submissionResult.status === 404) {
-        return { notFound: true }
-      }
-      if (submissionResult.status !== 200) {
-        throw submissionResult
-      }
-      return {
-        props: {
-          submission: submissionResult.body,
-          problem: problemResult.body,
-        },
-      }
+    if (getContest.status !== 200) {
+      throw getContest
     }
-    const submissionResult =
-      await query.submission.getLatestSubmissionByProblemId.query({
-        params: { problemId: problemId.toString() },
-      })
-    if (submissionResult.status === 404) {
+    if (getProblem.status !== 200) {
+      throw getProblem
+    }
+    if (getLatestSubmission.status !== 200) {
+      throw getLatestSubmission
+    }
+    const serverTime = getTime.body
+    const contest = getContest.body
+    if (contest.timeStart > serverTime) {
       return { notFound: true }
-    }
-    if (submissionResult.status !== 200) {
-      throw submissionResult
     }
     return {
       props: {
-        submission: submissionResult.body.submission,
-        problem: problemResult.body,
+        contestId,
+        contest,
+        serverTime: serverTime.toString(),
+        problem: getProblem.body,
+        latestSubmission: getLatestSubmission.body.submission,
       },
     }
   }
 )
 
-export default function WriteSolutionPage(props: WriteSolutionPageProps) {
-  const problem = props.problem
+export default function ContestPage(props: ContestProblemPageProps) {
+  const router = useRouter()
+  const contestProps = useContestProps(props)
+  const { contest, contestStatus } = contestProps
+  const { problem } = props
+
+  useEffect(() => {
+    if (contestStatus !== 'RUNNING') {
+      router.push(`/contest/${props.contestId}`)
+    }
+  }, [contestStatus])
+
   return (
-    <main className="flex-1 py-8 w-full mx-auto" id="content">
+    <ContestLayout {...contestProps}>
       <Head>
-        <title>{problem.name} | One Tambon One Grader</title>
+        <title>
+          {problem.name} - {contest.name} | OTOG
+        </title>
       </Head>
-      <ProblemSection {...props} key={problem.id} />
-    </main>
+      <div className="flex items-center gap-2 p-4">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbLink
+              className="font-heading text-lg font-semibold hidden md:block"
+              asChild
+            >
+              <NextLink href={`/contest/${props.contestId}`}>
+                {contest.name}
+              </NextLink>
+            </BreadcrumbLink>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-heading text-lg font-semibold">
+                {problem.name}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      <ContestProblemSection {...props} key={problem.id} />
+      <Footer className="pt-8 px-4 max-w-full" />
+    </ContestLayout>
   )
 }
+ContestPage.footer = false
 
-const ProblemSection = (props: WriteSolutionPageProps) => {
+const ContestProblemSection = (props: ContestProblemPageProps) => {
   type Tab = 'problem' | 'editor' | 'submissions'
-  const [tab, setTab] = useQueryState('tab', { defaultValue: 'problem' })
-
+  const [tab, setTab] = useState<Tab>('problem')
   const queryClient = useQueryClient()
   const { containerRef, isBreakpoint: isLargeScreen } =
     useContainerBreakpoint<HTMLDivElement>({
@@ -142,8 +206,6 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
     })
 
   const codeEditorPortal = useHtmlPortalNode()
-  const { user } = useUserContext()
-
   const [twoColumn, setTwoColumn] = useState(false)
   useEffect(() => {
     if (!isLargeScreen) {
@@ -151,18 +213,13 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
     }
   }, [isLargeScreen])
   return (
-    <section ref={containerRef} className="w-full @container">
+    <section className="flex-1 @container" ref={containerRef}>
       <div
         className={clsx(
           'flex-1 flex flex-col gap-4 px-4',
           !twoColumn && 'max-w-4xl mx-auto'
         )}
       >
-        <h1 className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center">
-          <PencilSquareIcon className="size-6" />
-          {props.problem.name}
-        </h1>
-
         <Tabs value={tab} onValueChange={(tab) => setTab(tab as Tab)}>
           <div className="flex justify-between">
             <TabsList className="bg-transparent p-0">
@@ -201,6 +258,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
               <Columns2Icon />
             </Toggle>
           </div>
+
           <TabsContent
             className="data-[state=inactive]:hidden"
             forceMount
@@ -214,7 +272,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
                 defaultSize={50}
                 className={clsx(
                   'flex flex-col gap-2',
-                  twoColumn && '!overflow-y-scroll max-h-[800px]'
+                  twoColumn && '!overflow-y-auto max-h-[800px]'
                 )}
               >
                 <embed
@@ -257,15 +315,13 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
           >
             <ClientInPortal node={codeEditorPortal}>
               <CodeEditorForm
+                contestId={props.contest.id}
                 problem={props.problem}
-                latestSubmission={props.submission}
+                latestSubmission={props.latestSubmission}
                 onSuccess={() => {
                   queryClient.invalidateQueries({
-                    queryKey: submissionKey.getSubmissionsByProblemId({
-                      params: {
-                        problemId: props.problem.id.toString(),
-                        userId: user?.id.toString()!,
-                      },
+                    queryKey: submissionKey.getContestSubmissions({
+                      params: { contestId: props.contestId.toString() },
                     }).queryKey,
                   })
                   setTab('submissions')
@@ -279,7 +335,10 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
             forceMount
             value="submissions"
           >
-            <ProblemSubmissionTable problemId={props.problem.id} />
+            <ContestSubmissionTable
+              contestId={props.contest.id}
+              problemId={props.problem.id}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -287,38 +346,25 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
   )
 }
 
-// const ClangdEditor = dynamic(
-//   () =>
-//     import('../../components/clangd-editor').then((mod) => mod.ClangdEditor),
-//   {
-//     ssr: false,
-//     loading: () => (
-//       <p className="flex items-center justify-center w-full h-[800px]">
-//         Loading...
-//       </p>
-//     ),
-//   }
-// )
-
 const CodeEditorFormSchema = z.object({
   sourceCode: z.string(),
   language: z.nativeEnum(Language),
 })
 type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
 
-interface CodeEditorFormProps {
-  latestSubmission: SubmissionDetailSchema | null
+interface CodeEditorForm {
   problem: Problem
+  contestId: number
+  latestSubmission: SubmissionDetailSchema | null
   onSuccess: () => void
 }
-function CodeEditorForm(props: CodeEditorFormProps) {
+function CodeEditorForm(props: CodeEditorForm) {
   const formRef = useRef<HTMLFormElement>(null)
   const form = useForm<CodeEditorFormSchema>({
     defaultValues: { language: 'cpp' },
     resolver: zodResolver(CodeEditorFormSchema),
   })
 
-  const router = useRouter()
   const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
@@ -327,6 +373,7 @@ function CodeEditorForm(props: CodeEditorFormProps) {
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId.toString() },
         body: {
           sourceCode: file,
           language: values.language,
@@ -339,63 +386,48 @@ function CodeEditorForm(props: CodeEditorFormProps) {
         },
         onSuccess: () => {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
-          props.onSuccess()
+          props.onSuccess?.()
         },
       }
     )
   }, console.error)
 
-  const [preferOldEditor] = useState(true)
-  const queryClient = useQueryClient()
-
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4">
-        {!preferOldEditor && form.watch('language') === 'cpp' ? (
-          <div className="overflow-hidden rounded-md border">
-            {/* <div role="application" aria-label="Clang Editor">
-              <ClangdEditor
-                className="h-[800px]"
-                defaultValue={
-                  props.submission?.sourceCode ?? DEFAULT_SOURCE_CODE
-                }
-                theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-                onMount={(editor) => (editorRef.current = editor)}
+      <form
+        ref={formRef}
+        onSubmit={onSubmit}
+        className="flex flex-col gap-4 h-[800px]"
+      >
+        <FormField
+          control={form.control}
+          name="sourceCode"
+          render={({ field }) => (
+            <FormItem className="space-y-0">
+              <FormLabel className="sr-only">โค้ด</FormLabel>
+              <MonacoEditor
+                height="744px"
+                language={form.watch('language')}
+                defaultValue={props.latestSubmission?.sourceCode}
+                onChange={field.onChange}
               />
-            </div>
-            <ClangdEditorFooter setPreferOldEditor={setPreferOldEditor} /> */}
-          </div>
-        ) : (
-          <FormField
-            control={form.control}
-            name="sourceCode"
-            render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormLabel className="sr-only">โค้ด</FormLabel>
-                <MonacoEditor
-                  height="744px"
-                  language={form.watch('language')}
-                  defaultValue={props.latestSubmission?.sourceCode}
-                  onChange={field.onChange}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        <div className="grid grid-cols-3 sticky bottom-0 bg-background py-4 -my-4">
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="grid grid-cols-3">
           <FormField
             control={form.control}
             name="language"
-            defaultValue={Language.cpp}
             render={({ field }) => (
-              <FormItem className="space-y-0">
+              <FormItem className="flex-1 space-y-0">
                 <FormLabel className="sr-only">ภาษา</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger {...field}>
+                      <SelectValue placeholder="เลือกภาษา" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {Object.entries(LanguageName).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
@@ -403,23 +435,19 @@ function CodeEditorForm(props: CodeEditorFormProps) {
                       </SelectItem>
                     ))}
                   </SelectContent>
+                  <FormMessage />
                 </Select>
-                <FormMessage />
               </FormItem>
             )}
           />
           <div className="col-start-3 flex gap-2">
-            <Button type="submit" className="flex-1">
+            <Button className="flex-1" type="submit">
               ส่ง
             </Button>
             <SubmitCode
               problem={props.problem}
-              onSuccess={() => {
-                router.push('/submission?all=false')
-                queryClient.invalidateQueries({
-                  queryKey: submissionKey.getSubmissions._def,
-                })
-              }}
+              contestId={props.contestId}
+              onSuccess={props.onSuccess}
             />
           </div>
         </div>
@@ -428,87 +456,27 @@ function CodeEditorForm(props: CodeEditorFormProps) {
   )
 }
 
-// const ClangdEditorFooter = ({
-//   setPreferOldEditor,
-// }: {
-//   setPreferOldEditor: (preferOldEditor: boolean) => void
-// }) => {
-//   return (
-//     <div className="flex justify-between items-center px-4 py-1">
-//       <TooltipProvider>
-//         <Tooltip>
-//           <TooltipTrigger asChild>
-//             <Button size="icon" variant="ghost" className="rounded-full size-6">
-//               <InformationCircleIcon />
-//             </Button>
-//           </TooltipTrigger>
-//           <TooltipContent className="whitespace-pre-line flex flex-col items-start">
-//             <span>
-//               <Link
-//                 href="https://github.com/Guyutongxue/clangd-in-browser"
-//                 isExternal
-//               >
-//                 Clangd Editor
-//               </Link>{' '}
-//               powered by wasm
-//             </span>
-//             <span>- Error ที่แสดงอาจจะไม่ตรงกับผลลัพธ์หลังการส่ง</span>
-//             <span>
-//               - <code>{'#include <bits/stdc++.h>'}</code> สามารถใช้งานได้
-//             </span>
-//           </TooltipContent>
-//         </Tooltip>
-//       </TooltipProvider>
-//       <div className="flex items-center text-xs gap-2">
-//         <p>Editor โหลดช้า ?</p>
-//         <Button
-//           onClick={() => setPreferOldEditor(true)}
-//           variant="link"
-//           className="text-xs p-0 h-auto"
-//         >
-//           สลับไปใช้ Version เดิม
-//         </Button>
-//       </div>
-//     </div>
-//   )
-// }
-
-interface ProblemSubmissionTableProps {
+interface ContestSubmissionTableProps {
+  contestId: number
   problemId: number
 }
-function ProblemSubmissionTable(props: ProblemSubmissionTableProps) {
+function ContestSubmissionTable(props: ContestSubmissionTableProps) {
   const { user } = useUserContext()
-  const pageSize = 10
-  const getSubmissionsByProblemId = useInfiniteQuery({
-    queryKey: submissionKey.getSubmissionsByProblemId({
+  const getContestSubmissions = useQuery({
+    ...submissionKey.getContestSubmissions({
       params: {
-        problemId: props.problemId.toString(),
-        userId: user?.id.toString()!,
+        contestId: props.contestId.toString(),
       },
-    }).queryKey,
-    // TODO: https://github.com/lukemorales/query-key-factory/issues/89
-    queryFn: ({ pageParam }) =>
-      submissionQuery.getSubmissionsByProblemId.query({
-        params: {
-          problemId: props.problemId.toString(),
-          userId: user?.id.toString()!,
-        },
-        query: {
-          offset: pageParam,
-          limit: pageSize,
-        },
-      }),
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.status === 200 ? lastPage.body.at(-1)?.id : undefined,
+      query: {
+        problemId: props.problemId,
+        userId: user?.id!,
+      },
+    }),
     enabled: !!user,
   })
   const data = useMemo(
-    () =>
-      getSubmissionsByProblemId.data?.pages.flatMap((page) =>
-        page.status === 200 ? page.body : []
-      ) ?? [],
-    [getSubmissionsByProblemId.data]
+    () => getContestSubmissions.data?.body ?? [],
+    [getContestSubmissions.data]
   )
   const table = useReactTable({
     data,
@@ -516,13 +484,9 @@ function ProblemSubmissionTable(props: ProblemSubmissionTableProps) {
     getCoreRowModel: getCoreRowModel(),
   })
   return (
-    <InfiniteTable
+    <TableComponent
       table={table}
       classNames={{ container: 'border-transparent' }}
-      isLoading={getSubmissionsByProblemId.isLoading}
-      isError={getSubmissionsByProblemId.isError}
-      hasNextPage={getSubmissionsByProblemId.hasNextPage}
-      fetchNextPage={getSubmissionsByProblemId.fetchNextPage}
     />
   )
 }
@@ -617,6 +581,19 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
+          const queryClient = useQueryClient()
+          useEffect(() => {
+            if (
+              original.submissionResult?.score !==
+              submission.submissionResult?.score
+            ) {
+              queryClient.invalidateQueries({
+                queryKey: contestKey.getUserContestScores({
+                  params: { contestId: submission.contestId?.toString()! },
+                }).queryKey,
+              })
+            }
+          }, [submission])
           return <SubmissionStatusButton submission={submission} />
         }}
       />

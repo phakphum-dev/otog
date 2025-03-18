@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'
 import { parseAsBoolean, useQueryState } from 'nuqs'
@@ -62,6 +62,7 @@ const LatestSubmissionSecion = ({
   if (!latestSubmission) {
     return null
   }
+  const queryClient = useQueryClient()
   const problem = latestSubmission.problem!
   return (
     <section
@@ -85,7 +86,14 @@ const LatestSubmissionSecion = ({
           </span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <SubmitCode problem={problem} />
+          <SubmitCode
+            problem={problem}
+            onSuccess={() =>
+              queryClient.invalidateQueries({
+                queryKey: submissionKey.getSubmissions._def,
+              })
+            }
+          />
           <SubmissionStatusButton submission={latestSubmission} />
         </div>
       </div>

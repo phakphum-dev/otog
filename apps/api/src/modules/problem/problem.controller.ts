@@ -121,11 +121,13 @@ export class ProblemController {
       const user = await this.userService.findOneById(refreshToken.userId)
 
       // TODO validate user if contest is private
-      const contest = await this.contestService.getStartedAndUnFinishedContest()
+      const contests =
+        await this.contestService.getStartedAndUnFinishedContests()
       if (
         user?.role !== Role.Admin &&
-        contest &&
-        !contest.contestProblem.some((p) => p.problemId === problem.id)
+        contests.some((c) =>
+          c.contestProblem.some((p) => p.problemId === problem.id)
+        )
       ) {
         console.error(
           'There is no contest right now and you are not admin',
