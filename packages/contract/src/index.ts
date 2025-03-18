@@ -215,7 +215,7 @@ export const submissionRouter = contract.router(
     },
     getContestSubmissionsForAdmin: {
       method: 'GET',
-      path: '/contest/:contestId',
+      path: '/admin/contest/:contestId',
       responses: {
         200: z.array(SubmissionSchema),
       },
