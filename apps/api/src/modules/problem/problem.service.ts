@@ -106,7 +106,6 @@ export class ProblemService {
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
       })
-      console.log(files)
       if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
