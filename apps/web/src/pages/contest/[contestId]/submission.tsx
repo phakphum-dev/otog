@@ -117,7 +117,7 @@ function ContestSubmission() {
 function ContestSubmissionTable({ contestId }: { contestId: number }) {
   const [problemSearch, setProblemSearch] = useState('')
   const [userSearch, setUserSearch] = useState('')
-  const pageSize = 10
+  const pageSize = 89
   const getSubmissionsByProblemId = useInfiniteQuery({
     queryKey: submissionKey.getContestSubmissionsForAdmin({
       params: { contestId: contestId.toString() },
