@@ -7,7 +7,7 @@ import {
   TrophyIcon,
 } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TablePropertiesIcon } from 'lucide-react'
+import { ExternalLink, TablePropertiesIcon } from 'lucide-react'
 import { Terminal } from 'lucide-react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
@@ -36,6 +36,7 @@ import { clsx } from '@otog/ui/utils'
 
 import { appKey, contestKey } from '../../api/query'
 import { useUserContext } from '../../context/user-context'
+import { environment } from '../../env'
 import { initialDataSuccess } from '../../utils/initial-data-success'
 import { toTimerFormat } from '../../utils/time'
 import { useTimer } from '../../utils/use-timer'
@@ -145,6 +146,7 @@ function PreContestSidebar() {
       <SidebarGroupContent>
         <SidebarMenu>
           <HomeMenuItem />
+          <CPPRefMenuItem />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
@@ -174,6 +176,7 @@ function MidContestSidebar() {
             <HomeMenuItem />
             <ScoreboardMenuItem />
             <SubmissionMenuItem />
+            <CPPRefMenuItem />
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -379,6 +382,23 @@ function Timer() {
     }
   }, [remaining])
   return <>{toTimerFormat(remaining)}</>
+}
+
+function CPPRefMenuItem() {
+  if (!environment.CPP_REF_LINK) {
+    return null
+  }
+  return (
+    <SidebarMenuItem>
+      <SideBarButton
+        href={environment.CPP_REF_LINK}
+        className="flex items-center gap-2"
+      >
+        <ExternalLink className="size-4" />
+        C++ Reference
+      </SideBarButton>
+    </SidebarMenuItem>
+  )
 }
 
 function usePathActive(props: { href: string }) {

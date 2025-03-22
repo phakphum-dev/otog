@@ -1,5 +1,6 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
-import { parseEnv, z } from 'znv'
+import { parseEnv, z } from 'znv';
+
 
 export const isServer = typeof window === 'undefined'
 const requireOnServer = (value: string | undefined) =>
@@ -24,6 +25,7 @@ export const environment = parseEnv(
 
     CONTACT_LINK: process.env.NEXT_PUBLIC_CONTACT_LINK,
     GITHUB_LINK: process.env.NEXT_PUBLIC_GITHUB_LINK,
+    CPP_REF_LINK: process.env.NEXT_PUBLIC_CPP_REF_LINK,
   },
   {
     NODE_ENV: z.enum(['development', 'production']),
@@ -45,5 +47,6 @@ export const environment = parseEnv(
 
     CONTACT_LINK: z.string(),
     GITHUB_LINK: z.string(),
+    CPP_REF_LINK: z.string(),
   }
 )
