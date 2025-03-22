@@ -34,6 +34,7 @@ import { clsx } from '@otog/ui/utils'
 
 import Logo from '../../public/logo512.png'
 import { useUserContext } from '../context/user-context'
+import { environment } from '../env'
 import { Search } from './search'
 import { ThemeToggle } from './theme-provider'
 import { UserAvatar } from './user-avatar'
@@ -73,22 +74,24 @@ export const Navbar = () => {
                 />
               </NextLink>
             </Link>
-            <ul className="flex gap-2 items-center max-lg:hidden">
-              <li>
-                <NavButton href="/problem" className="ml-6">
-                  โจทย์
-                </NavButton>
-              </li>
-              <li>
-                <NavButton href="/submission">ผลตรวจ</NavButton>
-              </li>
-              <li>
-                <NavButton href="/contest">แข่งขัน</NavButton>
-              </li>
-            </ul>
+            {!environment.OFFLINE_MODE && (
+              <ul className="flex gap-2 items-center max-lg:hidden">
+                <li>
+                  <NavButton href="/problem" className="ml-6">
+                    โจทย์
+                  </NavButton>
+                </li>
+                <li>
+                  <NavButton href="/submission">ผลตรวจ</NavButton>
+                </li>
+                <li>
+                  <NavButton href="/contest">แข่งขัน</NavButton>
+                </li>
+              </ul>
+            )}
           </div>
           <div className="flex gap-2 max-lg:hidden">
-            <Search />
+            {!environment.OFFLINE_MODE && <Search />}
             <ThemeToggle />
             {user ? (
               <Menu user={user} />
@@ -110,23 +113,25 @@ export const Navbar = () => {
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription className="" />
                 </SheetHeader>
-                <ul className="flex flex-col gap-2">
-                  <li>
-                    <NavButton className="block" href="/problem">
-                      โจทย์
-                    </NavButton>
-                  </li>
-                  <li>
-                    <NavButton className="block" href="/submission">
-                      ผลตรวจ
-                    </NavButton>
-                  </li>
-                  <li>
-                    <NavButton className="block" href="/contest">
-                      แข่งขัน
-                    </NavButton>
-                  </li>
-                </ul>
+                {!environment.OFFLINE_MODE && (
+                  <ul className="flex flex-col gap-2">
+                    <li>
+                      <NavButton className="block" href="/problem">
+                        โจทย์
+                      </NavButton>
+                    </li>
+                    <li>
+                      <NavButton className="block" href="/submission">
+                        ผลตรวจ
+                      </NavButton>
+                    </li>
+                    <li>
+                      <NavButton className="block" href="/contest">
+                        แข่งขัน
+                      </NavButton>
+                    </li>
+                  </ul>
+                )}
                 <div className="flex gap-2">
                   <ThemeToggle />
                   {user ? (
@@ -207,12 +212,14 @@ const Menu = ({ user }: MenuProps) => {
             {user.showName}
           </DropdownMenuLabel>
         )}
-        <DropdownMenuItem asChild>
-          <NextLink href={`/user/${user.id}`}>
-            <UserIcon />
-            โปรไฟล์
-          </NextLink>
-        </DropdownMenuItem>
+        {!environment.OFFLINE_MODE && (
+          <DropdownMenuItem asChild>
+            <NextLink href={`/user/${user.id}`}>
+              <UserIcon />
+              โปรไฟล์
+            </NextLink>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={logout}
           className="text-destructive focus:text-destructive"

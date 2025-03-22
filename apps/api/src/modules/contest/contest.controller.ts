@@ -78,6 +78,7 @@ export class ContestController {
     )
   }
 
+  @OfflineAccess(AccessState.Authenticated)
   @TsRestHandler(c.getContestProblem)
   getContestProblem() {
     return tsRestHandler(
@@ -104,6 +105,7 @@ export class ContestController {
     )
   }
 
+  @OfflineAccess(AccessState.Authenticated)
   @TsRestHandler(c.getUserContestScores)
   getUserContestScores(@User() user?: UserDTO) {
     return tsRestHandler(

@@ -84,6 +84,7 @@ export class SubmissionController {
     )
   }
 
+  @OfflineAccess(AccessState.Authenticated)
   @TsRestHandler(c.getContestSubmissions, { jsonQuery: true })
   @Roles(Role.Admin, Role.User)
   getContestSubmissions() {

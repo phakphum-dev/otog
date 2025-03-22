@@ -115,7 +115,7 @@ export function ContestLayout(
     <ContestProvider value={props}>
       <SidebarProvider className="max-w-screen-2xl mx-auto">
         <Sidebar>
-          <SidebarContent>
+          <SidebarContent className="pt-2">
             <ContestSidebar />
           </SidebarContent>
           <SidebarFooter>
