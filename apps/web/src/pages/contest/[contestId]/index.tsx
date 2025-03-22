@@ -11,7 +11,10 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList } from '@otog/ui/breadcrumb'
 import { Button } from '@otog/ui/button'
 import { Separator } from '@otog/ui/separator'
 
-import { SidebarTrigger } from '../../../../../../packages/ui/src/sidebar'
+import {
+  SidebarTrigger,
+  useSidebar,
+} from '../../../../../../packages/ui/src/sidebar'
 import { appKey, contestKey, contestQuery } from '../../../api/query'
 import { withQuery } from '../../../api/server'
 import { Footer } from '../../../components/footer'
@@ -233,6 +236,7 @@ function PostContest() {
 
 const GeanButton = () => {
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const { open } = useSidebar()
   useEffect(() => {
     const distanceBetween = (
       p1x: number,
@@ -252,7 +256,8 @@ const GeanButton = () => {
       const radius = Math.max(width * 0.75, height * 0.75, 100)
 
       const parent = button.parentNode as HTMLDivElement
-      const bx = parent.offsetLeft + button.offsetLeft + width / 2
+      const bx =
+        parent.offsetLeft + (open ? 256 : 0) + button.offsetLeft + width / 2
       const by = parent.offsetTop + button.offsetTop + height / 2
 
       const dist = distanceBetween(event.clientX, event.clientY, bx, by)
@@ -273,7 +278,7 @@ const GeanButton = () => {
     return () => {
       document.removeEventListener('mousedown', onMouseMove)
     }
-  }, [])
+  }, [open])
   return (
     <div className="relative">
       <Button
