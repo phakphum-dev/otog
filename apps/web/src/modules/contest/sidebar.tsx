@@ -390,13 +390,12 @@ function CPPRefMenuItem() {
   }
   return (
     <SidebarMenuItem>
-      <SideBarButton
-        href={environment.CPP_REF_LINK}
-        className="flex items-center gap-2"
-      >
-        <ExternalLink className="size-4" />
-        C++ Reference
-      </SideBarButton>
+      <SidebarMenuButton asChild className="flex items-center gap-2">
+        <a href={environment.CPP_REF_LINK} target="_blank" rel="noreferrer">
+          <ExternalLink className="size-4" />
+          C++ Reference
+        </a>
+      </SidebarMenuButton>
     </SidebarMenuItem>
   )
 }
