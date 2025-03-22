@@ -125,7 +125,7 @@ export class ProblemController {
         await this.contestService.getStartedAndUnFinishedContests()
       if (
         user?.role !== Role.Admin &&
-        contests.some((c) =>
+        !contests.some((c) =>
           c.contestProblem.some((p) => p.problemId === problem.id)
         )
       ) {
