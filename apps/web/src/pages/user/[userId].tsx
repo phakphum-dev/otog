@@ -62,7 +62,9 @@ export default function ProfilePage(props: ProfilePageProps) {
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="font-heading text-2xl font-semibold">ผลตรวจ</h2>
-        {!isAdmin && <UserSubmissionTable userId={props.userProfile.id} />}
+        {(props.userProfile.role === 'user' || isAdmin) && (
+          <UserSubmissionTable userId={props.userProfile.id} />
+        )}
       </section>
     </main>
   )
