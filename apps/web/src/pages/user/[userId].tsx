@@ -39,7 +39,7 @@ export const getServerSideProps = withQuery<ProfilePageProps>(
 )
 
 export default function ProfilePage(props: ProfilePageProps) {
-  const { user } = useUserContext()
+  const { user, isAdmin } = useUserContext()
   return (
     <main className="container flex flex-col gap-6 flex-1 py-8" id="content">
       <section className="flex flex-col gap-4">
@@ -62,7 +62,7 @@ export default function ProfilePage(props: ProfilePageProps) {
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="font-heading text-2xl font-semibold">ผลตรวจ</h2>
-        <UserSubmissionTable userId={props.userProfile.id} />
+        {!isAdmin && <UserSubmissionTable userId={props.userProfile.id} />}
       </section>
     </main>
   )
