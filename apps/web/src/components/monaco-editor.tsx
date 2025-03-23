@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
 
-import MonacoReactEditor from '@monaco-editor/react'
+import MonacoReactEditor, { loader } from '@monaco-editor/react'
 import { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
 
 import { Language } from '../enums'
+import { environment } from '../env'
+
+if (environment.OFFLINE_MODE) {
+  loader.config({
+    paths: {
+      vs: '/vs',
+    },
+  })
+}
 
 interface MonacoEditorProps {
   language?: keyof typeof Language
