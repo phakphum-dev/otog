@@ -12,6 +12,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 
 import { clearAccessToken, getAccessToken } from '../api/auth'
+import { authQuery } from '../api/query'
 
 export interface UserContextValue {
   logout: () => void
@@ -39,7 +40,9 @@ export const UserContextProvider = (props: UserProviderProps) => {
     queryClient.clear()
   }, [queryClient])
   const router = useRouter()
+  const logoutQuery = authQuery.logout.useMutation()
   const logout = useCallback(async () => {
+    logoutQuery.mutateAsync({ body: {} })
     await signOut({ redirect: false })
     await router.push('/login')
     clearAccessToken()

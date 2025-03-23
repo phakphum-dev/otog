@@ -932,6 +932,15 @@ export const authRouter = contract.router(
       body: LoginBody,
       summary: 'Login and get tokens',
     },
+    logout: {
+      method: 'POST',
+      path: '/logout',
+      responses: {
+        200: z.object({}),
+      },
+      body: z.object({}),
+      summary: 'Logout',
+    },
     refreshToken: {
       method: 'GET',
       path: '/refresh/token',

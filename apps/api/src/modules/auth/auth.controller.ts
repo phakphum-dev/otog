@@ -1,4 +1,4 @@
-import { Controller, Post, Res, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common'
 import {
   TsRestHandler,
   nestControllerContract,
@@ -66,5 +66,15 @@ export class AuthController {
         expires: token.refreshToken.expiryDate ?? undefined,
       })
       .json(authResDTO)
+  }
+
+  @OfflineAccess(AccessState.Authenticated)
+  @Post('/auth/logout')
+  async logout(@Res() res: Response) {
+    res.clearCookie('RID', {
+      httpOnly: true,
+      domain: environment.COOKIE_DOMAIN,
+    })
+    return res.status(200).send({})
   }
 }
