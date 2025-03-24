@@ -94,10 +94,11 @@ export class SubmissionService {
     limit: number
     userId?: number
     problemSearch?: string
+    includeContest: boolean
   }) {
     return await this.prisma.submission.findMany({
       where: {
-        contestId: null,
+        contestId: args.includeContest ? undefined : null,
         id: { lt: args.offset },
         userId: args.userId,
         user: args.userId ? undefined : { role: UserRole.user },
@@ -170,6 +171,9 @@ export class SubmissionService {
   }
 
   fileCheck(file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required!')
+    }
     // check file extension
     if (!scodeFileFilter(file))
       throw new BadRequestException('Only C C++ and Python are allowed!')
@@ -194,6 +198,24 @@ export class SubmissionService {
         status: SubmissionStatus.waiting,
         sourceCode: args.file.buffer.toString(),
         contestId: args.contestId,
+      },
+    })
+  }
+
+  isProblemInContestOrPublic(args: {
+    problemId: number
+    contestId: number | null
+  }) {
+    return this.prisma.problem.findFirst({
+      select: { id: true },
+      where: {
+        id: args.problemId,
+        OR: [
+          ...(args.contestId
+            ? [{ contestProblem: { some: { contestId: args.contestId } } }]
+            : []),
+          { show: true },
+        ],
       },
     })
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Param,
   ParseIntPipe,
@@ -42,8 +43,18 @@ export class SubmissionController {
       async ({
         query: { offset = 1e9, limit = 89, problemSearch, userId },
       }) => {
-        if (!user || user.role !== Role.Admin) {
+        if (!user) {
           const submissions = await this.submissionService.findMany({
+            offset,
+            limit,
+            problemSearch,
+            userId,
+            includeContest: false,
+          })
+          return { status: 200, body: submissions }
+        }
+        if (user.role === 'admin') {
+          const submissions = await this.submissionService.findManyWithAdmin({
             offset,
             limit,
             problemSearch,
@@ -51,11 +62,22 @@ export class SubmissionController {
           })
           return { status: 200, body: submissions }
         }
-        const submissions = await this.submissionService.findManyWithAdmin({
+        if (userId === user.id) {
+          const submissions = await this.submissionService.findMany({
+            offset,
+            limit,
+            problemSearch,
+            userId,
+            includeContest: true,
+          })
+          return { status: 200, body: submissions }
+        }
+        const submissions = await this.submissionService.findMany({
           offset,
           limit,
           problemSearch,
           userId,
+          includeContest: false,
         })
         return { status: 200, body: submissions }
       }
@@ -137,11 +159,19 @@ export class SubmissionController {
       const contestId = query.contestId
         ? z.coerce.number().parse(query.contestId)
         : null
+      const problemId = z.coerce.number().parse(params.problemId)
       if (contestId) {
         // TODO validate user if contest is private
         await this.contestService.addUserToContest(contestId, user.id)
       }
-      const problemId = z.coerce.number().parse(params.problemId)
+      const isProblemInContestOrPublic =
+        await this.submissionService.isProblemInContestOrPublic({
+          problemId,
+          contestId,
+        })
+      if (!isProblemInContestOrPublic) {
+        throw new BadRequestException('Problem is not in contest or public!')
+      }
       const submission = await this.submissionService.create({
         userId: user.id,
         problemId,
