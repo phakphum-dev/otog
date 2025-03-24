@@ -26,7 +26,7 @@ async function bootstrap() {
       : (undefined as never)
   )
 
-  if (!environment.OFFLINE_MODE) {
+  if (environment.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('OTOG API')
       .setDescription('API service for OTOG')

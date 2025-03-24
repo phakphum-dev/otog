@@ -15,4 +15,5 @@ export const environment = parseEnv(process.env, {
   S3_BUCKET: z.string().default(''),
 
   DATABASE_URL: z.string(),
+  NODE_ENV: z.enum(['development', 'production']).default('production'),
 })
