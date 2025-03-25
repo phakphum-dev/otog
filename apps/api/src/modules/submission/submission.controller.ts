@@ -164,13 +164,15 @@ export class SubmissionController {
         // TODO validate user if contest is private
         await this.contestService.addUserToContest(contestId, user.id)
       }
-      const isProblemInContestOrPublic =
-        await this.submissionService.isProblemInContestOrPublic({
-          problemId,
-          contestId,
-        })
-      if (!isProblemInContestOrPublic) {
-        throw new BadRequestException('Problem is not in contest or public!')
+      if (user.role === 'user') {
+        const isProblemInContestOrPublic =
+          await this.submissionService.isProblemInContestOrPublic({
+            problemId,
+            contestId,
+          })
+        if (!isProblemInContestOrPublic) {
+          throw new BadRequestException('Problem is not in contest or public!')
+        }
       }
       const submission = await this.submissionService.create({
         userId: user.id,
