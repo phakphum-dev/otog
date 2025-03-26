@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@otog/ui/avatar'
 import { cn } from '@otog/ui/utils'
 
 import { avatarKey } from '../api/query'
+import { environment } from '../env'
 import { AvatarSize } from '../firebase/get-avatar-url'
 import { ClientOnly } from './client-only'
 
@@ -22,7 +23,10 @@ export const UserAvatar = forwardRef<HTMLSpanElement, UserAvatarProps>(
   (props, ref) => {
     const { user, className, size = 'small' } = props
     // TODO: implement img url in session instead
-    const getAvatarUrl = useQuery(avatarKey.getUrl({ userId: user.id, size }))
+    const getAvatarUrl = useQuery({
+      enabled: !environment.OFFLINE_MODE,
+      ...avatarKey.getUrl({ userId: user.id, size }),
+    })
 
     return (
       <Avatar
