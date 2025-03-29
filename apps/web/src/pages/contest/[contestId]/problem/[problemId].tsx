@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -68,6 +68,7 @@ import {
 import { withQuery } from '../../../../api/server'
 import { ExampleTable } from '../../../../components/example-table'
 import { Footer } from '../../../../components/footer'
+import { InfiniteTable } from '../../../../components/infinite-table'
 import { InlineComponent } from '../../../../components/inline-component'
 import { MonacoEditor } from '../../../../components/monaco-editor'
 import {
@@ -80,7 +81,6 @@ import {
   SubmissionScoreBadge,
   useSubmissionPolling,
 } from '../../../../components/submission-table'
-import { TableComponent } from '../../../../components/table-component'
 import { useUserContext } from '../../../../context/user-context'
 import { Language, LanguageName } from '../../../../enums'
 import { useContainerBreakpoint } from '../../../../hooks/use-container-breakpoint'
@@ -466,20 +466,36 @@ interface ContestSubmissionTableProps {
 }
 function ContestSubmissionTable(props: ContestSubmissionTableProps) {
   const { user } = useUserContext()
-  const getContestSubmissions = useQuery({
-    ...submissionKey.getContestSubmissions({
-      params: {
-        contestId: props.contestId.toString(),
-      },
+  const pageSize = 89
+  const getContestSubmissions = useInfiniteQuery({
+    queryKey: submissionKey.getContestSubmissions({
+      params: { contestId: props.contestId.toString() },
       query: {
         problemId: props.problemId,
         userId: user?.id!,
       },
-    }),
+    }).queryKey,
+    // TODO: https://github.com/lukemorales/query-key-factory/issues/89
+    queryFn: ({ pageParam }) =>
+      submissionQuery.getContestSubmissions.query({
+        params: { contestId: props.contestId.toString() },
+        query: {
+          problemId: props.problemId,
+          userId: user?.id!,
+          offset: pageParam,
+          limit: pageSize,
+        },
+      }),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.status === 200 ? lastPage.body.at(-1)?.id : undefined,
     enabled: !!user,
   })
   const data = useMemo(
-    () => getContestSubmissions.data?.body ?? [],
+    () =>
+      getContestSubmissions.data?.pages.flatMap((page) =>
+        page.status === 200 ? page.body : []
+      ) ?? [],
     [getContestSubmissions.data]
   )
   const table = useReactTable({
@@ -488,9 +504,13 @@ function ContestSubmissionTable(props: ContestSubmissionTableProps) {
     getCoreRowModel: getCoreRowModel(),
   })
   return (
-    <TableComponent
+    <InfiniteTable
       table={table}
       classNames={{ container: 'border-transparent' }}
+      isLoading={getContestSubmissions.isLoading}
+      isError={getContestSubmissions.isError}
+      hasNextPage={getContestSubmissions.hasNextPage}
+      fetchNextPage={getContestSubmissions.fetchNextPage}
     />
   )
 }
