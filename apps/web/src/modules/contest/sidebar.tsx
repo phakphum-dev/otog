@@ -203,14 +203,17 @@ function HomeMenuItem() {
 
 function ScoreboardMenuItem() {
   const { contest, contestStatus } = useContest()
-  if (contest.scoreboardPolicy === 'NOT_VISIBLE') {
-    return null
-  }
-  if (
-    contest.scoreboardPolicy === 'AFTER_CONTEST' &&
-    contestStatus !== 'FINISHED'
-  ) {
-    return null
+  const { isAdmin } = useUserContext()
+  if (!isAdmin) {
+    if (contest.scoreboardPolicy === 'NOT_VISIBLE') {
+      return null
+    }
+    if (
+      contest.scoreboardPolicy === 'AFTER_CONTEST' &&
+      contestStatus !== 'FINISHED'
+    ) {
+      return null
+    }
   }
   return (
     <SidebarMenuItem>
