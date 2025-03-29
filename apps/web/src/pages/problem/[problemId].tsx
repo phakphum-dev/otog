@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
@@ -16,8 +17,9 @@ import { useQueryState } from 'nuqs'
 import { z } from 'zod'
 
 import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
-import { Problem, SubmissionStatus } from '@otog/database'
+import { Problem } from '@otog/database'
 import { Button } from '@otog/ui/button'
+import { DialogTrigger } from '@otog/ui/dialog'
 import {
   Form,
   FormField,
@@ -38,7 +40,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@otog/ui/select'
-import { Spinner } from '@otog/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@otog/ui/tabs'
 import { Toggle } from '@otog/ui/toggle'
 import { clsx } from '@otog/ui/utils'
@@ -54,8 +55,11 @@ import {
   ClientOutPortal,
   useHtmlPortalNode,
 } from '../../components/portals'
-import { SubmissionStatusButton } from '../../components/submission-status'
-import { useSubmissionPolling } from '../../components/submission-table'
+import { SubmissionDialog } from '../../components/submission-dialog'
+import {
+  SubmissionScoreBadge,
+  useSubmissionPolling,
+} from '../../components/submission-table'
 import { useUserContext } from '../../context/user-context'
 import { Language, LanguageName } from '../../enums'
 import { useContainerBreakpoint } from '../../hooks/use-container-breakpoint'
@@ -542,33 +546,13 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          if (
-            submission.status == SubmissionStatus.waiting ||
-            submission.status == SubmissionStatus.grading
-          ) {
-            return (
-              <div className="inline-flex gap-2 items-center">
-                <Spinner size="sm" />
-                <div>
-                  {submission.submissionResult?.score ?? 0} /{' '}
-                  {submission.problem.score}
-                </div>
-              </div>
-            )
-          }
-          return (
-            <div>
-              {submission.submissionResult?.score ?? 0} /{' '}
-              {submission.problem.score}
-            </div>
-          )
+          return <SubmissionScoreBadge submission={submission} />
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      cellClassName:
-        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
+      cellClassName: 'max-w-[200px] min-w-[120px] whitespace-pre-wrap text-end',
       headClassName: 'text-end',
     },
   }),
@@ -611,20 +595,28 @@ const columns = [
       cellClassName: 'text-end tabular-nums',
     },
   }),
-  columnHelper.accessor('status', {
-    header: 'สถานะ',
+  columnHelper.display({
+    id: 'action',
+    header: '',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return <SubmissionStatusButton submission={submission} />
+          return (
+            <SubmissionDialog submissionId={submission.id}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
+                  <EllipsisHorizontalIcon />
+                </Button>
+              </DialogTrigger>
+            </SubmissionDialog>
+          )
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      headClassName: 'text-center',
-      cellClassName: 'text-center',
+      cellClassName: 'text-end',
     },
   }),
 ]

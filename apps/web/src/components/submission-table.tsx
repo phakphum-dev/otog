@@ -1,4 +1,4 @@
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { useQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -10,14 +10,17 @@ import NextLink from 'next/link'
 
 import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
+import { Badge } from '@otog/ui/badge'
+import { Button } from '@otog/ui/button'
+import { DialogTrigger } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@otog/ui/tooltip'
+import { VariantProps } from '@otog/ui/utils'
 
 import { submissionKey } from '../api/query'
 import { InfiniteTable, InfiniteTableProps } from './infinite-table'
 import { InlineComponent } from './inline-component'
-import { SubmissionStatusButton } from './submission-status'
+import { SubmissionDialog } from './submission-dialog'
 import { UserAvatar } from './user-avatar'
 
 interface SubmissionTableProps extends Omit<InfiniteTableProps, 'table'> {
@@ -75,49 +78,19 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          if (
-            submission.status == SubmissionStatus.waiting ||
-            submission.status == SubmissionStatus.grading
-          ) {
-            return (
-              <div className="inline-flex gap-2 items-center">
-                <Spinner size="sm" />
-                <div>
-                  {submission.submissionResult?.score ?? 0} /{' '}
-                  {submission.problem.score}
-                </div>
-              </div>
-            )
-          }
-          return (
-            <div>
-              {submission.submissionResult?.score ?? 0} /{' '}
-              {submission.problem.score}
-            </div>
-          )
+          return <SubmissionScoreBadge submission={submission} />
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      cellClassName:
-        'max-w-[200px] min-w-[100px] whitespace-pre-wrap text-end tabular-nums',
+      cellClassName: 'max-w-[200px] min-w-[120px] whitespace-pre-wrap text-end',
       headClassName: 'text-end',
     },
   }),
   columnHelper.display({
     id: 'timeUsed',
-    header: () => (
-      <span className="inline-flex gap-2">
-        เวลาที่ใช้ (วินาที)
-        <Tooltip>
-          <TooltipTrigger>
-            <InformationCircleIcon className="size-4" />
-          </TooltipTrigger>
-          <TooltipContent>เวลารวมถูกปรับเป็นเวลาสูงสุดที่ใช้</TooltipContent>
-        </Tooltip>
-      </span>
-    ),
+    header: 'เวลาที่ใช้ (วินาที)',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
@@ -134,25 +107,88 @@ const columns = [
       cellClassName: 'text-end tabular-nums',
     },
   }),
-  columnHelper.accessor('status', {
-    header: 'สถานะ',
+  columnHelper.display({
+    id: 'action',
+    header: '',
     cell: ({ row: { original } }) => (
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return <SubmissionStatusButton submission={submission} />
+          return (
+            <SubmissionDialog submissionId={submission.id}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
+                  <EllipsisHorizontalIcon />
+                </Button>
+              </DialogTrigger>
+            </SubmissionDialog>
+          )
         }}
       />
     ),
     enableSorting: false,
     meta: {
-      headClassName: 'text-center',
-      cellClassName: 'text-center',
+      cellClassName: 'text-end',
     },
   }),
 ]
 
-export function useSubmissionPolling(originalSubmission: SubmissionSchema) {
+export function getSubmissionBadgeVariant(
+  status: SubmissionStatus,
+  score = 0
+): VariantProps<typeof Badge>['variant'] {
+  switch (status) {
+    case 'waiting':
+    case 'grading':
+      return 'outline'
+    case 'accept':
+      return 'accept'
+    case 'reject':
+      if (score > 0) {
+        return 'warning'
+      }
+      return 'reject'
+    case 'compileError':
+    case 'judgeError':
+      return 'error'
+    default:
+      return 'default'
+  }
+}
+
+export function SubmissionScoreBadge({
+  submission,
+}: {
+  submission: SubmissionSchema
+}) {
+  const score = submission.submissionResult?.score ?? 0
+  const fullScore = submission.problem.score
+  const badge = (
+    <SubmissionDialog submissionId={submission.id}>
+      <Badge
+        variant={getSubmissionBadgeVariant(submission.status, score)}
+        asChild
+      >
+        <DialogTrigger>
+          {score} / {fullScore}
+        </DialogTrigger>
+      </Badge>
+    </SubmissionDialog>
+  )
+  if (submission.status === 'waiting' || submission.status === 'grading') {
+    return (
+      <div className="inline-flex items-center gap-2">
+        <Spinner size="sm" aria-label="กำลังรอตรวจ" />
+        {badge}
+      </div>
+    )
+  }
+  return badge
+}
+
+export function useSubmissionPolling(
+  originalSubmission: SubmissionSchema
+): SubmissionSchema {
   const result = useQuery({
     ...submissionKey.getSubmission({
       params: { submissionId: originalSubmission.id.toString() },

@@ -41,6 +41,7 @@ import {
 } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
+import { useControllableState } from '@otog/ui/utils'
 
 import { submissionKey, submissionQuery } from '../api/query'
 import { useUserContext } from '../context/user-context'
@@ -53,13 +54,19 @@ import { UserAvatar } from './user-avatar'
 
 export const SubmissionDialog = ({
   submissionId,
-  open,
-  setOpen,
+  open: openProp,
+  setOpen: setOpenProp,
+  children,
 }: {
   submissionId?: number
-  open: boolean
-  setOpen: (open: boolean) => void
+  open?: boolean
+  setOpen?: (open: boolean) => void
+  children?: React.ReactNode
 }) => {
+  const [open, setOpen] = useControllableState({
+    prop: openProp,
+    onChange: setOpenProp,
+  })
   const getSubmission = useQuery({
     ...submissionKey.getSubmissionWithSourceCode({
       params: { submissionId: submissionId?.toString()! },
@@ -82,6 +89,7 @@ export const SubmissionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      {children}
       <DialogContent className="max-w-3xl rounded-2xl self-start">
         <NextLink
           title="เปิดแท็บใหม่"
