@@ -90,7 +90,10 @@ export const SubmitCode = (props: {
         <Form {...form}>
           <form
             ref={formRef}
-            onSubmit={onSubmit}
+            onSubmit={(e) => {
+              e.stopPropagation()
+              onSubmit(e)
+            }}
             className="flex flex-col gap-4"
           >
             <FormField
