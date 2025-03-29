@@ -66,6 +66,7 @@ export const SubmissionDialog = ({
   const [open, setOpen] = useControllableState({
     prop: openProp,
     onChange: setOpenProp,
+    defaultProp: false,
   })
   const getSubmission = useQuery({
     ...submissionKey.getSubmissionWithSourceCode({
