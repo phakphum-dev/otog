@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -21,8 +20,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@otog/ui/breadcrumb'
-import { Button } from '@otog/ui/button'
-import { DialogTrigger } from '@otog/ui/dialog'
 import { InputGroup, InputLeftIcon } from '@otog/ui/input'
 import { Link } from '@otog/ui/link'
 import { Separator } from '@otog/ui/separator'
@@ -34,7 +31,7 @@ import { DebouncedInput } from '../../../components/debounced-input'
 import { Footer } from '../../../components/footer'
 import { InfiniteTable } from '../../../components/infinite-table'
 import { InlineComponent } from '../../../components/inline-component'
-import { SubmissionDialog } from '../../../components/submission-dialog'
+import { SubmissionDialogButton } from '../../../components/submission-dialog'
 import {
   SubmissionScoreBadge,
   useSubmissionPolling,
@@ -283,15 +280,7 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return (
-            <SubmissionDialog submissionId={submission.id}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
-                  <EllipsisHorizontalIcon />
-                </Button>
-              </DialogTrigger>
-            </SubmissionDialog>
-          )
+          return <SubmissionDialogButton submission={submission} />
         }}
       />
     ),

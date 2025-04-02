@@ -12,6 +12,7 @@ import {
 import {
   ArrowTopRightOnSquareIcon,
   CodeBracketIcon,
+  EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -23,7 +24,7 @@ import dayjs from 'dayjs'
 import NextLink from 'next/link'
 import { z } from 'zod'
 
-import { SubmissionDetailSchema } from '@otog/contract'
+import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus, VerdictModel } from '@otog/database'
 import {
   Accordion,
@@ -469,3 +470,34 @@ const columns = [
     },
   }),
 ]
+
+export const SubmissionDialogButton = ({
+  submission,
+}: {
+  submission: SubmissionSchema
+}) => {
+  const { user } = useUserContext()
+  const disabled =
+    !user ||
+    !(
+      submission.userId === user.id ||
+      user.role === 'admin' ||
+      submission.public
+    )
+  if (disabled) {
+    return (
+      <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด" disabled>
+        <EllipsisHorizontalIcon />
+      </Button>
+    )
+  }
+  return (
+    <SubmissionDialog submissionId={submission.id}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
+          <EllipsisHorizontalIcon />
+        </Button>
+      </DialogTrigger>
+    </SubmissionDialog>
+  )
+}

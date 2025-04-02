@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
@@ -19,7 +18,6 @@ import { z } from 'zod'
 import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
 import { Problem } from '@otog/database'
 import { Button } from '@otog/ui/button'
-import { DialogTrigger } from '@otog/ui/dialog'
 import {
   Form,
   FormField,
@@ -55,7 +53,7 @@ import {
   ClientOutPortal,
   useHtmlPortalNode,
 } from '../../components/portals'
-import { SubmissionDialog } from '../../components/submission-dialog'
+import { SubmissionDialogButton } from '../../components/submission-dialog'
 import {
   SubmissionScoreBadge,
   useSubmissionPolling,
@@ -602,15 +600,7 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return (
-            <SubmissionDialog submissionId={submission.id}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
-                  <EllipsisHorizontalIcon />
-                </Button>
-              </DialogTrigger>
-            </SubmissionDialog>
-          )
+          return <SubmissionDialogButton submission={submission} />
         }}
       />
     ),

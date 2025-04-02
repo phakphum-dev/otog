@@ -1,4 +1,3 @@
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { useQuery } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -11,16 +10,16 @@ import NextLink from 'next/link'
 import { SubmissionSchema } from '@otog/contract'
 import { SubmissionStatus } from '@otog/database'
 import { Badge } from '@otog/ui/badge'
-import { Button } from '@otog/ui/button'
 import { DialogTrigger } from '@otog/ui/dialog'
 import { Link } from '@otog/ui/link'
 import { Spinner } from '@otog/ui/spinner'
 import { VariantProps } from '@otog/ui/utils'
 
 import { submissionKey } from '../api/query'
+import { useUserContext } from '../context/user-context'
 import { InfiniteTable, InfiniteTableProps } from './infinite-table'
 import { InlineComponent } from './inline-component'
-import { SubmissionDialog } from './submission-dialog'
+import { SubmissionDialog, SubmissionDialogButton } from './submission-dialog'
 import { UserAvatar } from './user-avatar'
 
 interface SubmissionTableProps extends Omit<InfiniteTableProps, 'table'> {
@@ -114,15 +113,7 @@ const columns = [
       <InlineComponent
         render={() => {
           const submission = useSubmissionPolling(original)
-          return (
-            <SubmissionDialog submissionId={submission.id}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
-                  <EllipsisHorizontalIcon />
-                </Button>
-              </DialogTrigger>
-            </SubmissionDialog>
-          )
+          return <SubmissionDialogButton submission={submission} />
         }}
       />
     ),
@@ -163,7 +154,19 @@ export function SubmissionScoreBadge({
 }) {
   const score = submission.submissionResult?.score ?? 0
   const fullScore = submission.problem.score
-  const badge = (
+  const { user } = useUserContext()
+  const disabled =
+    !user ||
+    !(
+      submission.userId === user.id ||
+      user.role === 'admin' ||
+      submission.public
+    )
+  const badge = disabled ? (
+    <Badge variant={getSubmissionBadgeVariant(submission.status, score)}>
+      {score} / {fullScore}
+    </Badge>
+  ) : (
     <SubmissionDialog submissionId={submission.id}>
       <Badge
         variant={getSubmissionBadgeVariant(submission.status, score)}
