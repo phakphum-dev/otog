@@ -113,7 +113,10 @@ export const SubmissionDialog = ({
           </Link>
         </DialogTitle>
         {submission ? (
-          <SubmissionDetail submission={submission} />
+          <SubmissionDetail
+            submission={submission}
+            onClose={() => setOpen(false)}
+          />
         ) : (
           <div className="w-full h-48 flex justify-center items-center">
             <Spinner />
@@ -126,8 +129,10 @@ export const SubmissionDialog = ({
 
 export const SubmissionDetail = ({
   submission,
+  onClose,
 }: {
   submission: SubmissionDetailSchema
+  onClose?: () => void
 }) => {
   const { hasCopied, onCopy } = useClipboard()
   const queryClient = useQueryClient()
@@ -193,14 +198,12 @@ export const SubmissionDetail = ({
             </code>
           )}
         <div className="flex justify-between gap-2 items-center">
-          {
-            <div className="inline-flex gap-2 items-center">
-              <p>
-                {submission.submissionResult?.score ?? 0} /{' '}
-                {submission.problem.score} คะแนน
-              </p>
-            </div>
-          }
+          <div className="inline-flex gap-2 items-center">
+            <p>
+              {submission.submissionResult?.score ?? 0} /{' '}
+              {submission.problem.score} คะแนน
+            </p>
+          </div>
           <p className="whitespace-nowrap">
             เวลาที่ใช้ {(submission.submissionResult?.timeUsed ?? 0) / 1000}{' '}
             วินาที
@@ -345,7 +348,10 @@ export const SubmissionDetail = ({
             {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
           </Button>
           <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
-            <NextLink href={`/problem/${submission.problem.id}?tab=editor`}>
+            <NextLink
+              href={`/problem/${submission.problem.id}?tab=editor`}
+              onClick={onClose}
+            >
               <PencilSquareIcon />
             </NextLink>
           </Button>
