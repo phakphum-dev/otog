@@ -20,6 +20,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   ColumnFiltersState,
+  FilterFnOption,
   Row,
   Table,
   VisibilityState,
@@ -72,6 +73,17 @@ import { useUserContext } from '../../context/user-context'
 import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 import { SubmitCode } from './submit-code'
 
+const customFilterFn: FilterFnOption<ProblemTableRowSchema> = (
+  row,
+  _columnId,
+  filterValue
+) => {
+  return (
+    `${row.original.id.toString().toLowerCase()} ${row.original.name.toLowerCase()}`.indexOf(
+      filterValue.toLowerCase()
+    ) !== -1
+  )
+}
 export const ProblemTable = () => {
   const { data, isLoading, isError } = useQuery(problemKey.getProblemTable())
   const problems = useMemo(
@@ -106,6 +118,7 @@ export const ProblemTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    globalFilterFn: customFilterFn,
   })
   return (
     <section className="flex flex-col gap-4" aria-labelledby="problem">
@@ -219,7 +232,6 @@ const OtogButtons = ({
 }
 
 const TableFilter = ({ table }: { table: Table<any> }) => {
-  const nameColumn = table.getColumn('name')!
   const statusColumn = table.getColumn('status')!
   const statusFilterValue = statusColumn.getFilterValue() as
     | RowStatus
@@ -246,7 +258,7 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
         <DebouncedInput
           type="search"
           placeholder="ค้นหา..."
-          onDebounce={(value) => nameColumn.setFilterValue(value)}
+          onDebounce={(value) => table.setGlobalFilter(value)}
         />
       </InputGroup>
       <div className="flex gap-2">
