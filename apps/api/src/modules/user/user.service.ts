@@ -162,9 +162,11 @@ export class UserService {
         data: { password: hash.hex() },
       })
     }
+    // eslint-disable-next-line no-unused-vars
+    const { password: _password, ...data } = userData
     return this.prisma.user.update({
       where: { id: userId },
-      data: userData,
+      data: data,
       select: WITHOUT_PASSWORD,
     })
   }
