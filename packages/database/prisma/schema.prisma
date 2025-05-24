@@ -65,20 +65,21 @@ model ContestProblem {
 }
 
 model Problem {
-  id             Int              @id @default(autoincrement())
-  name           String           @db.VarChar(255)
-  sname          String?          @db.VarChar(255)
-  score          Int
-  timeLimit      Int
-  memoryLimit    Int
-  show           Boolean
-  recentShowTime DateTime?        @db.Timestamptz(6)
-  case           String?          @db.VarChar(255)
-  rating         Int?
-  examples       Json?
-  contestProblem ContestProblem[]
-  submission     Submission[]
-  contestScore   ContestScore[]
+  id                 Int              @id @default(autoincrement())
+  name               String           @db.VarChar(255)
+  sname              String?          @db.VarChar(255)
+  score              Int
+  timeLimit          Int
+  memoryLimit        Int
+  show               Boolean
+  recentShowTime     DateTime?        @db.Timestamptz(6)
+  case               String?          @db.VarChar(255)
+  rating             Int?
+  examples           Json?
+  contestProblem     ContestProblem[]
+  submission         Submission[]
+  contestScore       ContestScore[]
+  attachmentMetadata Json?
 
   @@map("problem")
 }
