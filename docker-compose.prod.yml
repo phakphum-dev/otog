@@ -70,6 +70,7 @@ services:
       timeout: 5s
       retries: 10
     networks:
+      - api-gateway
       - otog-network
 
   create-bucket:
