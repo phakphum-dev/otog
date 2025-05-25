@@ -64,6 +64,11 @@ services:
     environment:
       <<: *x-minio-config
     command: server --console-address ":9001" /data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 3s
+      timeout: 5s
+      retries: 10
     networks:
       - otog-network
 
