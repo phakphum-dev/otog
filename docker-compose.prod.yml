@@ -28,7 +28,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      otog-create-bucket:
+      create-bucket:
         condition: service_completed_successfully
 
   postgres:
