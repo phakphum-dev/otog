@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DownloadSimpleIcon } from '@phosphor-icons/react'
 import {
   keepPreviousData,
   useQuery,
@@ -279,6 +280,25 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
   const [openEditProblem, setOpenEditProblem] = useState(false)
   const [openRejudgeProblem, setOpenRejudgeProblem] = useState(false)
   const rejudgeProblem = submissionQuery.rejudgeProblem.useMutation()
+  const downloadAttachment = problemQuery.downloadAttachment.useMutation()
+  const download = async () => {
+    const toastId = toast.loading('กำลังดาวน์โหลดไฟล์แนบ...')
+    const response = await downloadAttachment.mutateAsync({
+      params: { problemId: row.original.id.toString() },
+    })
+    if (response.status !== 200) {
+      console.error(
+        'Failed to download attachment for problem',
+        row.original.id,
+        response
+      )
+      toast.error('ไม่สามารถดาวน์โหลดไฟล์แนบได้', { id: toastId })
+      return
+    }
+    const presignedUrl = response.body.url
+    window.open(presignedUrl, '_blank')
+    toast.success('ดาวน์โหลดไฟล์แนบสำเร็จ', { id: toastId })
+  }
   return (
     <>
       <DropdownMenu>
@@ -295,6 +315,13 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
           <DropdownMenuItem onClick={() => setOpenRejudgeProblem(true)}>
             <ArrowPathIcon className="size-4" />
             ตรวจข้อนี้ใหม่
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={download}
+            disabled={!row.original.attachmentMetadata}
+          >
+            <DownloadSimpleIcon className="size-4" />
+            โหลดไฟล์แนบ
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -416,6 +443,7 @@ const EditProblemFormSchema = z.object({
   case: z.string(),
   pdf: z.instanceof(File).optional(),
   zip: z.instanceof(File).optional(),
+  lib: z.instanceof(File).optional(),
 })
 type EditProblemFormInput = z.input<typeof EditProblemFormSchema>
 type EditProblemFormOutput = z.output<typeof EditProblemFormSchema>
@@ -440,8 +468,9 @@ const EditProblemForm = ({
   })
   const queryClient = useQueryClient()
   const updateProblem = problemQuery.updateProblem.useMutation()
+  const uploadAttachment = problemQuery.uploadAttachment.useMutation()
   const onSubmit = form.handleSubmit(async (values) => {
-    const toastId = toast.loading('กำลังบันทึก...')
+    const toastId = toast.loading('(0/2) กำลังบันทึก...')
     await updateProblem.mutateAsync(
       {
         params: { problemId: problem.id.toString() },
@@ -458,17 +487,44 @@ const EditProblemForm = ({
       },
       {
         onSuccess: () => {
-          toast.success('บันทึกสำเร็จ', { id: toastId })
           queryClient.invalidateQueries({
             queryKey: problemKey.getProblemsForAdmin._def,
           })
-          onSuccess()
         },
         onError: () => {
           toast.error('ไม่สามารถบันทึกได้', { id: toastId })
         },
       }
     )
+    if (!values.lib) {
+      toast.success('บันทึกสำเร็จ', { id: toastId })
+      onSuccess()
+      return
+    }
+    toast.loading('(1/2) กำลังอัปโหลดไฟล์...', { id: toastId })
+    try {
+      const metadata = {
+        size: values.lib.size,
+        name: values.lib.name,
+        lastModified: values.lib.lastModified,
+        type: values.lib.type,
+      }
+      const response = await uploadAttachment.mutateAsync({
+        params: { problemId: problem.id.toString() },
+        body: { metadata },
+      })
+      const presignedUrl = response.body.url
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        body: values.lib,
+      })
+      toast.success('(2/2) อัปโหลดไฟล์สำเร็จ', { id: toastId })
+      onSuccess()
+    } catch (e) {
+      console.error('Failed to upload attachment', e)
+      toast.error('ไม่สามารถอัปโหลดไฟล์ได้', { id: toastId })
+      return
+    }
   })
   return (
     <Form {...form}>
@@ -566,9 +622,27 @@ const EditProblemForm = ({
         />
         <FormField
           control={form.control}
-          name="zip"
+          name="lib"
           render={({ field }) => (
             <FormItem>
+              <FormLabel>
+                ไฟล์แนบ (ZIP){' '}
+                <span className="text-muted-foreground text-xs">
+                  (optional)
+                </span>
+              </FormLabel>
+              <FormControl>
+                <FileInput {...field} accept=".zip,.zpi" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="zip"
+          render={({ field }) => (
+            <FormItem className="col-span-full">
               <FormLabel>เทสต์เคส (ZIP)</FormLabel>
               <FormControl>
                 <FileInput {...field} accept=".zip,.zpi" />

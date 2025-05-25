@@ -715,14 +715,30 @@ export const contestRouter = contract.router(
   { pathPrefix: '/contest' }
 )
 
-const ProblemWithoutExampleSchema = ProblemModel.omit({ examples: true })
+export const ProblemSchema = ProblemModel.pick({
+  id: true,
+  name: true,
+  sname: true,
+  score: true,
+  timeLimit: true,
+  memoryLimit: true,
+  show: true,
+  recentShowTime: true,
+  case: true,
+})
+export type ProblemSchema = z.infer<typeof ProblemSchema>
+export const ProblemDetailSchema = ProblemSchema.extend({
+  examples: z.any(),
+  attachmentMetadata: z.any(),
+})
+export type ProblemDetailSchema = z.infer<typeof ProblemDetailSchema>
 const LatestSubmissionModel = SubmissionModel.pick({
   id: true,
   status: true,
   userId: true,
   public: true,
 })
-export const ProblemTableRowSchema = ProblemWithoutExampleSchema.extend({
+export const ProblemTableRowSchema = ProblemSchema.extend({
   passedCount: z.number(),
   // samplePassedUsers: z.array(UserModel.pick({ id: true, showName: true })),
   latestSubmission: LatestSubmissionModel.nullable(),
@@ -740,16 +756,8 @@ export const PassedUserSchema = UserModel.pick({
 })
 export type PassedUserSchema = z.infer<typeof PassedUserSchema>
 
-const AdminProblemSchema = ProblemModel.pick({
-  id: true,
-  name: true,
-  sname: true,
-  show: true,
-  case: true,
-  memoryLimit: true,
-  timeLimit: true,
-  recentShowTime: true,
-  score: true,
+const AdminProblemSchema = ProblemSchema.extend({
+  attachmentMetadata: z.any(),
 })
 export type AdminProblemSchema = z.infer<typeof AdminProblemSchema>
 
@@ -783,7 +791,7 @@ export const problemRouter = contract.router(
       method: 'GET',
       path: '/:problemId',
       responses: {
-        200: ProblemModel,
+        200: ProblemDetailSchema,
         // 403: z.object({ message: z.string() }),
         // 404: z.object({ message: z.string() }),
       },
@@ -832,7 +840,7 @@ export const problemRouter = contract.router(
       method: 'PATCH',
       path: '/:problemId',
       responses: {
-        200: ProblemWithoutExampleSchema,
+        200: ProblemSchema,
       },
       body: ProblemModel.pick({ show: true }),
       summary: 'Toggle problem show state',
@@ -842,7 +850,7 @@ export const problemRouter = contract.router(
       path: '',
       contentType: 'multipart/form-data',
       responses: {
-        201: ProblemWithoutExampleSchema,
+        201: ProblemSchema,
       },
       body: contract.type<{
         name: string
@@ -860,7 +868,7 @@ export const problemRouter = contract.router(
       method: 'PUT',
       path: '/:problemId',
       responses: {
-        200: ProblemWithoutExampleSchema,
+        200: ProblemSchema,
       },
       contentType: 'multipart/form-data',
       body: contract.type<{
@@ -879,7 +887,7 @@ export const problemRouter = contract.router(
       method: 'DELETE',
       path: '/:problemId',
       responses: {
-        200: ProblemWithoutExampleSchema,
+        200: ProblemSchema,
       },
       body: null,
       summary: 'Delete a problem',
@@ -892,6 +900,39 @@ export const problemRouter = contract.router(
       },
       body: z.any(),
       summary: 'Update problem example testcases',
+    },
+    uploadAttachment: {
+      method: 'POST',
+      path: '/:problemId/upload-attachment',
+      body: z.object({
+        metadata: z.object({
+          size: z.number(),
+          name: z.string(),
+          lastModified: z.number(),
+          type: z.string(),
+        }),
+      }),
+      responses: {
+        200: z.object({ url: z.string() }),
+      },
+      summary: 'Upload attachment files for a problem',
+    },
+    downloadAttachment: {
+      method: 'POST',
+      path: '/:problemId/download-attachment',
+      body: z.object({}),
+      responses: {
+        200: z.object({
+          url: z.string(),
+          metadata: z.object({
+            size: z.number(),
+            name: z.string(),
+            lastModified: z.number(),
+            type: z.string(),
+          }),
+        }),
+      },
+      summary: 'Download attachment files for a problem',
     },
   },
   { pathPrefix: '/problem' }

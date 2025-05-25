@@ -265,13 +265,10 @@ export class ProblemController {
 
   @TsRestHandler(c.searchProblem, { jsonQuery: true })
   @Roles(Role.Admin)
-  searchProblem(@User() user?: UserDTO) {
+  searchProblem() {
     return tsRestHandler(
       c.searchProblem,
       async ({ query: { skip = 0, limit = 10, search } }) => {
-        if (user?.role !== Role.Admin) {
-          return { status: 403, body: { message: 'Forbidden' } }
-        }
         const problems = await this.problemService.searchProblem({
           limit,
           skip,
@@ -280,5 +277,49 @@ export class ProblemController {
         return { status: 200, body: problems }
       }
     )
+  }
+
+  @TsRestHandler(c.uploadAttachment)
+  @Roles(Role.Admin)
+  uploadAttachment() {
+    return tsRestHandler(c.uploadAttachment, async ({ params, body }) => {
+      const problemId = z.coerce.number().parse(params.problemId)
+      const result = await this.problemService.uploadAttachment({
+        body,
+        problemId,
+      })
+      return { status: 200, body: result }
+    })
+  }
+
+  @TsRestHandler(c.downloadAttachment)
+  downloadAttachment(@User() user?: UserDTO) {
+    return tsRestHandler(c.downloadAttachment, async ({ params }) => {
+      const problemId = z.coerce.number().parse(params.problemId)
+
+      const problem = await this.problemService.findOneById(problemId)
+      if (!problem) {
+        console.error('Cannot find problem with id', `${problemId}`)
+        throw new NotFoundException()
+      }
+      if (problem.show === false) {
+        // TODO validate user if contest is private
+        const contests =
+          await this.contestService.getStartedAndUnFinishedContests()
+        if (
+          user?.role !== Role.Admin &&
+          !contests.some((c) =>
+            c.contestProblem.some((p) => p.problemId === problem.id)
+          )
+        ) {
+          throw new ForbiddenException(
+            'There is no contest right now and you are not admin'
+          )
+        }
+      }
+
+      const result = await this.problemService.downloadAttachment(problemId)
+      return { status: 200, body: result }
+    })
   }
 }

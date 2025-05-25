@@ -6,6 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import * as fsExtra from 'fs-extra'
 import { mkdir, writeFile } from 'fs/promises'
 import fs from 'node:fs'
@@ -149,6 +150,28 @@ class S3FileManager extends FileManager {
     } catch (e) {
       return false
     }
+  }
+
+  async generatePutPresignedUrl(filePath: string): Promise<string> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: filePath,
+    })
+    const presignedUrl = await getSignedUrl(this.s3, command, {
+      expiresIn: 3600,
+    })
+    return presignedUrl
+  }
+
+  async generateGetPresignedUrl(filePath: string): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: filePath,
+    })
+    const presignedUrl = await getSignedUrl(this.s3, command, {
+      expiresIn: 3600,
+    })
+    return presignedUrl
   }
 }
 

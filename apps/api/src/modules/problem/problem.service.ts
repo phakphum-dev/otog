@@ -1,3 +1,4 @@
+import { NotFound } from '@aws-sdk/client-s3'
 import {
   BadRequestException,
   Injectable,
@@ -43,12 +44,11 @@ export const WITHOUT_EXAMPLE = {
 @Injectable()
 export class ProblemService {
   private fileManager: FileManager
+  private attachmentManager: S3FileManager
 
   constructor(private readonly prisma: PrismaService) {
     this.fileManager = new LocalFileManager()
-    this.fileManager = environment.USE_S3
-      ? new S3FileManager(environment.S3_BUCKET)
-      : new LocalFileManager()
+    this.attachmentManager = new S3FileManager(environment.S3_BUCKET)
   }
 
   async create(problemData: ProblemFormSchema, files: UploadedFilesObject) {
@@ -360,6 +360,7 @@ export class ProblemService {
         timeLimit: true,
         recentShowTime: true,
         score: true,
+        attachmentMetadata: true,
       },
       orderBy: { id: 'desc' },
     })
@@ -398,5 +399,49 @@ export class ProblemService {
       },
       orderBy: { id: 'desc' },
     })
+  }
+
+  async uploadAttachment(args: {
+    problemId: number
+    body: {
+      metadata: {
+        type: string
+        name: string
+        size: number
+        lastModified: number
+      }
+    }
+  }) {
+    const [url] = await Promise.all([
+      this.attachmentManager.generatePutPresignedUrl(
+        `attachment/${args.problemId}.zip`
+      ),
+      this.prisma.problem.update({
+        where: { id: args.problemId },
+        data: { attachmentMetadata: args.body.metadata },
+      }),
+    ])
+    return { url }
+  }
+
+  async downloadAttachment(problemId: number) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id: problemId },
+      select: { attachmentMetadata: true },
+    })
+    if (!problem || !problem.attachmentMetadata) {
+      throw new NotFoundException('Attachment not found')
+    }
+    try {
+      const url = await this.attachmentManager.generateGetPresignedUrl(
+        `attachment/${problemId}.zip`
+      )
+      return { url, metadata: problem.attachmentMetadata as any }
+    } catch (e) {
+      if (e instanceof NotFound) {
+        throw new NotFoundException('Attachment not found')
+      }
+      throw e
+    }
   }
 }

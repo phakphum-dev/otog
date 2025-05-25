@@ -24,7 +24,7 @@ import {
 } from '@tanstack/table-core'
 import { produce } from 'immer'
 
-import { Problem } from '@otog/database'
+import { ProblemDetailSchema } from '@otog/contract'
 import { Button } from '@otog/ui/button'
 import { Textarea } from '@otog/ui/textarea'
 
@@ -39,7 +39,7 @@ interface Testcase {
 }
 
 interface ExampleTableProps {
-  problem: Problem
+  problem: ProblemDetailSchema
 }
 
 export const ExampleTable = ({ problem }: ExampleTableProps) => {

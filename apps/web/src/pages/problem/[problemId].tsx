@@ -15,8 +15,11 @@ import { useRouter } from 'next/router'
 import { useQueryState } from 'nuqs'
 import { z } from 'zod'
 
-import { SubmissionDetailSchema, SubmissionSchema } from '@otog/contract'
-import { Problem } from '@otog/database'
+import {
+  ProblemDetailSchema,
+  SubmissionDetailSchema,
+  SubmissionSchema,
+} from '@otog/contract'
 import { Button } from '@otog/ui/button'
 import {
   Form,
@@ -25,7 +28,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@otog/ui/form'
-import { Link } from '@otog/ui/link'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -53,6 +55,7 @@ import {
   ClientOutPortal,
   useHtmlPortalNode,
 } from '../../components/portals'
+import { ProblemDetail } from '../../components/problem-detail'
 import { SubmissionDialogButton } from '../../components/submission-dialog'
 import {
   SubmissionScoreBadge,
@@ -65,7 +68,7 @@ import { SubmitCode } from '../../modules/problem/submit-code'
 
 interface WriteSolutionPageProps {
   submission: SubmissionDetailSchema | null
-  problem: Problem
+  problem: ProblemDetailSchema
 }
 
 export const getServerSideProps = withQuery<WriteSolutionPageProps>(
@@ -152,6 +155,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
       setTwoColumn(false)
     }
   }, [isLargeScreen])
+
   return (
     <section ref={containerRef} className="w-full @container">
       <div
@@ -224,21 +228,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
                   height="800px"
                   className="w-full rounded-md border min-h-[800px]"
                 />
-                {/* TODO: add attachment */}
-                <div className="flex justify-between gap-1">
-                  <p className="text-sm text-muted-foreground">
-                    {props.problem.timeLimit / 1000} วินาที{' '}
-                    {props.problem.memoryLimit} MB
-                  </p>
-                  <Link
-                    className="text-sm text-muted-foreground"
-                    variant="hidden"
-                    isExternal
-                    href={`/api/problem/${props.problem.id}`}
-                  >
-                    [ดาวน์โหลด]
-                  </Link>
-                </div>
+                <ProblemDetail problem={props.problem} />
                 <ExampleTable problem={props.problem} />
               </ResizablePanel>
               {twoColumn && (
@@ -310,7 +300,7 @@ type CodeEditorFormSchema = z.infer<typeof CodeEditorFormSchema>
 
 interface CodeEditorFormProps {
   latestSubmission: SubmissionDetailSchema | null
-  problem: Problem
+  problem: ProblemDetailSchema
   onSuccess: () => void
 }
 function CodeEditorForm(props: CodeEditorFormProps) {
