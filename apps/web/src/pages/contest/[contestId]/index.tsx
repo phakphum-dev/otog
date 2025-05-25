@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { PencilIcon } from '@heroicons/react/24/outline'
+import { PencilSimpleIcon } from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
 import Head from 'next/head'
 import NextLink from 'next/link'
@@ -135,7 +135,7 @@ function ContestDetail() {
           title="แก้ไขประกาศ"
           className="absolute flex gap-1 right-0 top-0"
         >
-          <PencilIcon />
+          <PencilSimpleIcon />
         </Button>
       )}
     </div>

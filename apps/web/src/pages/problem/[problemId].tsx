@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 
-import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { NotePencilIcon } from '@phosphor-icons/react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import { createColumnHelper, getCoreRowModel } from '@tanstack/table-core'
@@ -165,7 +165,7 @@ const ProblemSection = (props: WriteSolutionPageProps) => {
         )}
       >
         <h1 className="text-2xl font-heading tracking-tight font-semibold inline-flex gap-2 items-center">
-          <PencilSquareIcon className="size-6" />
+          <NotePencilIcon className="size-6" />
           {props.problem.name}
         </h1>
 

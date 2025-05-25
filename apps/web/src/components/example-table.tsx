@@ -10,11 +10,11 @@ import { toast } from 'react-hot-toast'
 
 import {
   CheckIcon,
-  DocumentDuplicateIcon,
-  PencilIcon,
+  CopyIcon,
+  PencilSimpleIcon,
   PlusIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 import { useReactTable } from '@tanstack/react-table'
 import {
   Cell,
@@ -80,7 +80,7 @@ export const ExampleTable = ({ problem }: ExampleTableProps) => {
               }
             }}
           >
-            <PencilIcon />
+            <PencilSimpleIcon />
           </Button>
         )}
         {isEditing && (
@@ -219,7 +219,7 @@ const TestcaseCell = ({
         variant="ghost"
         className="invisible absolute right-2 top-2 group-hover/example:visible"
       >
-        {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
+        {hasCopied ? <CheckIcon /> : <CopyIcon />}
       </Button>
     </div>
   )

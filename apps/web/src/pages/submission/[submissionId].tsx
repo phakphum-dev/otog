@@ -1,4 +1,4 @@
-import { CodeBracketIcon } from '@heroicons/react/24/solid'
+import { CodeIcon } from '@phosphor-icons/react'
 import Head from 'next/head'
 
 import { SubmissionDetailSchema } from '@otog/contract'
@@ -51,7 +51,7 @@ export default function SubmissionPage(props: SubmissionPageProps) {
           href={`/api/problem/${submission.problem.id}`}
           className="text-lg font-heading tracking-tight font-semibold inline-flex gap-2 items-center mb-2"
         >
-          <CodeBracketIcon className="size-6" />
+          <CodeIcon className="size-6" />
           <h1>ผลตรวจข้อ {submission.problem.name}</h1>
         </Link>
         <SubmissionDetail submission={submission} />

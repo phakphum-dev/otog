@@ -2,20 +2,20 @@ import { ReactNode, forwardRef, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import {
+  ArrowSquareOutIcon,
   CheckCircleIcon,
-  CodeBracketIcon,
-  EllipsisHorizontalIcon,
+  CodeIcon,
+  ColumnsIcon,
+  DotsThreeIcon,
   EyeIcon,
   EyeSlashIcon,
   FunnelIcon,
-  ListBulletIcon,
+  ListBulletsIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
-  ViewColumnsIcon,
+  NotePencilIcon,
   XCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+  XIcon,
+} from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
@@ -307,13 +307,13 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
             onClick={toggleNewProblemFilter}
           >
             โจทย์วันนี้
-            <XMarkIcon />
+            <XIcon />
           </Button>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
-              <ViewColumnsIcon aria-label="คอลัมน์ที่แสดง" />
+              <ColumnsIcon aria-label="คอลัมน์ที่แสดง" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -563,13 +563,13 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" title="เพิ่มเติม" size="icon">
-            <EllipsisHorizontalIcon />
+            <DotsThreeIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
             <NextLink href={`/problem/${row.original.id}?tab=editor`}>
-              <PencilSquareIcon />
+              <NotePencilIcon />
               เขียนส่ง
             </NextLink>
           </DropdownMenuItem>
@@ -577,14 +577,14 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onClick={() => setOpenLatestSubmission(true)}
             disabled={!row.original.latestSubmission}
           >
-            <CodeBracketIcon />
+            <CodeIcon />
             การส่งล่าสุด
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setOpenPassedUser(true)}
             disabled={row.original.passedCount === 0}
           >
-            <ListBulletIcon />
+            <ListBulletsIcon />
             ผู้ที่ผ่าน
           </DropdownMenuItem>
           <ToggleShowProblem row={row} />
@@ -654,7 +654,7 @@ const PassedUserDialog = ({
                     isExternal
                   >
                     <NextLink href={`/submission/${user.passedSubmission.id}`}>
-                      <ArrowTopRightOnSquareIcon className="size-4" />
+                      <ArrowSquareOutIcon className="size-4" />
                     </NextLink>
                   </Link>
                 )}

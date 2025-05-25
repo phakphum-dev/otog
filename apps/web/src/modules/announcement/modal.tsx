@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { PencilSimpleIcon, PlusIcon } from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@otog/ui/button'
@@ -52,7 +52,7 @@ export const AnnouncementModal = () => {
           size="icon"
           variant="ghost"
         >
-          {announcements.length ? <PencilIcon /> : <PlusIcon />}
+          {announcements.length ? <PencilSimpleIcon /> : <PlusIcon />}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">

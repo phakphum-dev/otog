@@ -3,9 +3,9 @@ import { useState } from 'react'
 import {
   CheckCircleIcon,
   ClockIcon,
-  ExclamationCircleIcon,
+  WarningCircleIcon,
   XCircleIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 
 import { Submission, SubmissionStatus } from '@otog/database'
 import { Button } from '@otog/ui/button'
@@ -32,9 +32,9 @@ export function SubmissionStatusIcon(props: { status?: SubmissionStatus }) {
     case 'reject':
       return <XCircleIcon className="text-destructive" />
     case 'compileError':
-      return <ExclamationCircleIcon className="text-purple-500" />
+      return <WarningCircleIcon className="text-purple-500" />
     case 'judgeError':
-      return <ExclamationCircleIcon className="text-purple-500" />
+      return <WarningCircleIcon className="text-purple-500" />
     default:
       return (
         <div className="size-[15px] border-muted-foreground border rounded-full" />

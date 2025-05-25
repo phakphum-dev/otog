@@ -3,9 +3,9 @@ import { ReactNode, createContext, useContext, useEffect } from 'react'
 import {
   BookOpenIcon,
   ClockIcon,
-  HomeIcon,
+  HouseLineIcon,
   TrophyIcon,
-} from '@heroicons/react/24/solid'
+} from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, TablePropertiesIcon } from 'lucide-react'
 import { Terminal } from 'lucide-react'
@@ -194,7 +194,7 @@ function HomeMenuItem() {
         href={`/contest/${contest.id}`}
         className="flex items-center gap-2"
       >
-        <HomeIcon className="size-4" />
+        <HouseLineIcon className="size-4" />
         Home
       </SideBarButton>
     </SidebarMenuItem>

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Head from 'next/head'
 import NextLink from 'next/link'

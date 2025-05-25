@@ -1,26 +1,24 @@
 import { KeyboardEvent, ReactNode, useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import {
-  MdCode,
-  MdFormatBold,
-  MdFormatItalic,
-  MdFormatListBulleted,
-  MdFormatListNumbered,
-  MdFormatQuote,
-  MdFormatUnderlined,
-  MdLink,
-  MdLooks3,
-  MdLooks4,
-  MdLooksOne,
-  MdLooksTwo,
-} from 'react-icons/md'
 
 import {
+  CodeIcon,
   EyeIcon,
   EyeSlashIcon,
-  PencilIcon,
+  LinkIcon,
+  ListBulletsIcon,
+  ListNumbersIcon,
+  PencilSimpleIcon,
+  QuotesIcon,
+  TextBIcon,
+  TextHFourIcon,
+  TextHOneIcon,
+  TextHThreeIcon,
+  TextHTwoIcon,
+  TextItalicIcon,
+  TextUnderlineIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
 import isHotkey from 'is-hotkey'
 import { createEditor } from 'slate'
@@ -107,7 +105,7 @@ export const AnnouncementEditable = ({
           onClick={() => setEditing(true)}
           title="แก้ไขประกาศ"
         >
-          <PencilIcon />
+          <PencilSimpleIcon />
         </Button>
       </div>
     </div>
@@ -151,26 +149,20 @@ export const AnnouncementEditor = ({
         <div className="flex flex-wrap justify-between gap-2">
           <div className="flex gap-2">
             <ButtonGroup>
-              <MarkButton format="bold" icon={<MdFormatBold />} />
-              <MarkButton format="italic" icon={<MdFormatItalic />} />
-              <MarkButton format="underline" icon={<MdFormatUnderlined />} />
-              <MarkButton format="link" icon={<MdLink />} />
-              <MarkButton format="code" icon={<MdCode />} />
+              <MarkButton format="bold" icon={<TextBIcon />} />
+              <MarkButton format="italic" icon={<TextItalicIcon />} />
+              <MarkButton format="underline" icon={<TextUnderlineIcon />} />
+              <MarkButton format="link" icon={<LinkIcon />} />
+              <MarkButton format="code" icon={<CodeIcon />} />
             </ButtonGroup>
             <ButtonGroup>
-              <BlockButton format="heading-one" icon={<MdLooksOne />} />
-              <BlockButton format="heading-two" icon={<MdLooksTwo />} />
-              <BlockButton format="heading-three" icon={<MdLooks3 />} />
-              <BlockButton format="heading-four" icon={<MdLooks4 />} />
-              <BlockButton format="block-quote" icon={<MdFormatQuote />} />
-              <BlockButton
-                format="numbered-list"
-                icon={<MdFormatListNumbered />}
-              />
-              <BlockButton
-                format="bulleted-list"
-                icon={<MdFormatListBulleted />}
-              />
+              <BlockButton format="heading-one" icon={<TextHOneIcon />} />
+              <BlockButton format="heading-two" icon={<TextHTwoIcon />} />
+              <BlockButton format="heading-three" icon={<TextHThreeIcon />} />
+              <BlockButton format="heading-four" icon={<TextHFourIcon />} />
+              <BlockButton format="block-quote" icon={<QuotesIcon />} />
+              <BlockButton format="numbered-list" icon={<ListNumbersIcon />} />
+              <BlockButton format="bulleted-list" icon={<ListBulletsIcon />} />
             </ButtonGroup>
           </div>
           <div className="flex gap-2 max-sm:ml-auto">
@@ -286,7 +278,12 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline" title="ลบประกาศ">
+        <Button
+          size="icon"
+          variant="outline"
+          title="ลบประกาศ"
+          aria-label="ลบประกาศ"
+        >
           <TrashIcon />
         </Button>
       </DialogTrigger>

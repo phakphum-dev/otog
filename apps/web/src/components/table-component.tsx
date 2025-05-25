@@ -4,9 +4,9 @@ import { TableVirtuoso } from 'react-virtuoso'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  ChevronUpDownIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline'
+  CaretUpDownIcon,
+  WarningIcon,
+} from '@phosphor-icons/react'
 import { flexRender } from '@tanstack/react-table'
 import {
   Cell,
@@ -228,7 +228,7 @@ const TableEmptyPlaceholder = ({
             <Spinner />
           ) : isError ? (
             <div className="inline-flex gap-2 items-center">
-              <ExclamationTriangleIcon className="size-4" />
+              <WarningIcon className="size-4" />
               การโหลดข้อมูลผิดพลาด
             </div>
           ) : (
@@ -286,7 +286,7 @@ const TableHeadComponent = ({
               ) : sortDirection === 'desc' ? (
                 <ArrowUpIcon />
               ) : (
-                <ChevronUpDownIcon />
+                <CaretUpDownIcon />
               )}
             </Button>
           </SelectPrimitive.Trigger>

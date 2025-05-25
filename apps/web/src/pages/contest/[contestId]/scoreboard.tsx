@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { ListBulletIcon } from '@heroicons/react/24/outline'
+import { ListBulletsIcon } from '@phosphor-icons/react'
 import { useReactTable } from '@tanstack/react-table'
 import {
   createColumnHelper,
@@ -289,7 +289,7 @@ export function Scoreboard({ contestScoreboard }: ContestScoreboardProps) {
           className="p-1.5 h-7"
           onPressedChange={() => setExpanded((expanded) => !expanded)}
         >
-          <ListBulletIcon aria-label="ซ่อนรายละเอียด" />
+          <ListBulletsIcon aria-label="ซ่อนรายละเอียด" />
         </Toggle>
       </div>
 

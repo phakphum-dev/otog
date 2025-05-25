@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useMemo, useState } from 'react'
 
 import { Combobox, createListCollection } from '@ark-ui/react/combobox'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { matchSorter } from 'match-sorter'
 import NextLink from 'next/link'

@@ -1,10 +1,9 @@
 import { useId, useState } from 'react'
 import Cropper, { Area } from 'react-easy-crop'
 import toast from 'react-hot-toast'
-import { FaCropAlt, FaUpload } from 'react-icons/fa'
 
 import { FileUpload, useFileUpload } from '@ark-ui/react/file-upload'
-import { XMarkIcon } from '@heroicons/react/24/solid'
+import { CropIcon, FileArrowUpIcon, XIcon } from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
@@ -112,7 +111,7 @@ export const AvatarUpload = (props: AvatarUploadProps) => {
           <FileUpload.HiddenInput />
           <FileUpload.Dropzone tabIndex={-1}>
             <Button size="sm" variant="secondary">
-              <FaUpload />
+              <FileArrowUpIcon />
               อัปโหลด
             </Button>
           </FileUpload.Dropzone>
@@ -254,7 +253,7 @@ export const ImageCropModal = (props: ImageUploadModalProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
-          <FaCropAlt />
+          <CropIcon />
           ตัดภาพ
         </Button>
       </DialogTrigger>
@@ -328,7 +327,7 @@ const DeleteAvatarDialog = () => {
           variant="secondary"
           aria-label="remove-profile-picture"
         >
-          <XMarkIcon />
+          <XIcon />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

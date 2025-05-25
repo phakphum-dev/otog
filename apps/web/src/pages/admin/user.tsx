@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DotsThreeIcon } from '@phosphor-icons/react'
 import {
   keepPreviousData,
   useQuery,
@@ -231,7 +231,7 @@ const ActionMenu = ({ row }: { row: Row<UserSchema> }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" aria-label="เพิ่มเติม" size="icon">
-            <EllipsisHorizontalIcon />
+            <DotsThreeIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

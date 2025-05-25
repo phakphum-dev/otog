@@ -8,10 +8,13 @@ import {
 } from 'react'
 import { Children, ReactElement, cloneElement, memo } from 'react'
 import { useForm } from 'react-hook-form'
-import { IoChatbubbleEllipses, IoSend } from 'react-icons/io5'
 
-import { XMarkIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  ChatCircleDotsIcon,
+  PaperPlaneRightIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import {
   useInfiniteQuery,
   useQuery,
@@ -111,7 +114,7 @@ export function Chat() {
               size="icon"
               aria-label="แชท"
             >
-              <IoChatbubbleEllipses />
+              <ChatCircleDotsIcon weight="fill" />
             </Button>
           </PopoverTrigger>
         </OnlineUsersTooltip>
@@ -138,7 +141,7 @@ export function Chat() {
                 aria-label="ปิด"
                 className="flex-1 size-4 hover:bg-transparent hover:text-inherit justify-end h-full p-4"
               >
-                <XMarkIcon />
+                <XIcon />
               </Button>
             </div>
           </Button>
@@ -203,7 +206,7 @@ export function Chat() {
                 variant="ghost"
                 type="submit"
               >
-                <IoSend />
+                <PaperPlaneRightIcon weight="fill" />
               </Button>
             </form>
           </Form>

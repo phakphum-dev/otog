@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebounce } from '@uidotdev/usehooks'
 import Head from 'next/head'

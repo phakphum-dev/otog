@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { MdUploadFile } from 'react-icons/md'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { FileArrowUpIcon } from '@phosphor-icons/react'
 import { File } from '@web-std/file'
 import { z } from 'zod'
 
@@ -82,7 +82,7 @@ export const SubmitCode = (props: {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button title="ส่งด้วยไฟล์" size="icon" variant="secondary">
-          <MdUploadFile />
+          <FileArrowUpIcon />
         </Button>
       </DialogTrigger>
       <DialogContent>

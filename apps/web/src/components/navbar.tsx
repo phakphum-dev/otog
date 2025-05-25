@@ -2,11 +2,11 @@ import { ReactNode, useEffect, useState } from 'react'
 import { RemoveScroll } from 'react-remove-scroll'
 
 import {
-  ArrowRightStartOnRectangleIcon,
-  ChevronDownIcon,
+  CaretDownIcon,
+  ListIcon,
+  SignOutIcon,
   UserIcon,
-} from '@heroicons/react/24/outline'
-import { Bars3Icon } from '@heroicons/react/24/solid'
+} from '@phosphor-icons/react'
 import { User } from 'next-auth'
 import Image from 'next/image'
 import NextLink from 'next/link'
@@ -104,8 +104,8 @@ export const Navbar = () => {
           <div className="lg:hidden">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Bars3Icon />
+                <Button variant="ghost" size="icon" aria-label="Menu">
+                  <ListIcon />
                 </Button>
               </SheetTrigger>
               <SheetContent className="flex flex-col gap-6">
@@ -197,7 +197,7 @@ const Menu = ({ user }: MenuProps) => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost">
           <UserAvatar user={user} />
-          <ChevronDownIcon className="size-2" />
+          <CaretDownIcon className="size-2" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -224,7 +224,7 @@ const Menu = ({ user }: MenuProps) => {
           onClick={logout}
           className="text-destructive focus:text-destructive"
         >
-          <ArrowRightStartOnRectangleIcon />
+          <SignOutIcon />
           ออกจากระบบ
         </DropdownMenuItem>
       </DropdownMenuContent>

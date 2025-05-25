@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  ArrowPathIcon,
+  DotsThreeIcon,
+  DownloadSimpleIcon,
   EyeIcon,
   EyeSlashIcon,
-} from '@heroicons/react/24/outline'
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { DownloadSimpleIcon } from '@phosphor-icons/react'
+  RepeatIcon,
+} from '@phosphor-icons/react'
 import {
   keepPreviousData,
   useQuery,
@@ -304,7 +304,7 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" aria-label="เพิ่มเติม" size="icon">
-            <EllipsisHorizontalIcon />
+            <DotsThreeIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -313,7 +313,7 @@ const ActionMenu = ({ row }: { row: Row<AdminProblemSchema> }) => {
             แก้ไขโจทย์
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpenRejudgeProblem(true)}>
-            <ArrowPathIcon className="size-4" />
+            <RepeatIcon className="size-4" />
             ตรวจข้อนี้ใหม่
           </DropdownMenuItem>
           <DropdownMenuItem

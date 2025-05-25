@@ -2,18 +2,16 @@ import { useMemo } from 'react'
 import toast from 'react-hot-toast'
 
 import {
-  ArrowPathIcon,
+  ArrowSquareOutIcon,
   CheckIcon,
-  DocumentDuplicateIcon,
+  CodeIcon,
+  CopyIcon,
+  DotsThreeIcon,
   EyeIcon,
   EyeSlashIcon,
-  PencilSquareIcon,
-} from '@heroicons/react/24/outline'
-import {
-  ArrowTopRightOnSquareIcon,
-  CodeBracketIcon,
-  EllipsisHorizontalIcon,
-} from '@heroicons/react/24/solid'
+  NotePencilIcon,
+  RepeatIcon,
+} from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -100,10 +98,10 @@ export const SubmissionDialog = ({
           rel="noreferrer"
           className="absolute right-12 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
         >
-          <ArrowTopRightOnSquareIcon className="size-4" />
+          <ArrowSquareOutIcon className="size-4" />
         </NextLink>
         <DialogTitle className="flex items-center gap-2">
-          <CodeBracketIcon className="size-6" />
+          <CodeIcon className="size-6" />
           <Link
             isExternal
             variant="hidden"
@@ -303,7 +301,7 @@ export const SubmissionDetail = ({
                 )
               }}
             >
-              <ArrowPathIcon />
+              <RepeatIcon />
             </Button>
           )}
           {(user?.id === submission.userId || user?.role === 'admin') && (
@@ -345,14 +343,15 @@ export const SubmissionDetail = ({
             variant="ghost"
             onClick={() => onCopy(submission.sourceCode ?? '')}
           >
-            {hasCopied ? <CheckIcon /> : <DocumentDuplicateIcon />}
+            {hasCopied ? <CheckIcon /> : <CopyIcon />}
           </Button>
           <Button size="icon" title="เขียนข้อนี้" variant="ghost" asChild>
             <NextLink
               href={`/problem/${submission.problem.id}?tab=editor`}
               onClick={onClose}
+              aria-label="เขียนข้อนี้"
             >
-              <PencilSquareIcon />
+              <NotePencilIcon />
             </NextLink>
           </Button>
         </div>
@@ -493,7 +492,7 @@ export const SubmissionDialogButton = ({
   if (disabled) {
     return (
       <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด" disabled>
-        <EllipsisHorizontalIcon />
+        <DotsThreeIcon />
       </Button>
     )
   }
@@ -501,7 +500,7 @@ export const SubmissionDialogButton = ({
     <SubmissionDialog submissionId={submission.id}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="ดูรายละเอียด">
-          <EllipsisHorizontalIcon />
+          <DotsThreeIcon />
         </Button>
       </DialogTrigger>
     </SubmissionDialog>

@@ -2,13 +2,13 @@ import { useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PencilIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  CaretDownIcon,
+  CaretUpIcon,
+  PencilSimpleIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -94,7 +94,7 @@ export const TaskCard = (props: TaskCardProps) => {
                 </div>
               )}
             </div>
-            {isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {isOpen ? <CaretUpIcon /> : <CaretDownIcon />}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -121,7 +121,7 @@ export const TaskCard = (props: TaskCardProps) => {
                   variant="ghost"
                   onClick={onEditorToggle}
                 >
-                  {isEditorOpen ? <XMarkIcon /> : <PencilIcon />}
+                  {isEditorOpen ? <XIcon /> : <PencilSimpleIcon />}
                 </Button>
               </CollapsibleTrigger>
             </div>
