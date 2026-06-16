@@ -158,19 +158,20 @@ model Verdict {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  username     String         @unique @db.VarChar(255)
-  showName     String         @unique @db.VarChar(255)
-  email        String?        @unique @db.VarChar(255)
-  password     String         @db.VarChar(255)
-  role         UserRole
-  rating       Int?
-  creationDate DateTime       @default(now()) @db.Timestamptz(6)
-  updateDate   DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
-  chat         Chat[]
-  submission   Submission[]
-  userContest  UserContest[]
-  contestScore ContestScore[]
+  id                Int            @id @default(autoincrement())
+  username          String         @unique @db.VarChar(255)
+  showName          String         @unique @db.VarChar(255)
+  email             String?        @unique @db.VarChar(255)
+  password          String         @db.VarChar(255)
+  role              UserRole
+  rating            Int?
+  showInLeaderboard Boolean        @default(true)
+  creationDate      DateTime       @default(now()) @db.Timestamptz(6)
+  updateDate        DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  chat              Chat[]
+  submission        Submission[]
+  userContest       UserContest[]
+  contestScore      ContestScore[]
 
   @@map("user")
 }

@@ -89,6 +89,9 @@ export class UserService {
         rating: true,
         showInLeaderboard: true,
         submission: {
+          where: {
+            status: 'accept',
+          },
           select: {
             status: true,
             problemId: true,

@@ -87,6 +87,9 @@ export const Navbar = () => {
                 <li>
                   <NavButton href="/contest">แข่งขัน</NavButton>
                 </li>
+                <li>
+                  <NavButton href="/leaderboard">จัดอันดับ</NavButton>
+                </li>
               </ul>
             )}
           </div>
@@ -128,6 +131,11 @@ export const Navbar = () => {
                     <li>
                       <NavButton className="block" href="/contest">
                         แข่งขัน
+                      </NavButton>
+                    </li>
+                    <li>
+                      <NavButton className="block" href="/leaderboard">
+                        จัดอันดับ
                       </NavButton>
                     </li>
                   </ul>
