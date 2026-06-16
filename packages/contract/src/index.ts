@@ -105,6 +105,15 @@ export type ListPaginationQuerySchema = z.infer<
   typeof ListPaginationQuerySchema
 >
 
+export const LeaderboardQuerySchema = ListPaginationQuerySchema.extend({
+  showAll: z
+    .union([z.boolean(), z.enum(['true', 'false'])])
+    .transform((v) => v === true || v === 'true')
+    .optional()
+    .default(false),
+})
+export type LeaderboardQuerySchema = z.infer<typeof LeaderboardQuerySchema>
+
 export const ChatMessage = ChatModel.pick({
   id: true,
   creationDate: true,
@@ -136,6 +145,7 @@ export const UserSchema = UserModel.pick({
   showName: true,
   role: true,
   rating: true,
+  showInLeaderboard: true,
 })
 export type UserSchema = z.infer<typeof UserSchema>
 
@@ -361,6 +371,24 @@ export const UserProfile = UserSchema.extend({
 })
 export type UserProfile = z.infer<typeof UserProfile>
 
+export const UserLeaderboardSchema = UserSchema.extend({
+  passedCount: z.number(),
+  passedCountAll: z.number(),
+  rank: z.number(),
+})
+export type UserLeaderboardSchema = z.infer<typeof UserLeaderboardSchema>
+
+export const UserPassedProblemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  sname: z.string().nullable(),
+  score: z.number(),
+  show: z.boolean(),
+  solvedDate: z.coerce.date(),
+  submissionId: z.number(),
+})
+export type UserPassedProblemSchema = z.infer<typeof UserPassedProblemSchema>
+
 export const userRouter = contract.router(
   {
     getUsersForAdmin: {
@@ -374,6 +402,18 @@ export const userRouter = contract.router(
         }),
       },
       summary: 'Get paginated users for admin',
+    },
+    getLeaderboard: {
+      method: 'GET',
+      path: '/leaderboard',
+      query: LeaderboardQuerySchema,
+      responses: {
+        200: z.object({
+          data: z.array(UserLeaderboardSchema),
+          total: z.number(),
+        }),
+      },
+      summary: 'Get user leaderboard (ranked by number of passed problems)',
     },
     getOnlineUsers: {
       method: 'GET',
@@ -415,6 +455,27 @@ export const userRouter = contract.router(
       },
       body: UserModel.pick({ showName: true }),
       summary: 'Update user show name',
+    },
+    updateLeaderboardVisibility: {
+      method: 'PATCH',
+      path: '/:userId/leaderboard-visibility',
+      responses: {
+        200: UserModel.pick({ showInLeaderboard: true }),
+        403: z.object({ message: z.string() }),
+      },
+      body: z.object({ showInLeaderboard: z.boolean() }),
+      summary: 'Update user leaderboard visibility',
+    },
+    getPassedProblems: {
+      method: 'GET',
+      path: '/:userId/passed-problems',
+      query: z.object({
+        sortBy: z.enum(['id', 'solvedDate']).optional().default('solvedDate'),
+      }),
+      responses: {
+        200: z.array(UserPassedProblemSchema),
+      },
+      summary: 'Get user passed problems',
     },
   },
   { pathPrefix: '/user' }
