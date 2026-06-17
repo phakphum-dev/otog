@@ -80,53 +80,32 @@ export class UserService {
     requestingUserId: number | undefined,
     isAdminUser: boolean,
   ) {
-    const allUsers = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        showName: true,
-        role: true,
-        rating: true,
-        showInLeaderboard: true,
-        submission: {
-          where: {
-            status: 'accept',
-          },
-          select: {
-            status: true,
-            problemId: true,
-            problem: {
-              select: {
-                show: true,
-              },
-            },
-          },
-        },
-      },
-    })
-
-    const withStats = allUsers.map((user) => {
-      const passedPublic = new Set<number>()
-      const passedAll = new Set<number>()
-
-      for (const sub of user.submission) {
-        if (!sub.problem) continue
-        if (sub.status !== 'accept') continue
-        if (sub.problem.show) passedPublic.add(sub.problemId)
-        passedAll.add(sub.problemId)
-      }
-
-      return {
-        id: user.id,
-        username: user.username,
-        showName: user.showName,
-        role: user.role,
-        rating: user.rating,
-        showInLeaderboard: user.showInLeaderboard,
-        passedCount: passedPublic.size,
-        passedCountAll: passedAll.size,
-      }
-    })
+    const withStats = await this.prisma.$queryRaw<
+      Array<{
+        id: number
+        username: string
+        showName: string
+        role: string
+        rating: number | null
+        showInLeaderboard: boolean
+        passedCount: number
+        passedCountAll: number
+      }>
+    >`
+      SELECT 
+        u.id, 
+        u.username, 
+        u."showName", 
+        u.role, 
+        u.rating, 
+        u."showInLeaderboard",
+        CAST(COUNT(DISTINCT CASE WHEN p.show = true THEN s."problemId" END) AS INTEGER) as "passedCount",
+        CAST(COUNT(DISTINCT s."problemId") AS INTEGER) as "passedCountAll"
+      FROM "user" u
+      LEFT JOIN "submission" s ON u.id = s."userId" AND s.status = 'accept'
+      LEFT JOIN "problem" p ON s."problemId" = p.id
+      GROUP BY u.id
+    `
 
     const sortFn = (
       a: (typeof withStats)[0],
