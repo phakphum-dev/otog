@@ -85,7 +85,7 @@ export class UserService {
         id: number
         username: string
         showName: string
-        role: string
+        role: 'user' | 'admin'
         rating: number | null
         showInLeaderboard: boolean
         passedCount: number
