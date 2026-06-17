@@ -76,8 +76,7 @@ export class ProblemService {
       if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
-          // TODO: fix me
-          files.pdf?.[0]?.path as string,
+          files.zip?.[0]?.path as string,
           this.fileManager
         )
       }
