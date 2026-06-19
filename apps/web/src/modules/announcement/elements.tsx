@@ -121,13 +121,15 @@ export const Element = ({
   }
 }
 
-export const Placeholder = (props: RenderPlaceholderProps) => {
+export const Placeholder = ({ attributes, children }: RenderPlaceholderProps) => {
   return (
-    <div
-      {...props}
-      style={{ ...props.attributes.style, top: '50%' }}
+    <span
+      {...attributes}
+      style={{ ...attributes.style, top: '50%' }}
       className="-translate-y-1/2"
-    />
+    >
+      {children}
+    </span>
   )
 }
 

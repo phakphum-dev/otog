@@ -63,7 +63,9 @@ export class AnnouncementController {
       if (!body.value) {
         return { status: 400, body: { message: 'No value is sent' } }
       }
-      const contestId = z.coerce.number().parse(query.contestId)
+      const contestId = query.contestId
+        ? z.coerce.number().parse(query.contestId)
+        : null
       const announcement = await this.announcementService.create(
         body.value,
         contestId
