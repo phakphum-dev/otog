@@ -76,6 +76,18 @@ jobs:
           printf '%s' "$VPN_USER_KEY" | base64 --decode > user.key
           printf '%s' "$VPN_SECRET" | base64 --decode > secret.txt
 
+      - name: Verify OpenVPN config
+        shell: bash
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE/.github/workflows"
+          test -f "$GITHUB_WORKSPACE/.github/workflows/client.ovpn"
+
+      - name: Install OpenVPN
+        run: |
+          sudo apt update
+          sudo apt install -y openvpn openvpn-systemd-resolved
+
       - name: Debug OpenVPN connection
         shell: bash
         run: |
@@ -90,17 +102,6 @@ jobs:
             'AUTH_FAILED|TLS Error|Cannot load|Options error|VERIFY ERROR|Connection refused|Network is unreachable|Inactivity timeout|Initialization Sequence' \
             openvpn-debug.log || true
 
-      - name: Verify OpenVPN config
-        shell: bash
-        run: |
-          echo "Workspace: $GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE/.github/workflows"
-          test -f "$GITHUB_WORKSPACE/.github/workflows/client.ovpn"
-
-      - name: Install OpenVPN
-        run: |
-          sudo apt update
-          sudo apt install -y openvpn openvpn-systemd-resolved
       - name: Connect to VPN
         uses: 'kota65535/github-openvpn-connect-action@v2'
         with:
