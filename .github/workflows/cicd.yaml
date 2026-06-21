@@ -76,6 +76,20 @@ jobs:
           printf '%s' "$VPN_USER_KEY" | base64 --decode > user.key
           printf '%s' "$VPN_SECRET" | base64 --decode > secret.txt
 
+      - name: Debug OpenVPN connection
+        shell: bash
+        run: |
+          set -o pipefail
+
+          sudo timeout 30s openvpn \
+            --config "$GITHUB_WORKSPACE/.github/workflows/client.ovpn" \
+            --verb 4 2>&1 | tee openvpn-debug.log || true
+
+          echo "======== Relevant errors ========"
+          grep -Ei \
+            'AUTH_FAILED|TLS Error|Cannot load|Options error|VERIFY ERROR|Connection refused|Network is unreachable|Inactivity timeout|Initialization Sequence' \
+            openvpn-debug.log || true
+
       - name: Verify OpenVPN config
         shell: bash
         run: |
