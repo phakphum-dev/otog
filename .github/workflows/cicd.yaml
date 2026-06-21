@@ -51,12 +51,41 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Connect to WARP
-        uses: Boostport/setup-cloudflare-warp@v1
+      # - name: Connect to WARP
+      #   uses: Boostport/setup-cloudflare-warp@v1
+      #   with:
+      #     organization: ${{ secrets.CLOUDFLARE_ORGANIZATION }}
+      #     auth_client_id: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_ID }}
+      #     auth_client_secret: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_SECRET }}
+
+      - name: Prepare VPN credentials
+        shell: bash
+        env:
+          VPN_CA_CRT: ${{ secrets.VPN_CA_CRT }}
+          VPN_USER_CRT: ${{ secrets.VPN_USER_CRT }}
+          VPN_USER_KEY: ${{ secrets.VPN_USER_KEY }}
+          VPN_SECRET: ${{ secrets.VPN_SECRET_USERNAME_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          printf '%s' "$VPN_CA_CRT" | base64 --decode > ca.crt
+          printf '%s' "$VPN_USER_CRT" | base64 --decode > user.crt
+          printf '%s' "$VPN_USER_KEY" | base64 --decode > user.key
+          printf '%s' "$VPN_SECRET" | base64 --decode > secret.txt
+
+      - name: Install OpenVPN
+        run: |
+          sudo apt update
+          sudo apt install -y openvpn openvpn-systemd-resolved
+      - name: Connect to VPN
+        uses: 'kota65535/github-openvpn-connect-action@v2'
         with:
-          organization: ${{ secrets.CLOUDFLARE_ORGANIZATION }}
-          auth_client_id: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_ID }}
-          auth_client_secret: ${{ secrets.CLOUDFLARE_AUTH_CLIENT_SECRET }}
+          config_file: .github/workflows/client.ovpn
+          # username: ${{ secrets.OVPN_USERNAME }}
+          # password: ${{ secrets.OVPN_PASSWORD }}
+          # client_key: ${{ secrets.OVPN_CLIENT_KEY }}
+          # tls_auth_key: ${{ secrets.OVPN_TLS_AUTH_KEY }}
 
       - name: Deploy to host
         uses: appleboy/ssh-action@v1.0.3
