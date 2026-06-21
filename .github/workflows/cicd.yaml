@@ -77,9 +77,9 @@ jobs:
       - name: Verify OpenVPN config
         shell: bash
         run: |
-          pwd
-          ls -la .github/workflows
-          test -f .github/workflows/client.ovpn
+          echo "Workspace: $GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE/.github/workflows"
+          test -f "$GITHUB_WORKSPACE/.github/workflows/client.ovpn"
 
       - name: Install OpenVPN
         run: |
@@ -88,7 +88,7 @@ jobs:
       - name: Connect to VPN
         uses: 'kota65535/github-openvpn-connect-action@v2'
         with:
-          config_file: .github/workflows/client.ovpn
+          config_file: ${{ github.workspace }}/.github/workflows/client.ovpn
           # username: ${{ secrets.OVPN_USERNAME }}
           # password: ${{ secrets.OVPN_PASSWORD }}
           # client_key: ${{ secrets.OVPN_CLIENT_KEY }}
