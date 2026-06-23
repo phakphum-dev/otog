@@ -9,7 +9,7 @@ import { PrismaService } from 'src/core/database/prisma.service'
 import { userList } from 'src/utils'
 import { searchId } from 'src/utils/search'
 
-import { ListPaginationQuerySchema } from '@otog/contract'
+import { ListPaginationQuerySchema, LeaderboardQuerySchema } from '@otog/contract'
 import { ContestMode, Prisma, User } from '@otog/database'
 
 export const WITHOUT_PASSWORD = {
@@ -18,6 +18,7 @@ export const WITHOUT_PASSWORD = {
   showName: true,
   role: true,
   rating: true,
+  showInLeaderboard: true,
 } as const
 
 @Injectable()
@@ -69,10 +70,105 @@ export class UserService {
         showName: true,
         role: true,
         rating: true,
+        showInLeaderboard: true,
       },
       orderBy: { id: 'desc' },
     })
   }
+  async getLeaderboard(
+    args: LeaderboardQuerySchema,
+    requestingUserId: number | undefined,
+    isAdminUser: boolean,
+  ) {
+    const withStats = await this.prisma.$queryRaw<
+      Array<{
+        id: number
+        username: string
+        showName: string
+        role: 'user' | 'admin'
+        rating: number | null
+        showInLeaderboard: boolean
+        passedCount: number
+        passedCountAll: number
+      }>
+    >`
+      SELECT 
+        u.id, 
+        u.username, 
+        u."showName", 
+        u.role, 
+        u.rating, 
+        u."showInLeaderboard",
+        CAST(COUNT(DISTINCT CASE WHEN p.show = true THEN s."problemId" END) AS INTEGER) as "passedCount",
+        CAST(COUNT(DISTINCT s."problemId") AS INTEGER) as "passedCountAll"
+      FROM "user" u
+      LEFT JOIN "submission" s ON u.id = s."userId" AND s.status = 'accept'
+      LEFT JOIN "problem" p ON s."problemId" = p.id
+      GROUP BY u.id
+    `
+
+    const sortFn = (
+      a: (typeof withStats)[0],
+      b: (typeof withStats)[0]
+    ) => {
+      if (b.passedCount !== a.passedCount) return b.passedCount - a.passedCount
+      const rA = a.rating ?? 0
+      const rB = b.rating ?? 0
+      if (rB !== rA) return rB - rA
+      return a.showName.localeCompare(b.showName)
+    }
+
+    const applySearch = <T extends { showName: string; username: string }>(
+      list: T[],
+      search: string | undefined
+    ) => {
+      if (!search) return list
+      const q = search.trim().toLowerCase()
+      return list.filter(
+        (u) =>
+          u.showName.toLowerCase().includes(q) ||
+          u.username.toLowerCase().includes(q)
+      )
+    }
+
+    if (isAdminUser && args.showAll) {
+      const sorted = [...withStats].sort(sortFn)
+      const ranked = sorted.map((item, index) => ({ ...item, rank: index + 1 }))
+      const filtered = applySearch(ranked, args.search)
+      return {
+        data: filtered.slice(args.skip, args.skip + args.limit),
+        total: filtered.length,
+      }
+    }
+
+    const visiblePool = withStats.filter((u) => u.showInLeaderboard)
+
+    const requestingUser = requestingUserId
+      ? withStats.find((u) => u.id === requestingUserId)
+      : undefined
+    const isHiddenRequester =
+      requestingUser && !requestingUser.showInLeaderboard
+
+    type StatsEntry = (typeof withStats)[0]
+    type RankedEntry = StatsEntry & { rank: number }
+
+    let workingList: RankedEntry[]
+
+    if (isHiddenRequester && requestingUser) {
+      const pool = [...visiblePool, requestingUser].sort(sortFn)
+      workingList = pool.map((item, index) => ({ ...item, rank: index + 1 }))
+    } else {
+      const sorted = [...visiblePool].sort(sortFn)
+      workingList = sorted.map((item, index) => ({ ...item, rank: index + 1 }))
+    }
+
+    const filtered = applySearch(workingList, args.search)
+    return {
+      data: filtered.slice(args.skip, args.skip + args.limit),
+      total: filtered.length,
+    }
+  }
+
   async getUsersCountForAdmin(args: ListPaginationQuerySchema) {
     return this.prisma.user.count({
       where: args.search
@@ -120,6 +216,15 @@ export class UserService {
     })
   }
 
+  async updateLeaderboardVisibilityById(showInLeaderboard: boolean, id: number) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { showInLeaderboard },
+      select: { showInLeaderboard: true },
+    })
+  }
+
+
   async getUserProfileById(id: number) {
     return this.prisma.user.findUnique({
       where: { id },
@@ -154,6 +259,9 @@ export class UserService {
   }
 
   async updateUser(userId: number, userData: Prisma.UserUpdateInput) {
+    if (userData.role === 'admin' && userData.showInLeaderboard === undefined) {
+      userData.showInLeaderboard = false
+    }
     if (typeof userData.password === 'string' && !!userData.password) {
       const hash = sha256.create()
       hash.update(userData.password)
@@ -169,5 +277,64 @@ export class UserService {
       data: data,
       select: WITHOUT_PASSWORD,
     })
+  }
+
+  async getPassedProblems(userId: number, sortBy: 'id' | 'solvedDate', isAdminUser: boolean) {
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        userId,
+        status: 'accept',
+        problem: !isAdminUser ? { show: true } : undefined,
+      },
+      select: {
+        id: true,
+        creationDate: true,
+        problem: {
+          select: {
+            id: true,
+            name: true,
+            sname: true,
+            score: true,
+            show: true,
+          },
+        },
+      },
+    })
+
+    const problemMap = new Map<number, {
+      id: number
+      name: string
+      sname: string | null
+      score: number
+      show: boolean
+      solvedDate: Date
+      submissionId: number
+    }>()
+
+    for (const sub of submissions) {
+      const p = sub.problem
+      const existing = problemMap.get(p.id)
+      if (!existing || sub.creationDate > existing.solvedDate) {
+        problemMap.set(p.id, {
+          id: p.id,
+          name: p.name,
+          sname: p.sname,
+          score: p.score,
+          show: p.show,
+          solvedDate: sub.creationDate,
+          submissionId: sub.id,
+        })
+      }
+    }
+
+    const passedProblems = Array.from(problemMap.values())
+
+    if (sortBy === 'id') {
+      passedProblems.sort((a, b) => a.id - b.id)
+    } else {
+      passedProblems.sort((a, b) => b.solvedDate.getTime() - a.solvedDate.getTime())
+    }
+
+    return passedProblems
   }
 }

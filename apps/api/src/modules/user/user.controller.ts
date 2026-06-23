@@ -34,6 +34,15 @@ export class UserController {
     })
   }
 
+  @TsRestHandler(c.getLeaderboard, { jsonQuery: true })
+  getLeaderboard(@User() user: UserDTO | undefined) {
+    return tsRestHandler(c.getLeaderboard, async ({ query }) => {
+      const isAdmin = user?.role === Role.Admin
+      const { data, total } = await this.userService.getLeaderboard(query, user?.id, isAdmin)
+      return { status: 200, body: { data, total } }
+    })
+  }
+
   @TsRestHandler(c.getOnlineUsers)
   getOnlineUsers() {
     return tsRestHandler(c.getOnlineUsers, async () => {
@@ -81,5 +90,34 @@ export class UserController {
         return { status: 200, body: showName }
       }
     )
+  }
+
+  @TsRestHandler(c.updateLeaderboardVisibility)
+  @Roles(Role.Admin, Role.User)
+  updateLeaderboardVisibility(@User() user: UserDTO) {
+    return tsRestHandler(
+      c.updateLeaderboardVisibility,
+      async ({ params: { userId }, body }) => {
+        const id = z.coerce.number().parse(userId)
+        if (user.role !== Role.Admin && user.id !== id) {
+          return { status: 403, body: { message: 'Forbidden' } }
+        }
+        const showInLeaderboard = await this.userService.updateLeaderboardVisibilityById(
+          body.showInLeaderboard,
+          id
+        )
+        return { status: 200, body: showInLeaderboard }
+      }
+    )
+  }
+
+  @TsRestHandler(c.getPassedProblems)
+  getPassedProblems(@User() user: UserDTO | undefined) {
+    return tsRestHandler(c.getPassedProblems, async ({ params, query }) => {
+      const userId = z.coerce.number().parse(params.userId)
+      const isAdmin = user?.role === Role.Admin
+      const problems = await this.userService.getPassedProblems(userId, query.sortBy, isAdmin)
+      return { status: 200, body: problems }
+    })
   }
 }

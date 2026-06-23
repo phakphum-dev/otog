@@ -62,6 +62,7 @@ export class AuthService {
       showName: user.showName,
       role: user.role,
       rating: user.rating,
+      showInLeaderboard: user.showInLeaderboard,
     }
     const jwtId = uuidv4()
     const accessToken = this.jwtService.sign(payload, {

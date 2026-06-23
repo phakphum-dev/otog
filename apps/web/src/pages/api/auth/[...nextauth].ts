@@ -140,8 +140,8 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
 
 export type AccessTokenPayload = UserSchema
 export function getUserData(accessToken: string): AccessTokenPayload {
-  const { id, username, showName, role, rating } = jwtDecode<
+  const { id, username, showName, role, rating, showInLeaderboard } = jwtDecode<
     AccessTokenPayload & JwtPayload
   >(accessToken)
-  return { id, username, showName, role, rating }
+  return { id, username, showName, role, rating, showInLeaderboard }
 }

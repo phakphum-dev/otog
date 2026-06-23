@@ -14,11 +14,14 @@ export class UserDTO {
 
   rating: number
 
+  showInLeaderboard: boolean
+
   constructor(user: any) {
     this.id = user?.id
     this.username = user?.username
     this.showName = user?.showName
     this.role = user?.role
     this.rating = user?.rating
+    this.showInLeaderboard = user?.showInLeaderboard
   }
 }
