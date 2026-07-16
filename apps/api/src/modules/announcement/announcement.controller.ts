@@ -59,11 +59,15 @@ export class AnnouncementController {
   @TsRestHandler(c.createAnnouncement, { jsonQuery: true })
   @Roles(Role.Admin)
   createAnnouncement() {
-    return tsRestHandler(c.createAnnouncement, async ({ body }) => {
+    return tsRestHandler(c.createAnnouncement, async ({ body, query }) => {
       if (!body.value) {
         return { status: 400, body: { message: 'No value is sent' } }
       }
-      const announcement = await this.announcementService.create(body.value)
+      const contestId = z.coerce.number().parse(query.contestId)
+      const announcement = await this.announcementService.create(
+        body.value,
+        contestId
+      )
       return {
         status: 201,
         body: { ...announcement, value: JSON.stringify(announcement.value) },

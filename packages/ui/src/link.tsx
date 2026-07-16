@@ -3,7 +3,7 @@ import { ComponentProps, ForwardedRef, forwardRef } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 
-import { cn } from '.'
+import { cn } from './utils'
 
 const linkStyles = cva(
   'rounded cursor-pointer hover:underline focus-visible:underline ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',

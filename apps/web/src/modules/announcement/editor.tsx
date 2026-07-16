@@ -1,26 +1,24 @@
 import { KeyboardEvent, ReactNode, useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import {
-  MdCode,
-  MdFormatBold,
-  MdFormatItalic,
-  MdFormatListBulleted,
-  MdFormatListNumbered,
-  MdFormatQuote,
-  MdFormatUnderlined,
-  MdLink,
-  MdLooks3,
-  MdLooks4,
-  MdLooksOne,
-  MdLooksTwo,
-} from 'react-icons/md'
 
 import {
+  CodeIcon,
   EyeIcon,
   EyeSlashIcon,
-  PencilIcon,
+  LinkIcon,
+  ListBulletsIcon,
+  ListNumbersIcon,
+  PencilSimpleIcon,
+  QuotesIcon,
+  TextBIcon,
+  TextHFourIcon,
+  TextHOneIcon,
+  TextHThreeIcon,
+  TextHTwoIcon,
+  TextItalicIcon,
+  TextUnderlineIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 import { useQueryClient } from '@tanstack/react-query'
 import isHotkey from 'is-hotkey'
 import { createEditor } from 'slate'
@@ -28,8 +26,8 @@ import { withHistory } from 'slate-history'
 import { Editable, Slate, withReact } from 'slate-react'
 
 import { AnnouncementSchema } from '@otog/contract'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -37,9 +35,9 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from '@otog/ui'
+} from '@otog/ui/dialog'
 
-import { keyAnnouncement, queryAnnouncement } from '../../api/query'
+import { announcementKey, announcementQuery } from '../../api/query'
 import { HEIGHT } from './constants'
 import {
   BlockButton,
@@ -57,10 +55,33 @@ interface AnnouncementEditableProps {
 export const AnnouncementEditable = ({
   announcement,
 }: AnnouncementEditableProps) => {
+  const value = useMemo(
+    () => (announcement.value ? JSON.parse(announcement.value) : null),
+    [announcement.value]
+  )
+
   const [isEditing, setEditing] = useState(false)
+  const queryClient = useQueryClient()
+  const onSave = async (value: string) => {
+    try {
+      await announcementQuery.updateAnnouncement.mutation({
+        params: { announcementId: announcement.id.toString() },
+        body: { ...announcement, value },
+      })
+      queryClient.invalidateQueries({
+        queryKey: announcementKey._def,
+      })
+      setEditing(false)
+      toast.success('บันทึกประกาศแล้ว')
+    } catch (e) {
+      console.error(e)
+      toast.error('บันทึกประกาศไม่สำเร็จ')
+    }
+  }
   return isEditing ? (
     <AnnouncementEditor
-      announcement={announcement}
+      onSave={onSave}
+      defaultValue={value}
       onClose={() => setEditing(false)}
       key={announcement.id}
     />
@@ -73,7 +94,7 @@ export const AnnouncementEditable = ({
         className="flex w-full flex-col justify-center items-center gap-2 overflow-hidden"
         style={{ height: HEIGHT }}
       >
-        <ReadonlyEditor value={JSON.parse(announcement.value)} />
+        <ReadonlyEditor value={value} />
       </div>
       <div className="absolute flex gap-1 right-0 top-1">
         <ToggleAnnouncement announcement={announcement} />
@@ -84,7 +105,7 @@ export const AnnouncementEditable = ({
           onClick={() => setEditing(true)}
           title="แก้ไขประกาศ"
         >
-          <PencilIcon />
+          <PencilSimpleIcon />
         </Button>
       </div>
     </div>
@@ -92,33 +113,20 @@ export const AnnouncementEditable = ({
 }
 
 type AnnouncementEditorProps = {
-  announcement: AnnouncementSchema
+  defaultValue: any
   onClose: () => void
+  onSave: (value: string) => void
+  height?: 'auto' | number
 }
 
 export const AnnouncementEditor = ({
-  announcement,
+  defaultValue,
   onClose,
+  onSave,
+  height = HEIGHT,
 }: AnnouncementEditorProps) => {
-  const [value, setValue] = useState(() => JSON.parse(announcement.value))
+  const [value, setValue] = useState(defaultValue)
 
-  const queryClient = useQueryClient()
-  const onSave = async () => {
-    try {
-      await queryAnnouncement.updateAnnouncement.mutation({
-        params: { announcementId: announcement.id.toString() },
-        body: { ...announcement, value: JSON.stringify(value) },
-      })
-      queryClient.invalidateQueries({
-        queryKey: keyAnnouncement._def,
-      })
-      onClose()
-      toast.success('บันทึกประกาศแล้ว')
-    } catch (e) {
-      console.error(e)
-      toast.error('บันทึกประกาศไม่สำเร็จ')
-    }
-  }
   const editor = useMemo(() => withReact(withHistory(createEditor())), [])
   // editor.children = value
   const handleHotkey = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -134,39 +142,38 @@ export const AnnouncementEditor = ({
       editor.insertText('\n')
     }
   }
+  // TODO: fix https://github.com/ianstormtaylor/slate/issues/3309
   return (
     <div className="flex flex-col gap-2 border-b py-4 last:border-b-0">
       <Slate editor={editor} initialValue={value} onChange={setValue}>
         <div className="flex flex-wrap justify-between gap-2">
           <div className="flex gap-2">
             <ButtonGroup>
-              <MarkButton format="bold" icon={<MdFormatBold />} />
-              <MarkButton format="italic" icon={<MdFormatItalic />} />
-              <MarkButton format="underline" icon={<MdFormatUnderlined />} />
-              <MarkButton format="link" icon={<MdLink />} />
-              <MarkButton format="code" icon={<MdCode />} />
+              <MarkButton format="bold" icon={<TextBIcon />} />
+              <MarkButton format="italic" icon={<TextItalicIcon />} />
+              <MarkButton format="underline" icon={<TextUnderlineIcon />} />
+              <MarkButton format="link" icon={<LinkIcon />} />
+              <MarkButton format="code" icon={<CodeIcon />} />
             </ButtonGroup>
             <ButtonGroup>
-              <BlockButton format="heading-one" icon={<MdLooksOne />} />
-              <BlockButton format="heading-two" icon={<MdLooksTwo />} />
-              <BlockButton format="heading-three" icon={<MdLooks3 />} />
-              <BlockButton format="heading-four" icon={<MdLooks4 />} />
-              <BlockButton format="block-quote" icon={<MdFormatQuote />} />
-              <BlockButton
-                format="numbered-list"
-                icon={<MdFormatListNumbered />}
-              />
-              <BlockButton
-                format="bulleted-list"
-                icon={<MdFormatListBulleted />}
-              />
+              <BlockButton format="heading-one" icon={<TextHOneIcon />} />
+              <BlockButton format="heading-two" icon={<TextHTwoIcon />} />
+              <BlockButton format="heading-three" icon={<TextHThreeIcon />} />
+              <BlockButton format="heading-four" icon={<TextHFourIcon />} />
+              <BlockButton format="block-quote" icon={<QuotesIcon />} />
+              <BlockButton format="numbered-list" icon={<ListNumbersIcon />} />
+              <BlockButton format="bulleted-list" icon={<ListBulletsIcon />} />
             </ButtonGroup>
           </div>
           <div className="flex gap-2 max-sm:ml-auto">
             <Button variant="ghost" size="sm" onClick={onClose}>
               ยกเลิก
             </Button>
-            <Button variant="success" onClick={onSave} size="sm">
+            <Button
+              variant="success"
+              onClick={() => onSave(JSON.stringify(value))}
+              size="sm"
+            >
               บันทึก
             </Button>
           </div>
@@ -174,8 +181,8 @@ export const AnnouncementEditor = ({
         <Editable
           className="outline-none overflow-hidden text-center flex flex-col justify-center gap-2"
           style={{
-            minHeight: HEIGHT,
-            maxHeight: HEIGHT,
+            minHeight: height,
+            maxHeight: height,
           }}
           placeholder="Enter announcement…"
           renderElement={Element}
@@ -213,7 +220,7 @@ const ToggleAnnouncement = ({
   const onToggle = async () => {
     const toastId = toast.loading('กำลังอัปเดต...')
     try {
-      const result = await queryAnnouncement.showAnnouncement.mutation({
+      const result = await announcementQuery.showAnnouncement.mutation({
         params: { announcementId: announcement.id.toString() },
         body: { show: !announcement.show },
       })
@@ -222,7 +229,7 @@ const ToggleAnnouncement = ({
         return
       }
       queryClient.invalidateQueries({
-        queryKey: keyAnnouncement._def,
+        queryKey: announcementKey._def,
       })
       if (result.body.show) {
         toast.success('ประกาศสำเร็จ', { id: toastId })
@@ -252,7 +259,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   const queryClient = useQueryClient()
   const onSubmit = async () => {
     try {
-      const result = await queryAnnouncement.deleteAnnouncement.mutation({
+      const result = await announcementQuery.deleteAnnouncement.mutation({
         params: { announcementId: announcementId.toString() },
       })
       if (result.status !== 200) {
@@ -261,7 +268,7 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
       toast.success('ลบประกาศสำเร็จ')
       setOpen(false)
       queryClient.invalidateQueries({
-        queryKey: keyAnnouncement._def,
+        queryKey: announcementKey._def,
       })
     } catch (e) {
       toast.error('เกิดข้อผิดพลาด')
@@ -271,7 +278,12 @@ const DeleteAnnouncement = ({ announcementId }: { announcementId: number }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline" title="ลบประกาศ">
+        <Button
+          size="icon"
+          variant="outline"
+          title="ลบประกาศ"
+          aria-label="ลบประกาศ"
+        >
           <TrashIcon />
         </Button>
       </DialogTrigger>

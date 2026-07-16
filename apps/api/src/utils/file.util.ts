@@ -1,9 +1,14 @@
-import * as fs from 'fs-extra'
+import * as fs from 'fs'
+import * as fsExtra from 'fs-extra'
+import { readFile } from 'fs/promises'
 import * as mime from 'mime-types'
 import * as path from 'path'
-import { DOC_DIR, TESTCASE_DIR } from 'src/core/constants'
 import { FileManager } from 'src/core/fileManager'
 import * as unzipper from 'unzipper'
+
+export const DOC_DIR = 'docs'
+export const TESTCASE_DIR = 'source'
+export const UPLOAD_DIR = 'volumes/upload'
 
 export async function updateProblemDoc(
   problemName: string,
@@ -18,15 +23,15 @@ export async function updateProblemDoc(
   await fileManager.removeDirIfExist(uploadDocPath)
 
   // get pdf file buffer
-  const buffer = await fs.readFile(pdfFullPath)
+  const buffer = await readFile(pdfFullPath)
 
   // save pdf file
-  await fileManager.saveFile(uploadDocPath, buffer, {
+  await fileManager.putFile(uploadDocPath, buffer, {
     ContentType: 'application/pdf',
   })
 
   // remove pdf file
-  await fs.remove(pdfFullPath)
+  await fsExtra.remove(pdfFullPath)
 }
 
 export async function updateProblemTestCase(
@@ -55,12 +60,13 @@ export async function updateProblemTestCase(
         entry.autodrain()
       } else {
         const dest = path.join(problemTestCaseDir, fileName)
+        await fsExtra.ensureDir(path.dirname(dest))
         const buffer = await entry.buffer()
         const ext = path.extname(fileName)
         const contentType = ['.in', '.sol'].includes(ext)
           ? 'text/plain'
           : mime.lookup(ext)
-        await fileManager.saveFile(dest, buffer, {
+        await fileManager.putFile(dest, buffer, {
           ContentType: contentType || undefined,
         })
       }
@@ -68,7 +74,7 @@ export async function updateProblemTestCase(
     .promise()
 
   // remove zip file
-  await fs.remove(zipFullPath)
+  await fsExtra.remove(zipFullPath)
 }
 
 export async function removeProblemSource(
@@ -88,5 +94,5 @@ export async function getProblemDocStream(
 ) {
   const docDir = path.join(DOC_DIR, `${problemName}.pdf`)
   if (!(await fileManager.isExists(docDir))) return null
-  return await fileManager.getFileReadSteam(docDir)
+  return await fileManager.getFileReadStream(docDir)
 }

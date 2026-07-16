@@ -4,66 +4,154 @@ import { Multer } from 'multer'
 import { PrismaService } from 'src/core/database/prisma.service'
 import { scodeFileFilter, scodeFileSizeLimit } from 'src/utils'
 
-import { SubmissionStatus, UserRole } from '@otog/database'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { WITHOUT_PASSWORD } from '../user/user.service'
 
-export const WITHOUT_SOURCECODE = {
+export const WITHOUT_DETAIL = {
   id: true,
-  result: true,
-  score: true,
-  timeUsed: true,
   status: true,
-  errmsg: true,
   contestId: true,
   language: true,
   creationDate: true,
   public: true,
+  userId: true,
   problem: {
-    select: { id: true, name: true, timeLimit: true, memoryLimit: true },
+    select: {
+      id: true,
+      name: true,
+      timeLimit: true,
+      memoryLimit: true,
+      score: true,
+    },
   },
   user: { select: WITHOUT_PASSWORD },
-} as const
+  submissionResult: {
+    select: {
+      id: true,
+      score: true,
+      timeUsed: true,
+      memUsed: true,
+      result: true,
+      errmsg: true,
+    },
+  },
+} satisfies Prisma.SubmissionSelect
 
-const WITH_SOURCECODE = {
-  ...WITHOUT_SOURCECODE,
+const WITH_DETAIL = {
+  ...WITHOUT_DETAIL,
   sourceCode: true,
-}
+  submissionResult: {
+    select: {
+      id: true,
+      score: true,
+      timeUsed: true,
+      memUsed: true,
+      result: true,
+      errmsg: true,
+      subtaskResults: {
+        select: {
+          score: true,
+          fullScore: true,
+          subtaskIndex: true,
+          verdicts: {
+            orderBy: { testcaseIndex: 'asc' },
+          },
+        },
+        orderBy: { subtaskIndex: 'asc' },
+      },
+    },
+  },
+} satisfies Prisma.SubmissionSelect
 
 @Injectable()
 export class SubmissionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(offset = 1e9, limit = 89) {
-    return this.prisma.submission.findMany({
-      where: { id: { lt: offset } },
-      take: limit,
-      select: WITHOUT_SOURCECODE,
-      orderBy: { id: 'desc' },
-    })
-  }
-
-  findAllWithOutContestAndAdmin(offset = 1e9, limit = 89) {
-    return this.prisma.submission.findMany({
+  async findManyWithAdmin(args: {
+    offset: number
+    limit: number
+    userId?: number
+    problemSearch?: string
+  }) {
+    return await this.prisma.submission.findMany({
       where: {
         contestId: null,
-        id: { lt: offset },
-        user: { role: { not: UserRole.admin } },
+        id: { lt: args.offset },
+        userId: args.userId,
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
       },
-      take: limit,
-      select: WITHOUT_SOURCECODE,
+      take: args.limit,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
 
-  findAllWithContest(offset = 1e9, limit = 89) {
+  async findMany(args: {
+    offset: number
+    limit: number
+    userId?: number
+    problemSearch?: string
+    includeContest: boolean
+  }) {
+    return await this.prisma.submission.findMany({
+      where: {
+        contestId: args.includeContest ? undefined : null,
+        id: { lt: args.offset },
+        userId: args.userId,
+        user: args.userId ? undefined : { role: UserRole.user },
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { id: 'desc' },
+    })
+  }
+
+  async getContestSubmissions(args: {
+    offset: number
+    limit: number
+    userId: number
+    contestId: number
+    problemId: number
+  }) {
+    return await this.prisma.submission.findMany({
+      where: {
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        userId: args.userId,
+        problemId: args.problemId,
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
+      orderBy: { creationDate: 'desc' },
+    })
+  }
+
+  findAllWithContest(args: {
+    contestId: number
+    offset: number
+    limit: number
+    problemSearch: string | undefined
+    userSearch: string | undefined
+  }) {
     return this.prisma.submission.findMany({
       where: {
-        contestId: { not: null },
-        id: { lt: offset },
+        contestId: args.contestId,
+        id: { lt: args.offset },
+        problem: args.problemSearch
+          ? { name: { contains: args.problemSearch, mode: 'insensitive' } }
+          : undefined,
+        user: args.userSearch
+          ? { showName: { contains: args.userSearch, mode: 'insensitive' } }
+          : undefined,
       },
-      take: limit,
-      select: WITHOUT_SOURCECODE,
+      take: args.limit,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -71,18 +159,21 @@ export class SubmissionService {
   async findOneByResultId(resultId: number) {
     return this.prisma.submission.findUnique({
       where: { id: resultId },
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
     })
   }
 
   async findOneByResultIdWithCode(resultId: number) {
     return this.prisma.submission.findUnique({
       where: { id: resultId },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
   fileCheck(file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required!')
+    }
     // check file extension
     if (!scodeFileFilter(file))
       throw new BadRequestException('Only C C++ and Python are allowed!')
@@ -94,7 +185,7 @@ export class SubmissionService {
   async create(args: {
     userId: number
     problemId: number
-    language: string | null
+    language: string
     file: Express.Multer.File
     contestId: number | null
   }) {
@@ -111,6 +202,24 @@ export class SubmissionService {
     })
   }
 
+  isProblemInContestOrPublic(args: {
+    problemId: number
+    contestId: number | null
+  }) {
+    return this.prisma.problem.findFirst({
+      select: { id: true },
+      where: {
+        id: args.problemId,
+        OR: [
+          ...(args.contestId
+            ? [{ contestProblem: { some: { contestId: args.contestId } } }]
+            : []),
+          { show: true },
+        ],
+      },
+    })
+  }
+
   findAllByUserIdWithOutContest(userId: number, offset = 1e9, limit = 89) {
     return this.prisma.submission.findMany({
       where: {
@@ -119,7 +228,7 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -131,7 +240,25 @@ export class SubmissionService {
         id: { lt: offset },
       },
       take: limit,
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
+      orderBy: { id: 'desc' },
+    })
+  }
+
+  getSubmissionsByProblemId(args: {
+    userId: number
+    problemId: number
+    limit: number
+    offset: number
+  }) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId: args.userId,
+        problemId: args.problemId,
+        id: { lt: args.offset },
+      },
+      take: args.limit,
+      select: WITHOUT_DETAIL,
       orderBy: { id: 'desc' },
     })
   }
@@ -140,7 +267,7 @@ export class SubmissionService {
     return this.prisma.submission.findFirst({
       where: { userId },
       orderBy: { id: 'desc' },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
@@ -148,7 +275,7 @@ export class SubmissionService {
     return this.prisma.submission.findFirst({
       where: { userId, problemId },
       orderBy: { id: 'desc' },
-      select: WITH_SOURCECODE,
+      select: WITH_DETAIL,
     })
   }
 
@@ -162,7 +289,7 @@ export class SubmissionService {
       .map((group) => group._max.id)
       .filter((id): id is number => id !== null)
     return this.prisma.submission.findMany({
-      select: WITHOUT_SOURCECODE,
+      select: WITHOUT_DETAIL,
       where: {
         id: { in: ids },
         user: { role: { not: UserRole.admin } },
@@ -198,20 +325,27 @@ export class SubmissionService {
     })
   }
 
-  async setSubmissionStatusToWaiting(submissionId: number) {
-    return this.prisma.submission.update({
-      where: { id: submissionId },
-      data: { status: SubmissionStatus.waiting, result: 'Rejudging' },
-      select: WITHOUT_SOURCECODE,
-    })
+  async rejudgeSubmission(submissionId: number) {
+    const [_, submission] = await this.prisma.$transaction([
+      this.prisma.submissionResult.delete({ where: { submissionId } }),
+      this.prisma.submission.update({
+        where: { id: submissionId },
+        data: { status: SubmissionStatus.waiting },
+        select: WITHOUT_DETAIL,
+      }),
+    ])
+    return submission
   }
 
-  async setAllLatestSubmissionStatusToWaiting(problemId: number) {
-    const submissionIds = await this.findLatestSubmissionIds(problemId)
-    const ids = submissionIds.filter((id): id is number => id !== null)
-    return this.prisma.submission.updateMany({
-      where: { id: { in: ids } },
-      data: { status: SubmissionStatus.waiting, result: 'Rejudging' },
-    })
+  async rejudgeProblem(problemId: number) {
+    const [_, submission] = await this.prisma.$transaction([
+      this.prisma.submissionResult.deleteMany({
+        where: { submission: { problemId } },
+      }),
+      this.prisma.submission.updateMany({
+        where: { problemId },
+        data: { status: SubmissionStatus.waiting },
+      }),
+    ])
   }
 }

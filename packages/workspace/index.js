@@ -22,7 +22,7 @@ function findRootWorkspace(path = process.cwd()) {
   // If the path is root workspace, return it
   if (isRootWorkspace(path)) return path
 
-  const parent = path.split('/').slice(0, -1).join('/')
+  const parent = fs.realpathSync(path + '/..')
   return findRootWorkspace(parent)
 }
 
@@ -32,7 +32,9 @@ function findRootWorkspace(path = process.cwd()) {
  */
 function findAllPackageMetadatas() {
   const rootWorkspace = findRootWorkspace()
-  const pnpmWorkspace = YAML.parse(fs.readFileSync(`${rootWorkspace}/pnpm-workspace.yaml`, 'utf8'))
+  const pnpmWorkspace = YAML.parse(
+    fs.readFileSync(`${rootWorkspace}/pnpm-workspace.yaml`, 'utf8')
+  )
 
   const workspaces = pnpmWorkspace.packages
 

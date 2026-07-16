@@ -1,95 +1,84 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory'
+import { AppRouter, isAppRoute } from '@ts-rest/core'
+import { initQueryClient } from '@ts-rest/react-query'
 
 import {
   announcementRouter,
+  appRouter,
+  authRouter,
+  chatRouter,
   contestRouter,
   problemRouter,
   submissionRouter,
   userRouter,
 } from '@otog/contract'
 
-import { createQueryClient } from '.'
 import { getAvatarUrl } from '../firebase/get-avatar-url'
+import { clientArgs } from './browser'
+import {
+  DynamicKey,
+  KeyTuple,
+  QueryFactorySchema,
+  QueryKeyArgs,
+  RouteFactoryOutput,
+  RouteFactorySchema,
+  getQueryFn,
+  getQueryKey,
+} from './lib'
 
-export const queryAnnouncement = createQueryClient(announcementRouter)
-export const keyAnnouncement = createQueryKeys('announcement', {
-  all: (contestId?: number) => ({
-    queryKey: [contestId],
-    queryFn: () =>
-      queryAnnouncement.getAnnouncements.query({
-        query: { contestId: contestId?.toString() },
-      }),
-  }),
-  shown: (contestId?: number) => ({
-    queryKey: [contestId],
-    queryFn: () =>
-      queryAnnouncement.getAnnouncements.query({
-        query: {
-          show: true,
-          contestId: contestId?.toString(),
-        },
-      }),
-  }),
-})
+const createQueryKey = <TName extends string, TAppRouter extends AppRouter>(
+  name: TName,
+  router: TAppRouter
+) => {
+  const schema: QueryFactorySchema = Object.fromEntries(
+    Object.entries(router)
+      .map(([key, subRouter]) => {
+        if (!isAppRoute(subRouter)) {
+          return null
+        }
+        if (subRouter.method !== 'GET') {
+          return null
+        }
+        return [
+          key,
+          (args: QueryKeyArgs<typeof subRouter, typeof clientArgs>) => ({
+            queryKey: getQueryKey(subRouter, args) as KeyTuple,
+            queryFn: getQueryFn(subRouter, clientArgs, args as any),
+          }),
+        ] satisfies [string, DynamicKey]
+      })
+      .filter((entry) => entry !== null)
+  )
+  const key = createQueryKeys(name, schema) as RouteFactoryOutput<
+    TName,
+    RouteFactorySchema<TAppRouter, typeof clientArgs>
+  >
+  return key
+}
 
-export const queryProblem = createQueryClient(problemRouter)
-export const keyProblem = createQueryKeys('problem', {
-  list: () => ({
-    queryKey: ['list'],
-    queryFn: () => queryProblem.getProblemTable.query(),
-  }),
-  passedUsers: (params: { problemId: number }) => ({
-    queryKey: ['passedUsers', params],
-    queryFn: () =>
-      queryProblem.getPassedUsers.query({
-        params: { problemId: params.problemId.toString() },
-      }),
-  }),
-})
+export const appQuery = initQueryClient(appRouter, clientArgs)
+export const authQuery = initQueryClient(authRouter, clientArgs)
+export const userQuery = initQueryClient(userRouter, clientArgs)
+export const chatQuery = initQueryClient(chatRouter, clientArgs)
+export const problemQuery = initQueryClient(problemRouter, clientArgs)
+export const contestQuery = initQueryClient(contestRouter, clientArgs)
+export const submissionQuery = initQueryClient(submissionRouter, clientArgs)
+export const announcementQuery = initQueryClient(announcementRouter, clientArgs)
 
-export const querySubmission = createQueryClient(submissionRouter)
-export const keySubmission = createQueryKeys('submission', {
-  list: () => ({
-    queryKey: ['list'],
-    queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
-      querySubmission.getSubmissions.query({
-        query: { offset: pageParam },
-      }),
-  }),
-  getOne: (params: { submissionId: number }) => ({
-    queryKey: ['getOne', params],
-    queryFn: () =>
-      querySubmission.getSubmission.query({
-        params: { submissionId: params.submissionId.toString() },
-      }),
-  }),
-  getOneWithSourceCode: (params: { submissionId: number }) => ({
-    queryKey: ['getOneWithSourceCode', params],
-    queryFn: () =>
-      querySubmission.getSubmissionWithSourceCode.query({
-        params: { submissionId: params.submissionId.toString() },
-      }),
-  }),
-})
-
-export const queryUser = createQueryClient(userRouter)
-export const keyUser = createQueryKeys('user', {})
-
-export const keyAvatar = createQueryKeys('avatar', {
+export const appKey = createQueryKey('app', appRouter)
+export const authKey = createQueryKey('auth', authRouter)
+export const userKey = createQueryKey('user', userRouter)
+export const chatKey = createQueryKey('chat', chatRouter)
+export const problemKey = createQueryKey('problem', problemRouter)
+export const contestKey = createQueryKey('contest', contestRouter)
+export const submissionKey = createQueryKey('submission', submissionRouter)
+export const announcementKey = createQueryKey(
+  'announcement',
+  announcementRouter
+)
+export const avatarKey = createQueryKeys('avatar', {
   getUrl: (params: { userId: number; size: 'default' | 'small' }) => ({
     queryKey: ['default', params],
     queryFn: () => getAvatarUrl({ userId: params.userId, size: params.size }),
-  }),
-})
-
-export const queryContest = createQueryClient(contestRouter)
-export const keyContest = createQueryKeys('contest', {
-  getCurrent: () => ({
-    queryKey: ['getCurrent'],
-    queryFn: () => queryContest.getCurrentContest.query(),
-  }),
-  getContests: () => ({
-    queryKey: ['getContests'],
-    queryFn: () => queryContest.getContests.query(),
   }),
 })

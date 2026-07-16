@@ -22,12 +22,15 @@ const c = nestControllerContract(userRouter)
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @TsRestHandler(c.getUsers)
+  @TsRestHandler(c.getUsersForAdmin, { jsonQuery: true })
   @Roles(Role.Admin)
-  getUsers() {
-    return tsRestHandler(c.getUsers, async () => {
-      const users = await this.userService.findAll()
-      return { status: 200, body: users }
+  getUsersForAdmin() {
+    return tsRestHandler(c.getUsersForAdmin, async ({ query }) => {
+      const [users, total] = await Promise.all([
+        this.userService.getUsersForAdmin(query),
+        this.userService.getUsersCountForAdmin(query),
+      ])
+      return { status: 200, body: { data: users, total } }
     })
   }
 

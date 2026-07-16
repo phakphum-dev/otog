@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import {
   TsRestHandler,
   nestControllerContract,
@@ -37,7 +36,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @OfflineAccess(AccessState.Public)
-  @TsRestHandler(c.login)
+  @Post('/auth/login')
   async login(@User() userData: UserDTO, @Res() res: Response) {
     const { token, user } = await this.authService.login(userData)
     const authResDTO = new AuthResDTO()
@@ -67,5 +66,15 @@ export class AuthController {
         expires: token.refreshToken.expiryDate ?? undefined,
       })
       .json(authResDTO)
+  }
+
+  @OfflineAccess(AccessState.Authenticated)
+  @Post('/auth/logout')
+  async logout(@Res() res: Response) {
+    res.clearCookie('RID', {
+      httpOnly: true,
+      domain: environment.COOKIE_DOMAIN,
+    })
+    return res.status(200).send({})
   }
 }

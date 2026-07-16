@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 import { AnnouncementSchema } from '@otog/contract'
 
-import { keyAnnouncement } from '../../api/query'
+import { announcementKey } from '../../api/query'
 import { useUserContext } from '../../context/user-context'
 import { HEIGHT, INTERVAL } from './constants'
 import { AnnouncementModal } from './modal'
@@ -21,7 +21,11 @@ export const AnnouncementCarousel = ({
 }: AnnouncementCarouselProps) => {
   const { isAdmin, isAuthenticated } = useUserContext()
 
-  const getAnnouncements = useQuery(keyAnnouncement.shown(contestId))
+  const getAnnouncements = useQuery(
+    announcementKey.getAnnouncements({
+      query: { show: true, contestId: contestId?.toString() },
+    })
+  )
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
   const count = announcements.length
@@ -44,7 +48,13 @@ export const AnnouncementCarousel = ({
     <AnnouncementContext.Provider
       value={{ contestId, currentIndex, onNext, count }}
     >
-      <div className="group relative mt-8 flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm">
+      <section
+        aria-labelledby="announcement"
+        className="group relative flex h-[180px] cursor-pointer select-none w-full rounded-lg shadow-sm"
+      >
+        <h2 id="announcement" className="sr-only">
+          ประกาศ
+        </h2>
         {announcements.map((announcement, index) => (
           <AnnouncementCard
             key={announcement.id}
@@ -53,7 +63,7 @@ export const AnnouncementCarousel = ({
           />
         ))}
         {isAdmin && <AnnouncementModal />}
-      </div>
+      </section>
     </AnnouncementContext.Provider>
   )
 }

@@ -1,10 +1,10 @@
 'use client'
 
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import { MoonIcon, SunIcon } from '@phosphor-icons/react'
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes/dist/types'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import { ClientOnly } from './client-only'
 
@@ -19,8 +19,8 @@ export function ThemeToggle() {
   }
   return (
     <Button
-      aria-hidden
       onClick={toggleColorMode}
+      aria-label="Toggle color mode"
       size="icon"
       className="rounded-full text-muted-foreground"
       variant="ghost"

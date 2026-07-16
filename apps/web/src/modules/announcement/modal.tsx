@@ -1,37 +1,42 @@
 import { useState } from 'react'
 
-import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { PencilSimpleIcon, PlusIcon } from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from '@otog/ui'
+} from '@otog/ui/dialog'
 
 import { useAnnouncementContext } from '.'
-import { keyAnnouncement, queryAnnouncement } from '../../api/query'
+import { announcementKey, announcementQuery } from '../../api/query'
 import { AnnouncementEditable } from './editor'
 import { createEmptyAnnouncement } from './utils'
 
 export const AnnouncementModal = () => {
   const [open, setOpen] = useState(false)
-  const getAnnouncements = useQuery(keyAnnouncement.all())
+
+  const { contestId } = useAnnouncementContext()
+  const getAnnouncements = useQuery(
+    announcementKey.getAnnouncements({
+      query: { contestId: contestId?.toString() },
+    })
+  )
   const announcements =
     getAnnouncements.data?.status === 200 ? getAnnouncements.data.body : []
 
   const queryClient = useQueryClient()
-  const { contestId } = useAnnouncementContext()
   const onCreate = async () => {
     try {
-      await queryAnnouncement.createAnnouncement.mutation({
+      await announcementQuery.createAnnouncement.mutation({
         body: { value: JSON.stringify(createEmptyAnnouncement()) },
         query: { contestId: contestId?.toString() },
       })
       queryClient.invalidateQueries({
-        queryKey: keyAnnouncement.all._def,
+        queryKey: announcementKey.getAnnouncements._def,
       })
     } catch (e) {
       // onErrorToast(e)
@@ -47,7 +52,7 @@ export const AnnouncementModal = () => {
           size="icon"
           variant="ghost"
         >
-          {announcements.length ? <PencilIcon /> : <PlusIcon />}
+          {announcements.length ? <PencilSimpleIcon /> : <PlusIcon />}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">

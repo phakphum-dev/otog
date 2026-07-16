@@ -1,17 +1,6 @@
-// import { Toaster } from 'react-hot-toast'
-// import { loader } from '@monaco-editor/react'
-// import { Chat } from '@src/chat'
-// import { Footer } from '@src/components/layout/Footer'
-// import { NavBar } from '@src/components/layout/NavBar'
-// import { OFFLINE_MODE } from '@src/config'
 // import { ConfirmModalProvider } from '@src/context/ConfirmContext'
-// import { SWRProvider } from '@src/context/SWRContext'
-// import { SocketProvider } from '@src/context/SocketContext'
-// import { UserProvider } from '@src/context/UserContext'
 // import { useAnalytics } from '@src/hooks/useAnalytics'
-// import { ErrorToastOptions, useErrorToaster } from '@src/hooks/useErrorToast'
-// import 'focus-visible/dist/focus-visible'
-import { useState } from 'react'
+import { ReactElement, ReactNode, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -19,22 +8,27 @@ import {
   QueryClient as TsRestQueryClient,
   QueryClientProvider as TsRestQueryClientProvider,
 } from '@ts-rest/react-query/tanstack'
+import { ClickToComponent } from 'click-to-react-component'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import buddhistEra from 'dayjs/plugin/buddhistEra'
+import { NextComponentType, NextPageContext } from 'next'
 import { Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
-// import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
+import { NuqsAdapter } from 'nuqs/adapters/next/pages'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 import '@otog/ui/styles.css'
+import { TooltipProvider } from '@otog/ui/tooltip'
 
+import { Chat } from '../components/chat'
 import { Footer } from '../components/footer'
 import { Navbar } from '../components/navbar'
 import { ThemeProvider } from '../components/theme-provider'
+import { SocketProvider } from '../context/socket-context'
 import { UserContextProvider } from '../context/user-context'
 import { inter, notosans, sarabun } from '../fonts'
 import '../styles/nprogress.css'
@@ -54,11 +48,22 @@ const ProgressBar = dynamic(() => import('./../components/progress-bar'), {
 //   })
 // }
 
+export type NextPageWithLayout = NextComponentType<
+  NextPageContext,
+  any,
+  any
+> & {
+  getLayout?: (page: ReactElement) => ReactNode
+  footer?: boolean
+}
+
 type MyAppProps = AppProps<{
   //   errorData: ErrorToastOptions
   //   fallback: { [key: string]: string }
   session: Session
-}>
+}> & {
+  Component: NextPageWithLayout
+}
 
 export default function MyApp({ Component, pageProps }: MyAppProps) {
   const { session, ...props } = pageProps
@@ -75,6 +80,8 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
         defaultOptions: { mutations: { throwOnError: false } },
       })
   )
+
+  const getLayout = Component.getLayout ?? ((page) => page)
 
   //   useErrorToaster(errorData)
   //   useAnalytics()
@@ -101,40 +108,42 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
           --font-notosans: ${notosans.style.fontFamily};
         }
       `}</style>
-      {/* 
-          <SocketProvider>
-          <ConfirmModalProvider>
-         */}
-
-      <SessionProvider session={session}>
-        <TsRestQueryClientProvider client={tsRestQueryClient}>
-          <QueryClientProvider client={queryClient}>
-            <UserContextProvider session={session}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <div className="min-h-screen flex flex-col">
-                  <SkipToMainContent />
-                  <ProgressBar />
-                  <Navbar />
-                  <Component {...props} />
-                  <Footer />
-                  {/* {!OFFLINE_MODE && <Chat /> */}
-                </div>
-                <Toaster
-                  position="bottom-center"
-                  toastOptions={{
-                    className: '!text-foreground !bg-background',
-                  }}
-                />
-              </ThemeProvider>
-            </UserContextProvider>
-          </QueryClientProvider>
-        </TsRestQueryClientProvider>
-      </SessionProvider>
+      <NuqsAdapter>
+        <SessionProvider session={session}>
+          <TsRestQueryClientProvider client={tsRestQueryClient}>
+            <QueryClientProvider client={queryClient}>
+              <UserContextProvider session={session}>
+                <SocketProvider>
+                  <TooltipProvider delayDuration={0}>
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      <div className="min-h-screen flex flex-col">
+                        <SkipToMainContent />
+                        <ProgressBar />
+                        <Navbar />
+                        {getLayout(<Component {...props} />)}
+                        <Chat />
+                        {(Component.footer ?? true) && <Footer />}
+                      </div>
+                      <Toaster
+                        position="bottom-center"
+                        toastOptions={{
+                          className: '!text-foreground !bg-background',
+                        }}
+                      />
+                      <ClickToComponent />
+                    </ThemeProvider>
+                  </TooltipProvider>
+                </SocketProvider>
+              </UserContextProvider>
+            </QueryClientProvider>
+          </TsRestQueryClientProvider>
+        </SessionProvider>
+      </NuqsAdapter>
     </>
   )
 }

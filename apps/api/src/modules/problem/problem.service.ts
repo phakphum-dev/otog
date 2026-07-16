@@ -1,24 +1,30 @@
+import { NotFound } from '@aws-sdk/client-s3'
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-// import { InjectS3 } from 'nestjs-s3'
-// import type { S3 } from 'nestjs-s3'
 import { PrismaService } from 'src/core/database/prisma.service'
 import {
-  FileFileManager,
-  FileManager, // S3FileManager,
+  FileManager,
+  LocalFileManager,
+  S3FileManager,
 } from 'src/core/fileManager'
+import { environment } from 'src/env'
 import {
   getProblemDocStream,
   removeProblemSource,
   updateProblemDoc,
   updateProblemTestCase,
 } from 'src/utils/file.util'
+import { searchId } from 'src/utils/search'
 
-import { PassedUserSchema, ProblemTableRowSchema } from '@otog/contract'
-import { Prisma, SubmissionStatus, User, UserRole } from '@otog/database'
+import {
+  PassedUserSchema,
+  ProblemFormSchema,
+  ProblemTableRowSchema,
+} from '@otog/contract'
+import { Prisma, SubmissionStatus, UserRole } from '@otog/database'
 
 import { UploadedFilesObject } from './dto/problem.dto'
 
@@ -38,25 +44,19 @@ export const WITHOUT_EXAMPLE = {
 @Injectable()
 export class ProblemService {
   private fileManager: FileManager
+  private attachmentManager: S3FileManager
 
-  constructor(
-    // @InjectS3() private readonly s3: S3,
-    private readonly prisma: PrismaService
-  ) {
-    this.fileManager = new FileFileManager()
-    // this.fileManager = environment.USE_S3
-    //   ? new S3FileManager(this.s3, 'otog-bucket')
-    //   : new FileFileManager()
+  constructor(private readonly prisma: PrismaService) {
+    this.fileManager = new LocalFileManager()
+    this.attachmentManager = new S3FileManager(environment.S3_BUCKET)
   }
 
-  async create(
-    problemData: Prisma.ProblemCreateInput,
-    files: UploadedFilesObject
-  ) {
+  async create(problemData: ProblemFormSchema, files: UploadedFilesObject) {
     try {
       const problem = await this.prisma.problem.create({
         data: {
           name: problemData.name,
+          sname: problemData.sname,
           score: problemData.score,
           timeLimit: problemData.timeLimit,
           memoryLimit: problemData.memoryLimit,
@@ -65,7 +65,7 @@ export class ProblemService {
         },
         select: WITHOUT_EXAMPLE,
       })
-      if (files.pdf) {
+      if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
@@ -73,11 +73,10 @@ export class ProblemService {
           this.fileManager
         )
       }
-      if (files.zip) {
+      if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
-          // TODO: fix me
-          files.pdf?.[0]?.path as string,
+          files.zip?.[0]?.path as string,
           this.fileManager
         )
       }
@@ -97,6 +96,7 @@ export class ProblemService {
       const problem = await this.prisma.problem.update({
         data: {
           name: problemData.name,
+          sname: problemData.sname,
           score: problemData.score,
           timeLimit: problemData.timeLimit,
           memoryLimit: problemData.memoryLimit,
@@ -105,7 +105,7 @@ export class ProblemService {
         where: { id: problemId },
         select: WITHOUT_EXAMPLE,
       })
-      if (files.pdf) {
+      if (files?.pdf) {
         await updateProblemDoc(
           `${problem.id}`,
           // TODO: fix me
@@ -113,16 +113,17 @@ export class ProblemService {
           this.fileManager
         )
       }
-      if (files.zip) {
+      if (files?.zip) {
         await updateProblemTestCase(
           `${problem.id}`,
           // TODO: fix me
-          files.pdf?.[0]?.path as string,
+          files.zip[0]?.path as string,
           this.fileManager
         )
       }
       return problem
     } catch (err) {
+      console.error(err)
       throw new BadRequestException()
     }
   }
@@ -132,89 +133,90 @@ export class ProblemService {
     userId?: number
   }): Promise<Array<ProblemTableRowSchema>> {
     const where = { show: args.show }
-    const [problems, problemsWithSubmissions, problemsWithSampleUsers] =
-      await Promise.all([
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            name: true,
-            sname: true,
-            score: true,
-            timeLimit: true,
-            memoryLimit: true,
-            show: true,
-            recentShowTime: true,
-            case: true,
-            rating: true,
-            submission: args.userId
-              ? {
-                  select: {
-                    id: true,
-                    status: true,
-                  },
-                  orderBy: { creationDate: 'desc' },
-                  where: { userId: args.userId },
-                  take: 1,
-                }
-              : undefined,
-          },
-          orderBy: { id: 'desc' },
-        }),
-        // TODO: do simpler query by making problem to user connection in db
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            submission: {
-              where: {
-                status: SubmissionStatus.accept,
-                user: { NOT: { role: UserRole.admin } },
-              },
-              distinct: ['userId'],
-              select: { id: true },
-            },
-          },
-        }),
-        this.prisma.problem.findMany({
-          where: where,
-          select: {
-            id: true,
-            submission: {
-              take: 3,
-              distinct: ['userId'],
-              where: {
-                status: SubmissionStatus.accept,
-                user: { NOT: { role: UserRole.admin } },
-              },
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    showName: true,
-                  },
+    const [problems, problemsWithSubmissions] = await Promise.all([
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          name: true,
+          sname: true,
+          score: true,
+          timeLimit: true,
+          memoryLimit: true,
+          show: true,
+          recentShowTime: true,
+          case: true,
+          rating: true,
+          submission: args.userId
+            ? {
+                select: {
+                  id: true,
+                  status: true,
+                  userId: true,
+                  public: true,
                 },
-              },
+                orderBy: { creationDate: 'desc' },
+                where: { userId: args.userId },
+                take: 1,
+              }
+            : undefined,
+        },
+        orderBy: { id: 'desc' },
+      }),
+      // TODO: do simpler query by making problem to user connection in db
+      this.prisma.problem.findMany({
+        where: where,
+        select: {
+          id: true,
+          submission: {
+            where: {
+              status: SubmissionStatus.accept,
+              user: { NOT: { role: UserRole.admin } },
             },
+            distinct: ['userId'],
+            select: { id: true },
           },
-        }),
-      ])
+        },
+      }),
+      // this.prisma.problem.findMany({
+      //   where: where,
+      //   select: {
+      //     id: true,
+      //     submission: {
+      //       take: 3,
+      //       distinct: ['userId'],
+      //       where: {
+      //         status: SubmissionStatus.accept,
+      //         user: { NOT: { role: UserRole.admin } },
+      //       },
+      //       select: {
+      //         user: {
+      //           select: {
+      //             id: true,
+      //             showName: true,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      // }),
+    ])
 
     const problemIdToPassedCount = new Map<number, number>()
     problemsWithSubmissions.forEach((problem) => {
       problemIdToPassedCount.set(problem.id, problem.submission.length)
     })
 
-    const problemIdToSampleUsers = new Map<
-      number,
-      Array<Pick<User, 'id' | 'showName'>>
-    >()
-    problemsWithSampleUsers.forEach((problem) => {
-      problemIdToSampleUsers.set(
-        problem.id,
-        problem.submission.map((s) => s.user)
-      )
-    })
+    // const problemIdToSampleUsers = new Map<
+    //   number,
+    //   Array<Pick<User, 'id' | 'showName'>>
+    // >()
+    // problemsWithSampleUsers.forEach((problem) => {
+    //   problemIdToSampleUsers.set(
+    //     problem.id,
+    //     problem.submission.map((s) => s.user)
+    //   )
+    // })
 
     return problems.map((problem) => ({
       id: problem.id,
@@ -227,9 +229,9 @@ export class ProblemService {
       recentShowTime: problem.recentShowTime,
       case: problem.case,
       rating: problem.rating,
-      latestSubmission: problem.submission[0] ?? null,
+      latestSubmission: problem.submission?.[0] ?? null,
       passedCount: problemIdToPassedCount.get(problem.id) ?? 0,
-      samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
+      // samplePassedUsers: problemIdToSampleUsers.get(problem.id) ?? [],
     }))
   }
 
@@ -276,8 +278,8 @@ export class ProblemService {
         showName: true,
         rating: true,
         submission: {
-          select: { id: true, status: true },
-          where: { status: SubmissionStatus.accept },
+          select: { id: true, status: true, userId: true, public: true },
+          where: { status: SubmissionStatus.accept, problemId: args.problemId },
           orderBy: { creationDate: 'desc' },
           take: 1,
         },
@@ -327,6 +329,118 @@ export class ProblemService {
     } catch (e) {
       console.log(e)
       throw new BadRequestException()
+    }
+  }
+
+  async getProblemsForAdmin(args: {
+    skip: number
+    limit: number
+    search?: string
+  }) {
+    return await this.prisma.problem.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+        show: true,
+        case: true,
+        memoryLimit: true,
+        timeLimit: true,
+        recentShowTime: true,
+        score: true,
+        attachmentMetadata: true,
+      },
+      orderBy: { id: 'desc' },
+    })
+  }
+  async getProblemsCountForAdmin(args: { search?: string }) {
+    return await this.prisma.problem.count({
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+    })
+  }
+
+  async searchProblem(args: { skip: number; limit: number; search?: string }) {
+    return await this.prisma.problem.findMany({
+      take: args.limit,
+      skip: args.skip,
+      where: args.search
+        ? {
+            OR: [
+              searchId(args.search),
+              { name: { contains: args.search, mode: 'insensitive' } },
+              { sname: { contains: args.search, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        sname: true,
+      },
+      orderBy: { id: 'desc' },
+    })
+  }
+
+  async uploadAttachment(args: {
+    problemId: number
+    body: {
+      metadata: {
+        type: string
+        name: string
+        size: number
+        lastModified: number
+      }
+    }
+  }) {
+    const [url] = await Promise.all([
+      this.attachmentManager.generatePutPresignedUrl(
+        `attachment/${args.problemId}.zip`
+      ),
+      this.prisma.problem.update({
+        where: { id: args.problemId },
+        data: { attachmentMetadata: args.body.metadata },
+      }),
+    ])
+    return { url }
+  }
+
+  async downloadAttachment(problemId: number) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id: problemId },
+      select: { attachmentMetadata: true },
+    })
+    if (!problem || !problem.attachmentMetadata) {
+      throw new NotFoundException('Attachment not found')
+    }
+    try {
+      const url = await this.attachmentManager.generateGetPresignedUrl(
+        `attachment/${problemId}.zip`
+      )
+      return { url, metadata: problem.attachmentMetadata as any }
+    } catch (e) {
+      if (e instanceof NotFound) {
+        throw new NotFoundException('Attachment not found')
+      }
+      throw e
     }
   }
 }

@@ -1,12 +1,12 @@
-import { ReactNode, forwardRef } from 'react'
+import { ReactNode, forwardRef, useId } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  ChevronUpDownIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline'
+  CaretUpDownIcon,
+  WarningIcon,
+} from '@phosphor-icons/react'
 import { flexRender } from '@tanstack/react-table'
 import {
   Cell,
@@ -14,14 +14,32 @@ import {
   RowData,
   Table as TanstackTable,
 } from '@tanstack/table-core'
-
 import {
-  Button,
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from 'lucide-react'
+
+import { Button } from '@otog/ui/button'
+import { InputGroup, InputLeftIcon } from '@otog/ui/input'
+import { Label } from '@otog/ui/label'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@otog/ui/pagination'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectPrimitive,
-  Spinner,
+  SelectTrigger,
+  SelectValue,
+} from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import {
   Table,
   TableBody,
   TableCell,
@@ -29,21 +47,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  clsx,
-} from '@otog/ui'
+} from '@otog/ui/table'
+import { clsx } from '@otog/ui/utils'
 
 import { ClientOnly } from './client-only'
+import { DebouncedInput } from './debounced-input'
 
 declare module '@tanstack/table-core' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
-    headClassName?: string
-    cellClassName?: string
+    headClassName?:
+      | string
+      | ((props: { table: TanstackTable<TData> }) => string)
+    cellClassName?:
+      | string
+      | ((props: { table: TanstackTable<TData> }) => string)
     cellRowSpan?: (row: Cell<TData, TValue>) => number
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    expanded?: boolean
   }
 }
 
-interface TableComponentProps<T> {
+export interface TableComponentProps<T> {
   table: TanstackTable<T>
   isLoading?: boolean
   isError?: boolean
@@ -108,6 +134,7 @@ export function TableVirtuosoComponent<T>({
                 <TableHeadComponent
                   key={header.id}
                   header={header}
+                  table={table}
                   className={classNames?.head}
                 />
               ))}
@@ -117,7 +144,9 @@ export function TableVirtuosoComponent<T>({
         itemContent={(index, row) =>
           row
             .getVisibleCells()
-            .map((cell) => <TableCellComponent key={cell.id} cell={cell} />)
+            .map((cell) => (
+              <TableCellComponent key={cell.id} cell={cell} table={table} />
+            ))
         }
       />
     </ClientOnly>
@@ -142,6 +171,7 @@ export const TableComponent = <T,>({
                 {headerGroup.headers.map((header) => (
                   <TableHeadComponent
                     key={header.id}
+                    table={table}
                     header={header}
                     className={classNames?.head}
                   />
@@ -163,6 +193,7 @@ export const TableComponent = <T,>({
                     <TableCellComponent
                       key={cell.id}
                       cell={cell}
+                      table={table}
                       className={classNames?.cell}
                     />
                   ))}
@@ -197,7 +228,7 @@ const TableEmptyPlaceholder = ({
             <Spinner />
           ) : isError ? (
             <div className="inline-flex gap-2 items-center">
-              <ExclamationTriangleIcon className="size-4" />
+              <WarningIcon className="size-4" />
               การโหลดข้อมูลผิดพลาด
             </div>
           ) : (
@@ -212,20 +243,31 @@ const TableEmptyPlaceholder = ({
 const TableHeadComponent = ({
   header,
   className,
+  table,
 }: {
   header: Header<any, unknown>
   className?: string
+  table: TanstackTable<any>
 }) => {
   const canSort = header.column.getCanSort()
+  const headClassName = (() => {
+    switch (typeof header.column.columnDef.meta?.headClassName) {
+      case 'string':
+        return header.column.columnDef.meta.headClassName
+      case 'function':
+        return header.column.columnDef.meta.headClassName({ table })
+      default:
+        return undefined
+    }
+  })()
   const children = header.isPlaceholder
     ? null
     : flexRender(header.column.columnDef.header, header.getContext())
   if (canSort) {
     const sortDirection = header.column.getIsSorted()
+
     return (
-      <TableHead
-        className={clsx(className, header.column.columnDef.meta?.headClassName)}
-      >
+      <TableHead className={clsx(className, headClassName)}>
         <Select
           value={sortDirection || ''}
           onValueChange={(sortDirection) => {
@@ -244,7 +286,7 @@ const TableHeadComponent = ({
               ) : sortDirection === 'desc' ? (
                 <ArrowUpIcon />
               ) : (
-                <ChevronUpDownIcon />
+                <CaretUpDownIcon />
               )}
             </Button>
           </SelectPrimitive.Trigger>
@@ -281,32 +323,37 @@ const TableHeadComponent = ({
     )
   }
   return (
-    <TableHead
-      className={clsx(className, header.column.columnDef.meta?.headClassName)}
-    >
-      {children}
-    </TableHead>
+    <TableHead className={clsx(className, headClassName)}>{children}</TableHead>
   )
 }
 
 const TableCellComponent = ({
   cell,
   className,
+  table,
 }: {
   cell: Cell<any, unknown>
   className?: string
+  table: TanstackTable<any>
 }) => {
   const columnDef = cell.column.columnDef
 
   const rowSpan = columnDef.meta?.cellRowSpan?.(cell)
   if (rowSpan !== undefined && rowSpan <= 0) return
 
-  // const interactive =
-  //   columnDef.meta?.interactive ?? columnDef.id === 'actions'
-
+  const cellClassName = (() => {
+    switch (typeof cell.column.columnDef.meta?.cellClassName) {
+      case 'string':
+        return cell.column.columnDef.meta.cellClassName
+      case 'function':
+        return cell.column.columnDef.meta.cellClassName({ table })
+      default:
+        return undefined
+    }
+  })()
   return (
     <TableCell
-      className={clsx(className, cell.column.columnDef.meta?.cellClassName)}
+      className={clsx(className, cellClassName)}
       rowSpan={rowSpan}
       // onClick={
       //   interactive ? undefined : (e) => onRowClick?.(row, e)
@@ -314,5 +361,161 @@ const TableCellComponent = ({
     >
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
     </TableCell>
+  )
+}
+
+export const TableSearch = ({ table }: { table: TanstackTable<any> }) => {
+  return (
+    <InputGroup className="w-full sm:w-80">
+      <InputLeftIcon>
+        <Search aria-hidden />
+      </InputLeftIcon>
+      <DebouncedInput
+        onDebounce={(value) => {
+          table.resetPageIndex()
+          table.setGlobalFilter(value)
+        }}
+        placeholder="ค้นหา..."
+      />
+    </InputGroup>
+  )
+}
+
+export const TablePagination = ({
+  table,
+  isLoading,
+}: {
+  table: TanstackTable<any>
+  isLoading: boolean
+}) => {
+  const id = useId()
+  return (
+    <div className="flex items-center justify-between gap-8">
+      {/* Results per page */}
+      <div className="flex items-center gap-3">
+        <Label htmlFor={id} className="max-sm:sr-only">
+          แสดง
+        </Label>
+        <Select
+          value={table.getState().pagination.pageSize.toString()}
+          onValueChange={(value) => {
+            table.setPageSize(Number(value))
+          }}
+        >
+          <SelectTrigger id={id} className="w-fit whitespace-nowrap">
+            <SelectValue placeholder="Select number of results" />
+          </SelectTrigger>
+          <SelectContent className="[&_*[role=option]>span]:end-2 [&_*[role=option]>span]:start-auto [&_*[role=option]]:pe-8 [&_*[role=option]]:ps-2">
+            {[5, 10, 25, 50].map((pageSize) => (
+              <SelectItem key={pageSize} value={pageSize.toString()}>
+                {pageSize}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <TablePaginationInfo table={table} isLoading={isLoading} />
+    </div>
+  )
+}
+
+export const TablePaginationInfo = ({
+  table,
+  isLoading,
+  className,
+}: {
+  table: TanstackTable<any>
+  isLoading: boolean
+  className?: string
+}) => {
+  return (
+    <div className={clsx('flex items-center justify-between gap-8', className)}>
+      {/* Page number information */}
+      <div className="flex grow justify-end whitespace-nowrap text-sm text-muted-foreground items-center gap-2">
+        {isLoading && <Spinner size="sm" />}
+        <p
+          className="whitespace-nowrap text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          <span className="text-foreground">
+            {table.getState().pagination.pageIndex *
+              table.getState().pagination.pageSize +
+              1}
+            -
+            {Math.min(
+              Math.max(
+                table.getState().pagination.pageIndex *
+                  table.getState().pagination.pageSize +
+                  table.getState().pagination.pageSize,
+                0
+              ),
+              table.getRowCount()
+            )}
+          </span>{' '}
+          จาก{' '}
+          <span className="text-foreground">
+            {table.getRowCount().toString()}
+          </span>
+        </p>
+      </div>
+
+      {/* Pagination buttons */}
+      <Pagination>
+        <PaginationContent>
+          {/* First page button */}
+          <PaginationItem>
+            <Button
+              size="icon"
+              variant="outline"
+              className="disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => table.firstPage()}
+              disabled={!table.getCanPreviousPage()}
+              aria-label="Go to first page"
+            >
+              <ChevronFirst size={16} strokeWidth={2} aria-hidden="true" />
+            </Button>
+          </PaginationItem>
+          {/* Previous page button */}
+          <PaginationItem>
+            <Button
+              size="icon"
+              variant="outline"
+              className="disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              aria-label="Go to previous page"
+            >
+              <ChevronLeft size={16} strokeWidth={2} aria-hidden="true" />
+            </Button>
+          </PaginationItem>
+          {/* Next page button */}
+          <PaginationItem>
+            <Button
+              size="icon"
+              variant="outline"
+              className="disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              aria-label="Go to next page"
+            >
+              <ChevronRight size={16} strokeWidth={2} aria-hidden="true" />
+            </Button>
+          </PaginationItem>
+          {/* Last page button */}
+          <PaginationItem>
+            <Button
+              size="icon"
+              variant="outline"
+              className="disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => table.lastPage()}
+              disabled={!table.getCanNextPage()}
+              aria-label="Go to last page"
+            >
+              <ChevronLast size={16} strokeWidth={2} aria-hidden="true" />
+            </Button>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
   )
 }

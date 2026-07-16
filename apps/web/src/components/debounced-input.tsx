@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { useDebounce } from '@uidotdev/usehooks'
 
-import { Input, InputProps } from '@otog/ui'
+import { Input, InputProps } from '@otog/ui/input'
 
 import { useEffectEvent } from '../hooks/use-effect-event'
 

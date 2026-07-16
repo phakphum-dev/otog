@@ -2,28 +2,33 @@ import Head from 'next/head'
 import Image from 'next/image'
 import NextLink from 'next/link'
 
-import { Button } from '@otog/ui'
+import { Button } from '@otog/ui/button'
 
 import ComputerImage from '../../public/computer.svg'
-import { withSession } from '../api/with-session'
-import { useUserContext } from '../context/user-context'
+import { withSession } from '../api/server'
 import { environment } from '../env'
-import { AnnouncementCarousel } from '../modules/announcement'
-import { ProblemTable } from '../modules/problem/problem-table'
+
+export const getServerSideProps = withSession(async ({ session }) => {
+  if (environment.OFFLINE_MODE) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/login',
+      },
+    }
+  }
+  if (session) {
+    return {
+      redirect: {
+        destination: '/problem',
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+})
 
 export default function HomePage() {
-  const { isAuthenticated } = useUserContext()
-  if (isAuthenticated) {
-    return (
-      <div className="container flex flex-col gap-6 flex-1 lg:max-w-screen-md">
-        <Head>
-          <title>Problem | OTOG</title>
-        </Head>
-        <AnnouncementCarousel />
-        <ProblemTable />
-      </div>
-    )
-  }
   return (
     <main
       id="content"
@@ -54,15 +59,3 @@ export default function HomePage() {
     </main>
   )
 }
-
-export const getServerSideProps = withSession(async () => {
-  if (environment.OFFLINE_MODE) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/login',
-      },
-    }
-  }
-  return { props: {} }
-})

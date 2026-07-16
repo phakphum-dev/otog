@@ -1,37 +1,39 @@
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { MdUploadFile } from 'react-icons/md'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
+import { FileArrowUpIcon } from '@phosphor-icons/react'
 import { File } from '@web-std/file'
-import { useRouter } from 'next/router'
 import { z } from 'zod'
 
 import { Problem } from '@otog/database'
+import { Button } from '@otog/ui/button'
 import {
-  Button,
   Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+} from '@otog/ui/dialog'
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+} from '@otog/ui/form'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@otog/ui'
+} from '@otog/ui/select'
 
-import { keySubmission, querySubmission } from '../../api/query'
+import { submissionQuery } from '../../api/query'
 import { FileInput } from '../../components/file-input'
 import { Language, LanguageName } from '../../enums'
 
@@ -43,6 +45,8 @@ type SubmitCodeFormSchema = z.infer<typeof SubmitCodeFormSchema>
 
 export const SubmitCode = (props: {
   problem: Pick<Problem, 'id' | 'name'>
+  contestId?: number
+  onSuccess: () => void
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -52,14 +56,13 @@ export const SubmitCode = (props: {
     resolver: zodResolver(SubmitCodeFormSchema),
   })
 
-  const router = useRouter()
-  const uploadFile = querySubmission.uploadFile.useMutation({})
-  const queryClient = useQueryClient()
+  const uploadFile = submissionQuery.uploadFile.useMutation({})
   const onSubmit = form.handleSubmit(async (values) => {
     const toastId = toast.loading(`กำลังส่งข้อ ${props.problem.name}...`)
     await uploadFile.mutateAsync(
       {
         params: { problemId: props.problem.id.toString() },
+        query: { contestId: props.contestId?.toString() },
         body: values,
       },
       {
@@ -70,8 +73,7 @@ export const SubmitCode = (props: {
         onSuccess: () => {
           toast.success('ส่งสำเร็จแล้ว', { id: toastId })
           setOpen(false)
-          router.push('/submission')
-          queryClient.invalidateQueries({ queryKey: keySubmission.list._def })
+          props?.onSuccess()
         },
       }
     )
@@ -80,7 +82,7 @@ export const SubmitCode = (props: {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button title="ส่งด้วยไฟล์" size="icon" variant="secondary">
-          <MdUploadFile />
+          <FileArrowUpIcon />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -88,7 +90,10 @@ export const SubmitCode = (props: {
         <Form {...form}>
           <form
             ref={formRef}
-            onSubmit={onSubmit}
+            onSubmit={(e) => {
+              e.stopPropagation()
+              onSubmit(e)
+            }}
             className="flex flex-col gap-4"
           >
             <FormField
@@ -109,7 +114,7 @@ export const SubmitCode = (props: {
               name="language"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>อัปโหลด</FormLabel>
+                  <FormLabel>ภาษา</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger {...field}>

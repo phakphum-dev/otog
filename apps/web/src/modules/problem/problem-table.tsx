@@ -1,26 +1,29 @@
-import { forwardRef, useMemo, useState } from 'react'
+import { ReactNode, forwardRef, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import {
+  ArrowSquareOutIcon,
   CheckCircleIcon,
-  CodeBracketIcon,
-  EllipsisHorizontalIcon,
+  CodeIcon,
+  ColumnsIcon,
+  DotsThreeIcon,
   EyeIcon,
   EyeSlashIcon,
   FunnelIcon,
-  ListBulletIcon,
+  ListBulletsIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
+  NotePencilIcon,
   XCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+  XIcon,
+} from '@phosphor-icons/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactTable } from '@tanstack/react-table'
 import {
   ColumnFiltersState,
+  FilterFnOption,
   Row,
   Table,
+  VisibilityState,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -29,35 +32,37 @@ import {
 import dayjs from 'dayjs'
 import { produce } from 'immer'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 
 import { ProblemTableRowSchema } from '@otog/contract'
 import { SubmissionStatus, UserRole } from '@otog/database'
+import { Button, ButtonProps } from '@otog/ui/button'
 import {
-  AvatarGroup,
-  AvatarMore,
-  Button,
-  ButtonProps,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
+  DialogTrigger,
+} from '@otog/ui/dialog'
+import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  InputGroup,
-  InputLeftIcon,
-  Link,
+} from '@otog/ui/dropdown-menu'
+import { InputGroup, InputLeftIcon } from '@otog/ui/input'
+import { Link } from '@otog/ui/link'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectPrimitive,
-  Spinner,
-  VariantProps,
-  clsx,
-  cva,
-} from '@otog/ui'
+} from '@otog/ui/select'
+import { Spinner } from '@otog/ui/spinner'
+import { VariantProps, clsx, cva } from '@otog/ui/utils'
 
-import { keyProblem, queryProblem } from '../../api/query'
+import { problemKey, problemQuery, submissionKey } from '../../api/query'
 import { DebouncedInput } from '../../components/debounced-input'
 import { InlineComponent } from '../../components/inline-component'
 import { SubmissionDialog } from '../../components/submission-dialog'
@@ -68,30 +73,58 @@ import { useUserContext } from '../../context/user-context'
 import { exhaustiveGuard } from '../../utils/exhaustive-guard'
 import { SubmitCode } from './submit-code'
 
+const customFilterFn: FilterFnOption<ProblemTableRowSchema> = (
+  row,
+  _columnId,
+  filterValue
+) => {
+  return (
+    `${row.original.id.toString().toLowerCase()} ${row.original.name.toLowerCase()}`.indexOf(
+      filterValue.toLowerCase()
+    ) !== -1
+  )
+}
 export const ProblemTable = () => {
-  const { data, isLoading, isError } = useQuery(keyProblem.list())
+  const { data, isLoading, isError } = useQuery(problemKey.getProblemTable())
   const problems = useMemo(
     () => (data?.status === 200 ? data.body : []),
     [data]
   )
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    recentShowTime: false,
+    passedCount: false,
+  })
+  useEffect(() => {
+    const passedCountVisible =
+      window.localStorage.getItem('preferredColumn.passedCount') === 'true'
+    setColumnVisibility((prev) => ({
+      ...prev,
+      passedCount: passedCountVisible,
+    }))
+  }, [])
   const table = useReactTable({
     columns,
     data: problems,
     filterFns: {},
     state: {
       columnFilters,
-      columnVisibility: { recentShowTime: false },
+      columnVisibility,
     },
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    globalFilterFn: customFilterFn,
   })
   return (
-    <main id="content" className="flex flex-col gap-4">
-      <h1 className="sr-only">โจทย์</h1>
+    <section className="flex flex-col gap-4" aria-labelledby="problem">
+      <h1 className="sr-only" id="problem">
+        โจทย์
+      </h1>
       <OtogButtons table={table} problems={problems} isLoading={isLoading} />
       <div className="flex flex-col gap-4">
         <TableFilter table={table} />
@@ -101,7 +134,7 @@ export const ProblemTable = () => {
           isError={isError}
         />
       </div>
-    </main>
+    </section>
   )
 }
 
@@ -199,7 +232,6 @@ const OtogButtons = ({
 }
 
 const TableFilter = ({ table }: { table: Table<any> }) => {
-  const nameColumn = table.getColumn('name')!
   const statusColumn = table.getColumn('status')!
   const statusFilterValue = statusColumn.getFilterValue() as
     | RowStatus
@@ -215,6 +247,8 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
       newProblemFilterValue === NEW_PROBLEM ? undefined : NEW_PROBLEM
     )
   }
+  const passedCountColumn = table.getColumn('passedCount')!
+
   return (
     <div className="flex gap-4 sticky py-2 -my-2 top-[calc(var(--navbar))] bg-background z-10">
       <InputGroup>
@@ -222,8 +256,9 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
           <MagnifyingGlassIcon />
         </InputLeftIcon>
         <DebouncedInput
+          type="search"
           placeholder="ค้นหา..."
-          onDebounce={(value) => nameColumn.setFilterValue(value)}
+          onDebounce={(value) => table.setGlobalFilter(value)}
         />
       </InputGroup>
       <div className="flex gap-2">
@@ -272,9 +307,30 @@ const TableFilter = ({ table }: { table: Table<any> }) => {
             onClick={toggleNewProblemFilter}
           >
             โจทย์วันนี้
-            <XMarkIcon />
+            <XIcon />
           </Button>
         )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <ColumnsIcon aria-label="คอลัมน์ที่แสดง" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuCheckboxItem
+              checked={passedCountColumn.getIsVisible()}
+              onClick={() => {
+                window.localStorage.setItem(
+                  'preferredColumn.passedCount',
+                  (!passedCountColumn.getIsVisible()).toString()
+                )
+                passedCountColumn.toggleVisibility()
+              }}
+            >
+              ผู้ที่ผ่าน
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )
@@ -316,8 +372,8 @@ const OtogButton = forwardRef<HTMLButtonElement, OtogButtonProps>(
       >
         {isLoading ? null : (
           <>
-            <h6>{label}</h6>
-            <h3 className="text-3xl font-bold md:text-4xl">{number}</h3>
+            <p>{label}</p>
+            <p className="text-3xl font-bold md:text-4xl">{number}</p>
           </>
         )}
       </Button>
@@ -380,7 +436,7 @@ const columns = [
           isExternal
           href={`/api/problem/${problem.id}`}
           className={clsx(
-            'flex flex-col',
+            'flex flex-col text-sm',
             !problem.show && 'text-muted-foreground'
           )}
         >
@@ -393,49 +449,33 @@ const columns = [
               </span>
             )}
           </span>
-          <span className="text-sm">
-            {/* TODO: fix nullish */}(
-            {problem.timeLimit ? problem.timeLimit / 1000 : '-'} วินาที{' '}
-            {problem.memoryLimit} MB)
+          <span>
+            ({problem.timeLimit / 1000} วินาที {problem.memoryLimit} MB)
           </span>
         </Link>
       )
     },
     meta: {
-      cellClassName: 'w-full',
+      cellClassName: 'lg:w-full min-w-[350px]',
     },
   }),
   columnHelper.accessor('passedCount', {
-    header: 'ผ่านแล้ว',
+    header: 'ผ่าน',
     cell: ({ row, getValue }) => (
       <InlineComponent
         render={() => {
           const passedCount = getValue()
           const [open, setOpen] = useState(false)
           return passedCount > 0 ? (
-            <>
-              <AvatarGroup asChild>
-                <Button
-                  title={`${passedCount} คน`}
-                  aria-label={`${passedCount} คน`}
-                  variant="ghost"
-                  className="gap-0 px-1"
-                  onClick={() => setOpen(true)}
-                >
-                  {row.original.samplePassedUsers.map((user) => (
-                    <UserAvatar key={user.id} user={user} />
-                  ))}
-                  {passedCount > 3 && (
-                    <AvatarMore aria-hidden count={passedCount} />
-                  )}
-                </Button>
-              </AvatarGroup>
-              <PassedUserDialog
-                problem={row.original}
-                open={open}
-                setOpen={setOpen}
-              />
-            </>
+            <PassedUserDialog
+              problem={row.original}
+              open={open}
+              setOpen={setOpen}
+            >
+              <DialogTrigger className="focus-visible:ring-focus text-muted-foreground">
+                {passedCount}
+              </DialogTrigger>
+            </PassedUserDialog>
           ) : (
             <div className="px-1 text-muted-foreground">-</div>
           )
@@ -443,8 +483,8 @@ const columns = [
       />
     ),
     meta: {
-      headClassName: 'text-end px-0 whitespace-pre',
-      cellClassName: 'text-end px-0',
+      headClassName: 'text-center whitespace-pre',
+      cellClassName: 'text-center',
     },
   }),
   columnHelper.display({
@@ -463,7 +503,25 @@ const columns = [
   columnHelper.display({
     id: 'submit',
     header: 'ส่ง',
-    cell: ({ row }) => <SubmitCode problem={row.original} />,
+    cell: ({ row }) => (
+      <InlineComponent
+        render={() => {
+          const router = useRouter()
+          const queryClient = useQueryClient()
+          return (
+            <SubmitCode
+              problem={row.original}
+              onSuccess={() => {
+                router.push('/submission?all=false')
+                queryClient.invalidateQueries({
+                  queryKey: submissionKey.getSubmissions._def,
+                })
+              }}
+            />
+          )
+        }}
+      />
+    ),
     meta: {
       cellClassName: 'text-center px-0',
     },
@@ -505,28 +563,28 @@ const ActionMenu = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" title="เพิ่มเติม" size="icon">
-            <EllipsisHorizontalIcon />
+            <DotsThreeIcon />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <NextLink href={`/problem/${row.original.id}`}>
-              <PencilSquareIcon />
-              {row.original.latestSubmission ? 'แก้ไขการส่งล่าสุด' : 'เขียนส่ง'}
+            <NextLink href={`/problem/${row.original.id}?tab=editor`}>
+              <NotePencilIcon />
+              เขียนส่ง
             </NextLink>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setOpenLatestSubmission(true)}
             disabled={!row.original.latestSubmission}
           >
-            <CodeBracketIcon />
+            <CodeIcon />
             การส่งล่าสุด
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setOpenPassedUser(true)}
             disabled={row.original.passedCount === 0}
           >
-            <ListBulletIcon />
+            <ListBulletsIcon />
             ผู้ที่ผ่าน
           </DropdownMenuItem>
           <ToggleShowProblem row={row} />
@@ -550,13 +608,17 @@ const PassedUserDialog = ({
   problem,
   open,
   setOpen,
+  children,
 }: {
-  problem: Pick<ProblemTableRowSchema, 'id' | 'name'>
+  problem: Pick<ProblemTableRowSchema, 'id' | 'name' | 'passedCount'>
   open: boolean
   setOpen: (open: boolean) => void
+  children?: ReactNode
 }) => {
   const getPassedUsers = useQuery({
-    ...keyProblem.passedUsers({ problemId: problem.id }),
+    ...problemKey.getPassedUsers({
+      params: { problemId: problem.id.toString() },
+    }),
     enabled: open,
   })
 
@@ -566,8 +628,10 @@ const PassedUserDialog = ({
   const { isAdmin } = useUserContext()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm">
+      {children}
+      <DialogContent className="max-w-sm self-start">
         <DialogTitle>ผู้ที่ผ่านข้อ {problem.name}</DialogTitle>
+        <DialogDescription>ผ่านแล้ว {problem.passedCount} คน</DialogDescription>
         {!users ? (
           <div className="flex items-center justify-center">
             <Spinner />
@@ -590,7 +654,7 @@ const PassedUserDialog = ({
                     isExternal
                   >
                     <NextLink href={`/submission/${user.passedSubmission.id}`}>
-                      <ArrowTopRightOnSquareIcon className="size-4" />
+                      <ArrowSquareOutIcon className="size-4" />
                     </NextLink>
                   </Link>
                 )}
@@ -603,10 +667,14 @@ const PassedUserDialog = ({
   )
 }
 
-const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
+const ToggleShowProblem = ({
+  row,
+}: {
+  row: Row<Pick<ProblemTableRowSchema, 'id' | 'show'>>
+}) => {
   const { user } = useUserContext()
   const problem = row.original
-  const toggleShowProblem = queryProblem.toggleShowProblem.useMutation()
+  const toggleShowProblem = problemQuery.toggleShowProblem.useMutation()
   const queryClient = useQueryClient()
   if (user?.role !== UserRole.admin) {
     return null
@@ -626,7 +694,7 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
             onSuccess: () => {
               toast.success(`${showLabel}โจทย์สำเร็จ`, { id: toastId })
               queryClient.setQueryData(
-                keyProblem.list().queryKey,
+                problemKey.getProblemTable().queryKey,
                 produce(
                   (draftResult: { body: Array<ProblemTableRowSchema> }) => {
                     const draftProblem = draftResult.body.find(
@@ -636,7 +704,9 @@ const ToggleShowProblem = ({ row }: { row: Row<ProblemTableRowSchema> }) => {
                   }
                 )
               )
-              queryClient.invalidateQueries({ queryKey: keyProblem.list._def })
+              queryClient.invalidateQueries({
+                queryKey: problemKey.getProblemTable._def,
+              })
             },
             onError: () => {
               toast.error(`ไม่สามารถ${showLabel}โจทย์ได้`, { id: toastId })

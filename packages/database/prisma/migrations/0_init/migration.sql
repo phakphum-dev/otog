@@ -14,7 +14,7 @@ CREATE TYPE "enum_user_role" AS ENUM ('user', 'admin');
 CREATE TABLE "announcement" (
     "id" SERIAL NOT NULL,
     "value" JSONB,
-    "show" BOOLEAN NOT NULL DEFAULT false,
+    "show" BOOLEAN DEFAULT false,
     "contestId" INTEGER,
 
     CONSTRAINT "announcement_pkey" PRIMARY KEY ("id")
@@ -25,8 +25,8 @@ CREATE TABLE "chat" (
     "id" SERIAL NOT NULL,
     "message" VARCHAR(255) NOT NULL,
     "userId" INTEGER NOT NULL,
-    "creationDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "updateDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+    "creationDate" TIMESTAMPTZ(6) NOT NULL,
+    "updateDate" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "chat_pkey" PRIMARY KEY ("id")
 );
@@ -37,8 +37,8 @@ CREATE TABLE "contest" (
     "name" VARCHAR(255),
     "mode" "enum_contest_mode" NOT NULL,
     "gradingMode" "enum_contest_gradingMode" NOT NULL,
-    "timeStart" TIMESTAMPTZ(6) NOT NULL,
-    "timeEnd" TIMESTAMPTZ(6) NOT NULL,
+    "timeStart" TIMESTAMPTZ(6),
+    "timeEnd" TIMESTAMPTZ(6),
     "announce" VARCHAR(255),
 
     CONSTRAINT "contest_pkey" PRIMARY KEY ("id")
@@ -76,8 +76,8 @@ CREATE TABLE "refreshToken" (
     "jwtId" VARCHAR(255),
     "used" BOOLEAN DEFAULT false,
     "expiryDate" TIMESTAMPTZ(6),
-    "creationDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "updateDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+    "creationDate" TIMESTAMPTZ(6) NOT NULL,
+    "updateDate" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "refreshToken_pkey" PRIMARY KEY ("id")
 );
@@ -85,7 +85,7 @@ CREATE TABLE "refreshToken" (
 -- CreateTable
 CREATE TABLE "submission" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" INTEGER,
     "problemId" INTEGER,
     "result" VARCHAR(255) DEFAULT 'WAITING',
     "score" INTEGER,
@@ -95,8 +95,8 @@ CREATE TABLE "submission" (
     "contestId" INTEGER,
     "sourceCode" TEXT,
     "language" VARCHAR(255),
-    "creationDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "updateDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+    "creationDate" TIMESTAMPTZ(6) NOT NULL,
+    "updateDate" TIMESTAMPTZ(6) NOT NULL,
     "public" BOOLEAN DEFAULT false,
 
     CONSTRAINT "submission_pkey" PRIMARY KEY ("id")
@@ -111,8 +111,8 @@ CREATE TABLE "user" (
     "password" VARCHAR(255) NOT NULL,
     "role" "enum_user_role" NOT NULL,
     "rating" INTEGER,
-    "creationDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "updateDate" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+    "creationDate" TIMESTAMPTZ(6) NOT NULL,
+    "updateDate" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );

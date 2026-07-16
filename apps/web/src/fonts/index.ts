@@ -1,4 +1,4 @@
-import { Inter, Kanit, Noto_Sans_Thai, Sarabun } from 'next/font/google'
+import { Inter, Noto_Sans_Thai } from 'next/font/google'
 import localFont from 'next/font/local'
 
 export const inter = Inter({

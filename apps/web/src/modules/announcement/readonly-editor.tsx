@@ -8,8 +8,12 @@ import { Element, Leaf } from './elements'
 
 interface ReadonlyEditorProps {
   value: Descendant[]
+  height?: 'auto' | number
 }
-export const ReadonlyEditor = ({ value }: ReadonlyEditorProps) => {
+export const ReadonlyEditor = ({
+  value,
+  height = HEIGHT,
+}: ReadonlyEditorProps) => {
   const editor = useMemo(() => withReact(createEditor()), [])
   editor.children = value
   return (
@@ -18,8 +22,8 @@ export const ReadonlyEditor = ({ value }: ReadonlyEditorProps) => {
       <Editable
         className="outline-none overflow-hidden text-center flex flex-col justify-center gap-2 whitespace-pre-wrap break-words"
         style={{
-          minHeight: HEIGHT,
-          maxHeight: HEIGHT,
+          minHeight: height,
+          maxHeight: height,
         }}
         readOnly
         renderElement={Element}

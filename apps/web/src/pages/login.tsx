@@ -10,12 +10,26 @@ import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
 import { LoginBody } from '@otog/contract'
-import { Button, Form, FormField, FormItem, FormLabel, Input } from '@otog/ui'
+import { Button } from '@otog/ui/button'
+import { Form, FormField, FormItem, FormLabel } from '@otog/ui/form'
+import { Input } from '@otog/ui/input'
 
 import Logo from '../../public/logo512.png'
-import { withSession } from '../api/with-session'
+import { withSession } from '../api/server'
 import { useUserContext } from '../context/user-context'
 import { environment } from '../env'
+
+export const getServerSideProps = withSession(async ({ session }) => {
+  if (session) {
+    return {
+      redirect: {
+        destination: environment.OFFLINE_MODE ? '/contest' : '/problem',
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+})
 
 export default function LoginPage() {
   const router = useRouter()
@@ -39,7 +53,7 @@ export default function LoginPage() {
       }
       toast.success('ลงชื่อเข้าใช้สำเร็จ !', { id: toastId })
       clearCache()
-      router.replace(environment.OFFLINE_MODE ? '/contest' : '/')
+      router.replace(environment.OFFLINE_MODE ? '/contest' : '/problem')
     } catch (e: unknown) {
       toast.error('ลงชื่อใช้งานไม่สำเร็จ', { id: toastId })
     }
@@ -118,15 +132,3 @@ export default function LoginPage() {
     </main>
   )
 }
-
-export const getServerSideProps = withSession(async (session) => {
-  if (session) {
-    return {
-      redirect: {
-        destination: environment.OFFLINE_MODE ? '/contest' : '/',
-        permanent: false,
-      },
-    }
-  }
-  return { props: {} }
-})

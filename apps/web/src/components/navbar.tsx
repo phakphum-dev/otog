@@ -1,37 +1,66 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
+import { RemoveScroll } from 'react-remove-scroll'
 
 import {
-  ArrowRightStartOnRectangleIcon,
-  ChevronDownIcon,
+  CaretDownIcon,
+  ListIcon,
+  SignOutIcon,
   UserIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 import { User } from 'next-auth'
 import Image from 'next/image'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
+import { Button } from '@otog/ui/button'
 // import { SearchMenu } from './SearchMenu'
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
-  Link,
-  clsx,
-} from '@otog/ui'
+} from '@otog/ui/dropdown-menu'
+import { Link } from '@otog/ui/link'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@otog/ui/sheet'
+import { clsx } from '@otog/ui/utils'
 
 import Logo from '../../public/logo512.png'
 import { useUserContext } from '../context/user-context'
+import { environment } from '../env'
+import { Search } from './search'
 import { ThemeToggle } from './theme-provider'
 import { UserAvatar } from './user-avatar'
 
 export const Navbar = () => {
   const { user } = useUserContext()
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  useEffect(() => {
+    function closeSheet() {
+      setOpen(false)
+    }
+    router.events.on('routeChangeStart', closeSheet)
+    return () => {
+      router.events.off('routeChangeStart', closeSheet)
+    }
+  }, [router])
   return (
     <>
       <div className="h-[--navbar] w-full" />
-      <nav className="fixed inset-x-0 top-0 z-20 h-[--navbar] border-b border-border bg-background shadow-sm">
+      <nav
+        className={clsx(
+          'fixed right-0 left-0 top-0 z-20 h-[--navbar] border-b border-border bg-background shadow-sm',
+          RemoveScroll.classNames.fullWidth
+        )}
+      >
         <div className="container flex h-full justify-between items-center">
           <div className="flex gap-2 items-center">
             <Link asChild className="p-1 rounded-full">
@@ -45,13 +74,24 @@ export const Navbar = () => {
                 />
               </NextLink>
             </Link>
-            <NavButton href="/" exact className="ml-6">
-              โจทย์
-            </NavButton>
-            <NavButton href="/submission">ผลตรวจ</NavButton>
-            <NavButton href="/contest">แข่งขัน</NavButton>
+            {!environment.OFFLINE_MODE && (
+              <ul className="flex gap-2 items-center max-lg:hidden">
+                <li>
+                  <NavButton href="/problem" className="ml-6">
+                    โจทย์
+                  </NavButton>
+                </li>
+                <li>
+                  <NavButton href="/submission">ผลตรวจ</NavButton>
+                </li>
+                <li>
+                  <NavButton href="/contest">แข่งขัน</NavButton>
+                </li>
+              </ul>
+            )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 max-lg:hidden">
+            {!environment.OFFLINE_MODE && <Search />}
             <ThemeToggle />
             {user ? (
               <Menu user={user} />
@@ -60,6 +100,50 @@ export const Navbar = () => {
                 <NextLink href="/login">เข้าสู่ระบบ</NextLink>
               </Button>
             )}
+          </div>
+          <div className="lg:hidden">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Menu">
+                  <ListIcon />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="flex flex-col gap-6">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription className="" />
+                </SheetHeader>
+                {!environment.OFFLINE_MODE && (
+                  <ul className="flex flex-col gap-2">
+                    <li>
+                      <NavButton className="block" href="/problem">
+                        โจทย์
+                      </NavButton>
+                    </li>
+                    <li>
+                      <NavButton className="block" href="/submission">
+                        ผลตรวจ
+                      </NavButton>
+                    </li>
+                    <li>
+                      <NavButton className="block" href="/contest">
+                        แข่งขัน
+                      </NavButton>
+                    </li>
+                  </ul>
+                )}
+                <div className="flex gap-2">
+                  <ThemeToggle />
+                  {user ? (
+                    <Menu user={user} />
+                  ) : (
+                    <Button asChild variant="ghost">
+                      <NextLink href="/login">เข้าสู่ระบบ</NextLink>
+                    </Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
@@ -107,27 +191,40 @@ interface MenuProps {
   user: User['user']
 }
 const Menu = ({ user }: MenuProps) => {
-  const { logout } = useUserContext()
+  const { logout, isAdmin } = useUserContext()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost">
           <UserAvatar user={user} />
-          <ChevronDownIcon className="size-2" />
+          <CaretDownIcon className="size-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem asChild>
-          <NextLink href={`/user/${user.id}`}>
-            <UserIcon />
-            โปรไฟล์
-          </NextLink>
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end">
+        {isAdmin ? (
+          <DropdownMenuItem asChild>
+            <NextLink href="/admin" className="max-w-60 truncate font-semibold">
+              {user.showName}
+            </NextLink>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuLabel className="max-w-60 truncate">
+            {user.showName}
+          </DropdownMenuLabel>
+        )}
+        {!environment.OFFLINE_MODE && (
+          <DropdownMenuItem asChild>
+            <NextLink href={`/user/${user.id}`}>
+              <UserIcon />
+              โปรไฟล์
+            </NextLink>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={logout}
           className="text-destructive focus:text-destructive"
         >
-          <ArrowRightStartOnRectangleIcon />
+          <SignOutIcon />
           ออกจากระบบ
         </DropdownMenuItem>
       </DropdownMenuContent>
